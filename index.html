@@ -1,1 +1,88 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Ravens Access</title>
+    <link rel="stylesheet" href="style.css">
+    <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script> 
+</head>
+<body>
 
+<div class="app-container">
+
+    <section id="INICIO" class="screen active">
+        <h1 style="text-align:center;">RAVENS ACCESS</h1>
+        <div class="menu-grid">
+            <div class="menu-item" onclick="navigate('A1')">
+                <img src="assets/visita.svg" alt="Visita">
+                <span>VISITA</span>
+            </div>
+            <div class="menu-item" onclick="navigate('B1')">
+                <img src="assets/paquete.svg" alt="Paquete">
+                <span>PAQUETE</span>
+            </div>
+            <div class="menu-item" onclick="navigate('C1')">
+                <img src="assets/salida.svg" alt="Salida">
+                <span>SALIDA</span>
+            </div>
+             <div class="menu-item" onclick="navigate('EA1')">
+                <img src="assets/qr.svg" alt="QR">
+                <span>QR RESIDENTE</span>
+            </div>
+        </div>
+    </section>
+
+    <section id="B1" class="screen">
+        <h2>¿Qué deseas hacer?</h2>
+        <div class="menu-item" onclick="navigate('BA1')" style="height: 100px; margin-bottom: 20px;">
+            <span>Recibir un paquete</span>
+        </div>
+        <div class="menu-item" onclick="navigate('BB1')" style="height: 100px; margin-bottom: 20px;">
+            <span>Entregar un paquete</span>
+        </div>
+        <button onclick="navigate('INICIO')" style="background:red; color:white; width:100%; padding:15px;">Cancelar</button>
+    </section>
+
+    <section id="BA1" class="screen">
+        <div style="background:#800020; padding:10px; margin-bottom:20px;">
+            <h2>Nuevo Registro</h2>
+        </div>
+
+        <form id="form-recibir-paquete">
+            <label>Nombre</label>
+            <input type="text" id="ba1-nombre" required>
+
+            <label>Torre</label>
+            <input type="text" id="ba1-torre" required>
+
+            <label>Departamento</label>
+            <input type="text" id="ba1-depto" required>
+
+            <label>Paquetería</label>
+            <input type="text" id="ba1-paqueteria" required>
+
+            <label>Estatus</label>
+            <select id="ba1-estatus">
+                <option value="Aceptado">Aceptado</option>
+                <option value="Dañado/Devuelto">Dañado/Devuelto</option>
+            </select>
+
+            <label>Foto</label>
+            <input type="file" id="ba1-foto" accept="image/*" capture="environment">
+            <div id="preview-container">
+                <img id="ba1-preview" style="width:100%; display:none; margin-top:10px; border:2px solid blue;">
+            </div>
+
+            <br><br>
+            <button type="button" class="primary-btn" onclick="guardarPaquete()">Guardar</button>
+            <br><br>
+            <button type="button" onclick="navigate('INICIO')">Cancelar</button>
+        </form>
+    </section>
+
+</div>
+
+<script src="app.js"></script>
+</body>
+</html>
