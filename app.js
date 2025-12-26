@@ -1,102 +1,93 @@
-// URL de tu Trigger HTTP de Power Automate / Logic Apps
-const AZURE_API_URL = "TU_URL_AQUI"; 
+/** * LÓGICA DE RAVENS ACCESS
+ * Gestión de estados: DENTRO / FUERA
+ */
 
-let html5QrCode;
+const CONFIG = {
+    API_URL: "TU_URL_DE_POWER_AUTOMATE_AQUI", // El HTTP Trigger
+    ESTADOS: { ENTRADA: "DENTRO", SALIDA: "FUERA" }
+};
 
-// Configuración del escáner
-const qrConfig = { fps: 10, qrbox: { width: 250, height: 250 } };
+let scanner = null;
 
-function startScanner() {
-    html5QrCode = new Html5Qrcode("reader");
-    html5QrCode.start(
-        { facingMode: "environment" }, 
-        qrConfig,
-        onScanSuccess
-    ).catch(err => {
-        console.error("Error al iniciar cámara: ", err);
-        document.getElementById('status-msg').innerText = "Error: No se pudo acceder a la cámara";
-    });
-}
+// --- NAVEGACIÓN ---
+function navigateTo(screenId) {
+    document.querySelectorAll('.screen').forEach(s => s.classList.add('hidden'));
+    document.getElementById(screenId).classList.remove('hidden');
 
-// Función que se ejecuta cuando escanea algo
-async function onScanSuccess(decodedText) {
-    if (decodedText) {
-        // Pausamos el escaneo para no procesar el mismo código 10 veces
-        html5QrCode.pause();
-        await procesarAcceso(decodedText);
+    if (screenId === 'screen-scan') {
+        initScanner();
+    } else if (scanner) {
+        scanner.stop();
     }
 }
 
-async function procesarAcceso(dni) {
-    showToast(`Validando DNI: ${dni}...`);
-    
+// --- ESCÁNER ---
+function initScanner() {
+    scanner = new Html5Qrcode("reader");
+    scanner.start(
+        { facingMode: "environment" },
+        { fps: 10, qrbox: 250 },
+        (decodedText) => {
+            scanner.pause();
+            validarDNI(decodedText);
+        }
+    ).catch(err => showToast("Error de cámara"));
+}
+
+// --- LÓGICA DE NEGOCIO (Equivalente a tus Patch/LookUp) ---
+async function validarDNI(dniFromScanner) {
+    const dni = dniFromScanner || document.getElementById('dni-input').value;
+    if (!dni) return showToast("Ingrese un DNI");
+
+    showToast("Validando en base de datos...");
+
     try {
-        const response = await fetch(AZURE_API_URL, {
+        const response = await fetch(CONFIG.API_URL, {
             method: 'POST',
-            headers: { 'Content-Type': 'application/json' },
             body: JSON.stringify({ 
                 dni: dni,
-                timestamp: new Date().toISOString(),
-                dispositivo: "WebScanner_Guardia"
-            })
+                accion: "VALIDAR_ACCESO",
+                timestamp: new Date().toISOString()
+            }),
+            headers: {'Content-Type': 'application/json'}
         });
 
-        const data = await response.json();
-        
-        // Manejo de Respuesta (Lógica de Power Apps LookUp/Patch)
-        if (data.autorizado) {
-            showResult('success', data);
-        } else {
-            // Aquí entra el Anti-passback o acceso denegado
-            showResult('denied', data);
-        }
+        const result = await response.json();
+        renderResult(result);
+
     } catch (error) {
-        console.error("Error API:", error);
-        showResult('error', { mensaje: "Error de conexión con el servidor" });
+        console.error(error);
+        showToast("Error de conexión");
+        navigateTo('screen-menu');
     }
 }
 
-// Interfaz de resultados
-function showResult(type, data) {
-    const modal = document.getElementById('result-modal');
-    const title = document.getElementById('modal-title');
-    const desc = document.getElementById('modal-desc');
-    const icon = document.getElementById('modal-icon');
-    const details = document.getElementById('user-details');
+function renderResult(data) {
+    const card = document.getElementById('result-card');
+    const icon = document.getElementById('res-icon');
+    const title = document.getElementById('res-title');
+    const desc = document.getElementById('res-desc');
 
-    if (type === 'success') {
-        icon.innerHTML = '✅';
-        icon.className = "text-green-500 text-6xl mb-4";
-        title.innerText = "ACCESO PERMITIDO";
-        title.className = "text-2xl font-bold text-green-500 mb-2";
-        desc.innerText = data.mensaje || "Registro actualizado correctamente.";
-        
-        // Mostrar detalles
-        details.classList.remove('hidden');
-        document.getElementById('res-nombre').innerText = data.nombre || "N/A";
-        document.getElementById('res-tipo').innerText = data.tipo || "Visitante";
-        document.getElementById('res-dni').innerText = data.dni || "";
-    } else if (type === 'denied') {
-        icon.innerHTML = '❌';
-        icon.className = "text-red-500 text-6xl mb-4";
-        title.innerText = "ACCESO DENEGADO";
-        title.className = "text-2xl font-bold text-red-500 mb-2";
-        desc.innerText = data.mensaje || "El usuario ya está dentro (Anti-passback) o no existe.";
-        details.classList.add('hidden');
+    navigateTo('screen-result');
+
+    // Lógica Anti-passback basada en la respuesta de tu Logic App
+    if (data.success) {
+        icon.innerHTML = "✅";
+        card.style.borderColor = "#16a34a"; // Verde
+        title.innerText = "ACCESO AUTORIZADO";
+        title.className = "text-3xl font-bold mb-2 text-green-500";
+        desc.innerText = `Bienvenido, registro de ${data.tipo} exitoso.`;
     } else {
-        icon.innerHTML = '⚠️';
-        title.innerText = "ERROR DE SISTEMA";
-        desc.innerText = data.mensaje;
+        icon.innerHTML = "❌";
+        card.style.borderColor = "#dc2626"; // Rojo
+        title.innerText = "ACCESO DENEGADO";
+        title.className = "text-3xl font-bold mb-2 text-red-500";
+        desc.innerText = data.error || "El usuario ya se encuentra dentro o no existe.";
     }
 
-    modal.classList.remove('hidden');
-}
-
-function closeModal() {
-    document.getElementById('result-modal').classList.add('hidden');
-    document.getElementById('manual-dni').value = "";
-    // Reanudar el escáner
-    html5QrCode.resume();
+    // Llenar datos del usuario
+    document.getElementById('data-nombre').innerText = data.nombre || "Desconocido";
+    document.getElementById('data-status').innerText = data.estatus || "SINFÍN";
 }
 
 function showToast(msg) {
@@ -105,11 +96,3 @@ function showToast(msg) {
     t.classList.remove('hidden');
     setTimeout(() => t.classList.add('hidden'), 3000);
 }
-
-function validarManual() {
-    const dni = document.getElementById('manual-dni').value;
-    if (dni) procesarAcceso(dni);
-}
-
-// Iniciar al cargar
-window.addEventListener('DOMContentLoaded', startScanner);
