@@ -3,496 +3,538 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
-    <title>RAVENS ACCESS</title>
+    <title>RAVENS ACCESS v2.0</title>
+    
     <script src="https://cdn.jsdelivr.net/npm/signature_pad@4.0.0/dist/signature_pad.umd.min.js"></script>
     <script src="https://unpkg.com/html5-qrcode" type="text/javascript"></script>
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Lato:ital,wght@0,300;0,400;0,700;0,900;1,400&display=swap" rel="stylesheet">
 
     <style>
-        /* === RESET & ESTRUCTURA BASE === */
+        /* === ESTILOS NATIVOS RAVENS === */
         :root {
             --guinda: #800020;  /* RGBA(128, 0, 32, 1) */
-            --verde: #36b04b;   /* RGBA(54, 176, 75, 1) */
+            --verde: #36b04b;   /* Éxito */
+            --rojo: #b80000;    /* Error */
+            --azul: #004080;    /* Info */
             --negro: #000000;
-            --gris-card: #1c1c1e;
-            --borde: #2c2c2e;
-            --texto: #ffffff;
-            --dorado: #FFD700;
+            --gris-dark: #121212;
+            --gris-claro: #1c1c1e;
+            --borde: #333;
+            --dorado: #eab308;
         }
 
         * { box-sizing: border-box; -webkit-tap-highlight-color: transparent; }
         
         body {
-            margin: 0; padding: 0;
             background-color: var(--negro);
-            color: var(--texto);
-            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
-            height: 100vh;
-            display: flex;
-            flex-direction: column;
-            overflow: hidden; /* Evita scroll global */
-        }
-
-        /* === HEADER FIJO === */
-        header {
-            height: 60px;
-            background: #111;
-            border-bottom: 1px solid var(--borde);
-            display: flex;
-            align-items: center;
-            justify-content: space-between;
-            padding: 0 16px;
-            flex-shrink: 0;
-            z-index: 10;
-        }
-
-        .logo { 
-            font-weight: 900; font-size: 1.2rem; font-style: italic; letter-spacing: -1px;
-            display: flex; align-items: center; gap: 10px;
-        }
-        .logo-icon {
-            width: 32px; height: 32px; background: var(--guinda); 
-            border-radius: 6px; display: flex; align-items: center; justify-content: center;
-            border: 1px solid white; font-size: 1.2rem;
-        }
-        .status { width: 8px; height: 8px; background: var(--verde); border-radius: 50%; box-shadow: 0 0 8px var(--verde); }
-
-        /* === ÁREA PRINCIPAL SCROLLABLE === */
-        main {
-            flex: 1;
-            overflow-y: auto;
-            padding: 20px;
-            -webkit-overflow-scrolling: touch;
-            padding-bottom: 40px;
-        }
-
-        /* === PANTALLAS === */
-        .screen { display: none; animation: fadeIn 0.2s ease-out; }
-        .screen.active { display: block; }
-        @keyframes fadeIn { from { opacity: 0; transform: translateY(10px); } to { opacity: 1; transform: translateY(0); } }
-
-        /* === TEXTOS === */
-        h2 { font-size: 1.8rem; font-weight: 800; font-style: italic; margin: 0 0 5px 0; text-transform: uppercase; line-height: 1; }
-        p.subtitle { color: #888; font-size: 0.8rem; letter-spacing: 1px; margin-bottom: 25px; text-transform: uppercase; }
-
-        /* === GRID DE MENÚS (Tipo Power Apps) === */
-        .grid-menu {
-            display: grid;
-            grid-template-columns: 1fr 1fr;
-            gap: 12px;
-        }
-
-        .card {
-            background: var(--gris-card);
-            border: 1px solid var(--borde);
-            border-radius: 16px;
-            height: 140px; /* Altura fija como tus rectángulos */
-            display: flex;
-            flex-direction: column;
-            align-items: center;
-            justify-content: center;
-            gap: 10px;
-            cursor: pointer;
-            transition: transform 0.1s;
-            position: relative;
-            overflow: hidden;
-        }
-        .card:active { transform: scale(0.96); background: #2c2c2e; border-color: var(--dorado); }
-        .card.full { grid-column: span 2; height: 100px; flex-direction: row; gap: 20px; }
-
-        .card-emoji { font-size: 3rem; line-height: 1; }
-        .card-text { font-size: 0.8rem; font-weight: 800; text-transform: uppercase; color: #ddd; letter-spacing: 0.5px; }
-
-        /* === BOTONES DE ACCIÓN === */
-        .btn-list {
-            display: flex; flex-direction: column; gap: 12px;
-        }
-        .btn-action {
-            background: var(--gris-card);
-            border: 1px solid var(--borde);
-            padding: 20px;
-            border-radius: 12px;
-            display: flex; align-items: center; gap: 15px;
-            font-size: 1rem; font-weight: 700; color: white;
-            text-transform: uppercase;
-        }
-        .btn-action:active { background: #333; }
-        .btn-action.primary { background: var(--guinda); border-color: #a00028; }
-        .btn-action.blue { background: #004080; border-color: #0059b3; }
-        
-        .btn-back {
-            background: none; border: none; color: #888;
-            font-weight: 700; font-size: 0.8rem;
-            margin-bottom: 15px; display: flex; align-items: center; gap: 5px;
-            padding: 0;
-        }
-
-        /* === FORMULARIOS === */
-        .form-group { margin-bottom: 15px; }
-        .form-group label { display: block; color: #888; font-size: 0.7rem; font-weight: 800; margin-bottom: 6px; margin-left: 4px; }
-        
-        input, select {
-            width: 100%;
-            background: black;
-            border: 1px solid #333;
             color: white;
-            padding: 16px;
-            border-radius: 12px;
-            font-size: 1rem;
-            outline: none;
-            -webkit-appearance: none; /* Quita estilo default iOS */
+            font-family: 'Lato', sans-serif;
+            margin: 0; padding: 0;
+            display: flex; justify-content: center;
+            min-height: 100vh;
         }
-        input:focus { border-color: var(--dorado); }
+
+        /* Simulación de Marco de Celular para PC */
+        #app-frame {
+            width: 100%; max-width: 480px;
+            background: #050505;
+            display: flex; flex-direction: column;
+            position: relative;
+            box-shadow: 0 0 50px rgba(0,0,0,0.5);
+            min-height: 100vh;
+        }
+
+        /* HEADER */
+        header {
+            height: 65px; background: rgba(18, 18, 18, 0.95);
+            border-bottom: 1px solid var(--borde);
+            display: flex; align-items: center; justify-content: space-between;
+            padding: 0 20px; z-index: 50; backdrop-filter: blur(10px);
+            position: sticky; top: 0;
+        }
+        .brand { display: flex; align-items: center; gap: 10px; cursor: pointer; }
+        .logo-box { 
+            width: 36px; height: 36px; background: var(--guinda); 
+            border: 1px solid white; border-radius: 6px; 
+            display: flex; align-items: center; justify-content: center; font-size: 1.1rem;
+        }
+        .brand-text h1 { margin: 0; font-size: 1.2rem; font-style: italic; font-weight: 900; line-height: 1; }
+        .brand-text p { margin: 0; font-size: 0.6rem; color: #aaa; letter-spacing: 1px; font-weight: 700; }
+        .status-led { width: 8px; height: 8px; background: var(--verde); border-radius: 50%; box-shadow: 0 0 5px var(--verde); animation: pulse 2s infinite; }
+
+        /* CONTENIDO */
+        main { flex: 1; overflow-y: auto; padding: 20px; padding-bottom: 80px; }
+        
+        .screen { display: none; animation: slideUp 0.25s ease-out; }
+        .screen.active { display: block; }
+
+        /* TEXTOS */
+        h2.title { font-size: 1.6rem; font-weight: 900; font-style: italic; text-transform: uppercase; margin-bottom: 5px; color: white; }
+        p.subtitle { color: #888; font-size: 0.8rem; text-transform: uppercase; letter-spacing: 1px; margin-bottom: 25px; margin-top: 0; }
+
+        /* MENÚ GRID (INICIO) */
+        .grid-menu { display: grid; grid-template-columns: 1fr 1fr; gap: 15px; }
+        .menu-card {
+            background: var(--gris-claro); border: 1px solid var(--borde);
+            border-radius: 18px; height: 140px;
+            display: flex; flex-direction: column; align-items: center; justify-content: center;
+            gap: 12px; cursor: pointer; transition: 0.1s;
+        }
+        .menu-card:active { transform: scale(0.97); background: #2a2a2a; border-color: var(--dorado); }
+        .menu-card.full { grid-column: span 2; height: 100px; flex-direction: row; gap: 20px; }
+        .card-icon { font-size: 2.2rem; color: var(--dorado); }
+        .card-text { font-size: 0.8rem; font-weight: 800; text-transform: uppercase; color: #ddd; }
+
+        /* BOTONES DE LISTA (A1, B1...) */
+        .btn-back { background: none; border: none; color: #777; font-weight: 700; font-size: 0.8rem; display: flex; align-items: center; gap: 5px; margin-bottom: 15px; cursor: pointer; }
+        
+        .action-list { display: flex; flex-direction: column; gap: 15px; }
+        .btn-action {
+            background: var(--gris-claro); border: 1px solid var(--borde);
+            padding: 22px; border-radius: 14px;
+            display: flex; align-items: center; justify-content: space-between;
+            color: white; font-weight: 700; text-transform: uppercase; font-size: 0.95rem;
+            cursor: pointer;
+        }
+        .btn-action:active { transform: scale(0.98); }
+        .btn-action.primary { background: linear-gradient(45deg, var(--guinda), #4a0012); border-color: #a00028; }
+        .btn-action.blue { background: linear-gradient(45deg, var(--azul), #002244); border-color: #0059b3; }
+        .icon-circle { width: 35px; height: 35px; background: rgba(0,0,0,0.3); border-radius: 50%; display: flex; align-items: center; justify-content: center; margin-right: 15px; }
+
+        /* FORMULARIOS */
+        .form-box { background: var(--gris-claro); padding: 25px; border-radius: 20px; border: 1px solid var(--borde); }
+        .input-group { margin-bottom: 15px; }
+        .input-group label { display: block; font-size: 0.7rem; color: #888; font-weight: 800; margin-bottom: 6px; margin-left: 5px; }
+        .ravens-input {
+            width: 100%; background: black; border: 1px solid #444;
+            color: white; padding: 14px; border-radius: 12px;
+            font-size: 1rem; outline: none; transition: border-color 0.2s;
+        }
+        .ravens-input:focus { border-color: var(--dorado); }
         .row { display: flex; gap: 10px; }
-        .row > div { flex: 1; }
-
+        
         .btn-save {
-            width: 100%; padding: 18px;
-            background: var(--verde);
-            color: white; font-weight: 900; font-size: 1rem;
-            border-radius: 12px; border: none;
-            text-transform: uppercase;
-            margin-top: 10px;
-            box-shadow: 0 4px 15px rgba(54, 176, 75, 0.3);
+            width: 100%; background: var(--verde); color: white;
+            padding: 16px; border: none; border-radius: 12px;
+            font-weight: 900; font-size: 1rem; text-transform: uppercase;
+            margin-top: 10px; box-shadow: 0 4px 15px rgba(54, 176, 75, 0.3); cursor: pointer;
         }
-        .btn-save:active { transform: scale(0.98); opacity: 0.9; }
+        .btn-save:active { transform: scale(0.98); }
 
-        /* === FIRMA Y CÁMARA === */
-        .signature-area {
-            background: white; border-radius: 12px;
-            height: 160px; overflow: hidden;
-            touch-action: none; /* CRÍTICO PARA MÓVIL */
+        /* CÁMARA Y FIRMA */
+        .photo-area {
+            position: relative; height: 140px; border: 2px dashed #444;
+            border-radius: 12px; background: #080808; overflow: hidden;
+            display: flex; align-items: center; justify-content: center;
+            flex-direction: column; color: #555; cursor: pointer;
         }
-        .photo-btn {
-            border: 2px dashed #444; border-radius: 12px;
-            height: 120px; display: flex; flex-direction: column;
-            align-items: center; justify-content: center;
-            color: #666; font-weight: 700; font-size: 0.8rem;
-            position: relative; overflow: hidden;
+        .photo-preview { position: absolute; inset: 0; background-size: cover; background-position: center; z-index: 2; }
+        .signature-wrapper {
+            height: 160px; background: white; border-radius: 12px;
+            overflow: hidden; touch-action: none; border: 2px solid #444;
         }
-        .photo-preview { position: absolute; inset: 0; background-size: cover; background-position: center; }
+        #sig-canvas { width: 100%; height: 100%; }
 
-        /* === MODAL FEEDBACK === */
-        .modal {
-            position: fixed; inset: 0; background: rgba(0,0,0,0.9);
-            z-index: 100; display: none;
-            align-items: center; justify-content: center;
-            padding: 20px;
-            backdrop-filter: blur(5px);
+        /* BITÁCORAS (LISTAS) */
+        .log-item {
+            background: var(--gris-claro); padding: 15px; border-radius: 12px;
+            margin-bottom: 10px; border-left: 4px solid var(--guinda);
         }
-        .modal.open { display: flex; }
-        .modal-card {
-            background: #1a1a1a; width: 100%; max-width: 320px;
-            padding: 30px; border-radius: 20px; border: 1px solid #333;
-            text-align: center;
+        .log-header { display: flex; justify-content: space-between; font-weight: bold; font-size: 0.9rem; }
+        .log-sub { font-size: 0.75rem; color: #888; margin-top: 4px; }
+        .log-item.ok { border-left-color: var(--verde); }
+
+        /* PANTALLAS DE FEEDBACK (EAV, QF, ETC) */
+        .feedback-screen {
+            display: flex; flex-direction: column; align-items: center;
+            justify-content: center; height: 70vh; text-align: center;
         }
-        .modal-emoji { font-size: 4rem; margin-bottom: 10px; display: block; }
-        .modal h3 { color: white; margin: 0 0 10px 0; font-size: 1.4rem; font-style: italic; }
-        .modal p { color: #aaa; font-size: 0.9rem; margin: 0 0 20px 0; }
-        .btn-modal { background: white; color: black; width: 100%; padding: 14px; border-radius: 10px; font-weight: 900; }
+        .feedback-icon { font-size: 5rem; margin-bottom: 20px; }
+        .feedback-title { font-size: 2rem; font-weight: 900; font-style: italic; margin-bottom: 10px; }
+        .success-text { color: var(--verde); }
+        .error-text { color: var(--rojo); }
+
+        /* QR */
+        .qr-frame {
+            height: 300px; background: black; border: 4px solid var(--guinda);
+            border-radius: 20px; overflow: hidden; position: relative;
+        }
+
+        /* UTILIDADES */
+        .hidden { display: none !important; }
+        .w-100 { width: 100%; }
+        
+        @keyframes slideUp { from { opacity: 0; transform: translateY(20px); } to { opacity: 1; transform: translateY(0); } }
+        @keyframes pulse { 0% { opacity: 1; } 50% { opacity: 0.5; } 100% { opacity: 1; } }
 
     </style>
 </head>
 <body>
 
+<div id="app-frame">
+    
     <header>
-        <div class="logo" onclick="nav('inicio')">
-            <div class="logo-icon">R</div>
-            <span>RAVENS</span>
+        <div class="brand" onclick="navigate('INICIO')">
+            <div class="logo-box"><i class="fas fa-shield-alt"></i></div>
+            <div class="brand-text">
+                <h1>RAVENS</h1>
+                <p>ACCESS SYSTEM</p>
+            </div>
         </div>
-        <div class="status"></div>
+        <div class="status-led"></div>
     </header>
 
-    <main>
+    <main id="viewport">
+        </main>
+
+</div>
+
+<script>
+    /* =========================================
+       1. ESTADO GLOBAL & CONFIGURACIÓN
+       ========================================= */
+    const STATE = {
+        colVisita: [],     // Simula VISITA de SharePoint
+        colPaquetes: [],   // Simula RECIBIRUNPAQUETE
+        colEntregas: [],   // Simula ENTREGARUNPAQUETE
+        photos: {},
+        signature: null,
+        userEmail: "guardia@groupravens.com" // Simulación de User().Email
+    };
+
+    // URLs extraídas de tus YAML
+    const API = {
+        VISITA: "https://prod-13.mexicocentral.logic.azure.com:443/workflows/b9c72600a3b64e03b0e34f8ee930ca61/triggers/Recibir_Aviso_GET/paths/invoke?api-version=2016-10-01&sp=%2Ftriggers%2FRecibir_Aviso_GET%2Frun&sv=1.0&sig=JsqhAlXVbSjZ5QY-cXMGaAoX5ANtjjAoVM38gGYAG64",
+        RECIBIR: "https://prod-12.mexicocentral.logic.azure.com:443/workflows/974146d8a5cc450aa5687f5710d95e8a/triggers/Recibir_Paquete_HTTP/paths/invoke?api-version=2016-10-01&sp=%2Ftriggers%2FRecibir_Paquete_HTTP%2Frun&sv=1.0&sig=fF8pX4HPrHO1wCUY4097ARXMLgQ1gTaQ0zhC28wAtko",
+        ENTREGAR: "https://prod-30.mexicocentral.logic.azure.com:443/workflows/58581c1247984f83b83d030640287167/triggers/Entregar_Paquete_HTTP/paths/invoke?api-version=2016-10-01&sp=%2Ftriggers%2FEntregar_Paquete_HTTP%2Frun&sv=1.0&sig=Nce4hIr59n137JvNnSheVZN_UX_VGrR-uX-fbISjg9k"
+    };
+
+    // Inicializar datos falsos para que no se vea vacío (Simulación de ClearCollect en App.OnStart)
+    STATE.colVisita = [
+        { Nombre: "Juan Perez", Torre: "A", Depto: "101", Hora: "10:00 AM" },
+        { Nombre: "Maria Lopez", Torre: "B", Depto: "205", Hora: "11:30 AM" }
+    ];
+
+    /* =========================================
+       2. DEFINICIÓN DE PANTALLAS (HTML DINÁMICO)
+       ========================================= */
+    const SCREENS = {
         
-        <div id="screen-inicio" class="screen active">
-            <h2>PANEL DE CONTROL</h2>
-            <p class="subtitle">SELECCIONE MÓDULO OPERATIVO</p>
-
-            <div class="grid-menu">
-                <div class="card" onclick="nav('a1')">
-                    <span class="card-emoji">👥</span>
-                    <span class="card-text">VISITAS</span>
-                </div>
-                <div class="card" onclick="nav('b1')">
-                    <span class="card-emoji">📦</span>
-                    <span class="card-text">PAQUETERÍA</span>
-                </div>
-                <div class="card" onclick="nav('d1')">
-                    <span class="card-emoji">🛠️</span>
-                    <span class="card-text">PROVEEDORES</span>
-                </div>
-                <div class="card" onclick="nav('e1')">
-                    <span class="card-emoji">📷</span>
-                    <span class="card-text">ACCESO QR</span>
-                </div>
-                <div class="card full" onclick="nav('f1')">
-                    <span class="card-emoji">🛡️</span>
-                    <span class="card-text">PERSONAL INTERNO</span>
-                </div>
-            </div>
-        </div>
-
-        <div id="screen-a1" class="screen">
-            <button class="btn-back" onclick="nav('inicio')">⬅ MENÚ PRINCIPAL</button>
-            <h2>VISITAS</h2>
-            <p class="subtitle">GESTIÓN DE ACCESOS</p>
-
-            <div class="btn-list">
-                <div class="btn-action primary" onclick="nav('aa1')">
-                    <span>➕ NUEVA VISITA</span>
-                </div>
-                <div class="btn-action" onclick="nav('aa2')">
-                    <span>📋 VER BITÁCORA</span>
+        // --- MENÚ PRINCIPAL ---
+        'INICIO': `
+            <div class="screen active">
+                <h2 class="title">PANEL DE CONTROL</h2>
+                <p class="subtitle">SELECCIONE MÓDULO</p>
+                <div class="grid-menu">
+                    <div class="menu-card" onclick="navigate('A1')">
+                        <i class="fas fa-users card-icon"></i>
+                        <span class="card-text">VISITAS</span>
+                    </div>
+                    <div class="menu-card" onclick="navigate('B1')">
+                        <i class="fas fa-box-open card-icon"></i>
+                        <span class="card-text">PAQUETERÍA</span>
+                    </div>
+                    <div class="menu-card" onclick="navigate('D1')">
+                        <i class="fas fa-tools card-icon"></i>
+                        <span class="card-text">PROVEEDORES</span>
+                    </div>
+                    <div class="menu-card" onclick="navigate('E1')">
+                        <i class="fas fa-qrcode card-icon"></i>
+                        <span class="card-text">ACCESO QR</span>
+                    </div>
+                    <div class="menu-card full" onclick="navigate('F1')">
+                        <i class="fas fa-user-shield card-icon"></i>
+                        <span class="card-text">PERSONAL INTERNO</span>
+                    </div>
                 </div>
             </div>
-        </div>
+        `,
 
-        <div id="screen-aa1" class="screen">
-            <button class="btn-back" onclick="nav('a1')">⬅ VOLVER</button>
-            <h2>NUEVA VISITA</h2>
-            <p class="subtitle">INGRESE DATOS DEL VISITANTE</p>
-
-            <div class="form-group">
-                <label>NOMBRE VISITANTE</label>
-                <input type="text" id="aa1-nombre" placeholder="Nombre completo">
-            </div>
-            <div class="row">
-                <div class="form-group">
-                    <label>TORRE</label>
-                    <input type="text" id="aa1-torre" placeholder="Ej. A">
-                </div>
-                <div class="form-group">
-                    <label>DEPTO</label>
-                    <input type="text" id="aa1-depto" placeholder="Ej. 101">
+        // --- MÓDULO A: VISITAS ---
+        'A1': `
+            <div class="screen active">
+                <button class="btn-back" onclick="navigate('INICIO')"><i class="fas fa-chevron-left"></i> MENÚ PRINCIPAL</button>
+                <h2 class="title">VISITAS</h2>
+                <p class="subtitle">CONTROL DE ACCESO</p>
+                <div class="action-list">
+                    <div class="btn-action primary" onclick="navigate('AA1')">
+                        <div class="icon-circle"><i class="fas fa-plus"></i></div>
+                        <span>REGISTRAR VISITA</span>
+                    </div>
+                    <div class="btn-action" onclick="navigate('AA2')">
+                        <div class="icon-circle"><i class="fas fa-list"></i></div>
+                        <span>VER BITÁCORA</span>
+                    </div>
                 </div>
             </div>
-            <div class="form-group">
-                <label>MOTIVO</label>
-                <input type="text" id="aa1-motivo" placeholder="Visita / Fiesta / Trabajo">
-            </div>
-            <button class="btn-save" onclick="submitAA1()">GUARDAR Y NOTIFICAR</button>
-        </div>
-
-        <div id="screen-b1" class="screen">
-            <button class="btn-back" onclick="nav('inicio')">⬅ MENÚ PRINCIPAL</button>
-            <h2>PAQUETERÍA</h2>
-            <p class="subtitle">RECEPCIÓN Y ENTREGA</p>
-
-            <div class="btn-list">
-                <div class="btn-action primary" onclick="nav('ba1')">
-                    <span>⬇ RECIBIR PAQUETE</span>
-                </div>
-                <div class="btn-action blue" onclick="nav('bb1')">
-                    <span>⬆ ENTREGAR A RESIDENTE</span>
+        `,
+        'AA1': `
+            <div class="screen active">
+                <button class="btn-back" onclick="navigate('A1')"><i class="fas fa-chevron-left"></i> VOLVER</button>
+                <h2 class="title" style="color:var(--guinda)">NUEVA VISITA</h2>
+                <div class="form-box">
+                    <div class="input-group"><label>VISITANTE</label><input type="text" id="aa1-nom" class="ravens-input"></div>
+                    <div class="row">
+                        <div class="input-group"><label>TORRE</label><input type="text" id="aa1-tor" class="ravens-input"></div>
+                        <div class="input-group"><label>DEPTO</label><input type="text" id="aa1-dep" class="ravens-input"></div>
+                    </div>
+                    <div class="input-group"><label>MOTIVO</label><input type="text" id="aa1-mot" class="ravens-input"></div>
+                    <button class="btn-save" onclick="logicAA1()">GUARDAR Y NOTIFICAR</button>
                 </div>
             </div>
-        </div>
+        `,
+        'AA2': `
+            <div class="screen active">
+                <button class="btn-back" onclick="navigate('A1')"><i class="fas fa-chevron-left"></i> VOLVER</button>
+                <h2 class="title" style="font-size:1.2rem">BITÁCORA VISITAS</h2>
+                <div id="list-aa2" style="margin-top:20px"></div>
+            </div>
+        `,
 
-        <div id="screen-ba1" class="screen">
-            <button class="btn-back" onclick="nav('b1')">⬅ VOLVER</button>
-            <h2>RECEPCIÓN</h2>
-            <p class="subtitle">REGISTRO DE PAQUETE</p>
-
-            <div class="form-group">
-                <label>DESTINATARIO</label>
-                <input type="text" id="ba1-nombre" placeholder="Nombre Residente">
-            </div>
-            <div class="form-group">
-                <label>EMPRESA</label>
-                <input type="text" id="ba1-paqueteria" placeholder="Amazon, DHL...">
-            </div>
-            <div class="form-group">
-                <label>ESTATUS</label>
-                <select id="ba1-estatus">
-                    <option>Aceptado</option>
-                    <option>Dañado</option>
-                </select>
-            </div>
-            
-            <div class="form-group">
-                <label>FOTO EVIDENCIA</label>
-                <div class="photo-btn" onclick="document.getElementById('cam-ba1').click()">
-                    <span id="txt-ba1">📷 TOCAR PARA FOTO</span>
-                    <div id="preview-ba1" class="photo-preview" style="display:none"></div>
-                    <input type="file" id="cam-ba1" accept="image/*" capture="environment" hidden onchange="previewPhoto(this, 'ba1')">
+        // --- MÓDULO B: PAQUETERÍA ---
+        'B1': `
+            <div class="screen active">
+                <button class="btn-back" onclick="navigate('INICIO')"><i class="fas fa-chevron-left"></i> MENÚ PRINCIPAL</button>
+                <h2 class="title">PAQUETERÍA</h2>
+                <div class="action-list">
+                    <div class="btn-action primary" onclick="navigate('BA1')">
+                        <div class="icon-circle"><i class="fas fa-arrow-down"></i></div>
+                        <span>RECIBIR PAQUETE</span>
+                    </div>
+                    <div class="btn-action blue" onclick="navigate('BB1')">
+                        <div class="icon-circle"><i class="fas fa-arrow-up"></i></div>
+                        <span>ENTREGAR PAQUETE</span>
+                    </div>
                 </div>
             </div>
-
-            <button class="btn-save" onclick="submitBA1()">REGISTRAR ENTRADA</button>
-        </div>
-
-        <div id="screen-bb1" class="screen">
-            <button class="btn-back" onclick="nav('b1')">⬅ VOLVER</button>
-            <h2>ENTREGA</h2>
-            <p class="subtitle">FIRMA DE CONFORMIDAD</p>
-
-            <div class="form-group">
-                <label>QUIEN RECIBE</label>
-                <input type="text" id="bb1-nombre" placeholder="Nombre completo">
-            </div>
-
-            <div class="form-group">
-                <label>FIRMA DIGITAL</label>
-                <div class="signature-area">
-                    <canvas id="sig-canvas"></canvas>
+        `,
+        'BA1': `
+            <div class="screen active">
+                <button class="btn-back" onclick="navigate('B1')"><i class="fas fa-chevron-left"></i> VOLVER</button>
+                <h2 class="title" style="color:var(--guinda)">RECEPCIÓN</h2>
+                <div class="form-box">
+                    <div class="input-group"><label>DESTINATARIO</label><input type="text" id="ba1-nom" class="ravens-input"></div>
+                    <div class="input-group"><label>EMPRESA</label><input type="text" id="ba1-emp" class="ravens-input"></div>
+                    <div class="input-group"><label>ESTATUS</label>
+                        <select id="ba1-est" class="ravens-input"><option>Aceptado</option><option>Dañado</option></select>
+                    </div>
+                    <div class="input-group">
+                        <label>FOTO EVIDENCIA</label>
+                        <div class="photo-area" onclick="document.getElementById('cam-ba1').click()">
+                            <input type="file" id="cam-ba1" hidden accept="image/*" capture="environment" onchange="previewImg(this, 'ba1')">
+                            <div id="prev-ba1" class="photo-preview hidden"></div>
+                            <i class="fas fa-camera fa-2x"></i><span>TOCAR PARA FOTO</span>
+                        </div>
+                    </div>
+                    <button class="btn-save" onclick="logicBA1()">REGISTRAR</button>
                 </div>
-                <div style="text-align: right; margin-top: 5px;">
-                    <span onclick="signaturePad.clear()" style="color: #ff4444; font-size: 0.7rem; font-weight: 800; cursor: pointer;">BORRAR FIRMA</span>
+            </div>
+        `,
+        'BB1': `
+            <div class="screen active">
+                <button class="btn-back" onclick="navigate('B1')"><i class="fas fa-chevron-left"></i> VOLVER</button>
+                <h2 class="title" style="color:var(--azul)">ENTREGA</h2>
+                <div class="form-box">
+                    <div class="input-group"><label>RECIBE</label><input type="text" id="bb1-nom" class="ravens-input"></div>
+                    <div class="input-group">
+                        <label>FIRMA DIGITAL</label>
+                        <div class="signature-wrapper"><canvas id="sig-canvas"></canvas></div>
+                        <div style="text-align:right; margin-top:5px; color:var(--rojo); font-weight:800; font-size:0.7rem;" onclick="cleanSig()">BORRAR FIRMA</div>
+                    </div>
+                    <button class="btn-save" style="background:var(--azul)" onclick="logicBB1()">CONFIRMAR ENTREGA</button>
                 </div>
             </div>
+        `,
 
-            <button class="btn-save" style="background: #004080;" onclick="submitBB1()">CONFIRMAR ENTREGA</button>
-        </div>
-
-        <div id="screen-e1" class="screen">
-            <button class="btn-back" onclick="nav('inicio')">⬅ MENÚ PRINCIPAL</button>
-            <h2>ESCANER QR</h2>
-            <div style="height: 300px; background: black; border: 4px solid var(--guinda); border-radius: 20px; overflow: hidden; position: relative;">
-                 <div id="qr-reader" style="width:100%; height:100%;"></div>
+        // --- PANTALLAS DE FEEDBACK (TIMERS) ---
+        'EAV': `
+            <div class="screen active feedback-screen">
+                <i class="fas fa-check-circle feedback-icon success-text"></i>
+                <h2 class="feedback-title success-text">REGISTRO CORRECTO</h2>
+                <p class="subtitle">DATOS GUARDADOS</p>
             </div>
-            <div class="row" style="margin-top: 20px;">
-                <button class="btn-action" style="flex:1; justify-content:center;" onclick="startQR('EA1')">RESIDENTE</button>
-                <button class="btn-action" style="flex:1; justify-content:center;" onclick="startQR('EC1')">VALIDAR</button>
+        `,
+        'QF': `
+            <div class="screen active feedback-screen">
+                <i class="fas fa-times-circle feedback-icon error-text"></i>
+                <h2 class="feedback-title error-text">ERROR</h2>
+                <p class="subtitle">INTENTE NUEVAMENTE</p>
             </div>
-        </div>
+        `,
+        'LOADING': `
+            <div class="screen active feedback-screen">
+                <i class="fas fa-spinner fa-spin feedback-icon" style="color:var(--azul)"></i>
+                <h2 class="feedback-title" style="color:var(--azul)">PROCESANDO...</h2>
+            </div>
+        `,
+        
+        // --- QR ---
+        'E1': `
+            <div class="screen active">
+                 <button class="btn-back" onclick="navigate('INICIO')"><i class="fas fa-chevron-left"></i> VOLVER</button>
+                 <h2 class="title">ESCÁNER QR</h2>
+                 <div class="qr-frame"><div id="qr-reader" style="width:100%;height:100%"></div></div>
+                 <div class="row" style="margin-top:20px">
+                    <button class="btn-action primary w-100" style="justify-content:center" onclick="initQR('EA1')">RESIDENTE</button>
+                    <button class="btn-action w-100" style="justify-content:center" onclick="initQR('EC1')">VALIDAR</button>
+                 </div>
+            </div>
+        `,
 
-    </main>
+        // --- PLACEHOLDERS D1/F1 ---
+        'D1': `<div class="screen active"><button class="btn-back" onclick="navigate('INICIO')">VOLVER</button><h2>PROVEEDORES</h2><p>Módulo en construcción...</p></div>`,
+        'F1': `<div class="screen active"><button class="btn-back" onclick="navigate('INICIO')">VOLVER</button><h2>PERSONAL</h2><p>Módulo en construcción...</p></div>`
+    };
 
-    <div id="modal" class="modal">
-        <div class="modal-card">
-            <span id="modal-icon" class="modal-emoji">⏳</span>
-            <h3 id="modal-title">Cargando...</h3>
-            <p id="modal-desc">Por favor espere</p>
-            <button class="btn-modal" onclick="closeModal()">ACEPTAR</button>
-        </div>
-    </div>
+    /* =========================================
+       3. MOTOR DE LÓGICA (JS)
+       ========================================= */
+    let signaturePad;
+    let qrScanner;
 
-    <script>
-        // CONFIGURACIÓN API (URLs Reales)
-        const API = {
-            VISITA: "https://prod-13.mexicocentral.logic.azure.com:443/workflows/b9c72600a3b64e03b0e34f8ee930ca61/triggers/Recibir_Aviso_GET/paths/invoke?api-version=2016-10-01&sp=%2Ftriggers%2FRecibir_Aviso_GET%2Frun&sv=1.0&sig=JsqhAlXVbSjZ5QY-cXMGaAoX5ANtjjAoVM38gGYAG64",
-            RECIBIR: "https://prod-12.mexicocentral.logic.azure.com:443/workflows/974146d8a5cc450aa5687f5710d95e8a/triggers/Recibir_Paquete_HTTP/paths/invoke?api-version=2016-10-01&sp=%2Ftriggers%2FRecibir_Paquete_HTTP%2Frun&sv=1.0&sig=fF8pX4HPrHO1wCUY4097ARXMLgQ1gTaQ0zhC28wAtko",
-            ENTREGAR: "https://prod-30.mexicocentral.logic.azure.com:443/workflows/58581c1247984f83b83d030640287167/triggers/Entregar_Paquete_HTTP/paths/invoke?api-version=2016-10-01&sp=%2Ftriggers%2FEntregar_Paquete_HTTP%2Frun&sv=1.0&sig=Nce4hIr59n137JvNnSheVZN_UX_VGrR-uX-fbISjg9k"
-        };
+    // Función Principal de Navegación
+    function navigate(screenName) {
+        // Detener QR si existe
+        if(qrScanner) { qrScanner.stop().catch(()=>{}); document.getElementById('qr-reader').innerHTML = ""; }
+        
+        // Renderizar HTML
+        const viewport = document.getElementById('viewport');
+        viewport.innerHTML = SCREENS[screenName] || SCREENS['INICIO'];
+        window.scrollTo(0,0);
 
-        let signaturePad;
-        let photos = {};
-        let qrScanner;
+        // Lógica específica por pantalla al cargar
+        if(screenName === 'AA2') renderListAA2();
+        if(screenName === 'BB1') initSignature();
+        if(screenName === 'EAV' || screenName === 'QF') startTimerRedirect(screenName);
+    }
 
-        // INICIO
-        window.onload = function() {
-            // Inicializar Firma
-            const canvas = document.getElementById('sig-canvas');
-            if (canvas) {
-                function resize() {
-                    const ratio = Math.max(window.devicePixelRatio || 1, 1);
-                    canvas.width = canvas.offsetWidth * ratio;
-                    canvas.height = canvas.offsetHeight * ratio;
-                    canvas.getContext("2d").scale(ratio, ratio);
-                }
-                window.onresize = resize;
-                resize();
-                signaturePad = new SignaturePad(canvas, { backgroundColor: 'rgb(255, 255, 255)' });
+    // Inicialización de Firma (BB1)
+    function initSignature() {
+        const canvas = document.getElementById('sig-canvas');
+        if(canvas) {
+            function resizeCanvas() {
+                const ratio = Math.max(window.devicePixelRatio || 1, 1);
+                canvas.width = canvas.offsetWidth * ratio;
+                canvas.height = canvas.offsetHeight * ratio;
+                canvas.getContext("2d").scale(ratio, ratio);
             }
-        };
-
-        // NAVEGACIÓN
-        function nav(id) {
-            if(qrScanner) qrScanner.stop().catch(()=>{});
-            document.querySelectorAll('.screen').forEach(el => el.classList.remove('active'));
-            document.getElementById('screen-' + id).classList.add('active');
-            window.scrollTo(0,0);
+            resizeCanvas();
+            signaturePad = new SignaturePad(canvas, { backgroundColor: 'rgb(255, 255, 255)' });
         }
+    }
+    function cleanSig() { if(signaturePad) signaturePad.clear(); }
 
-        // FOTOS
-        function previewPhoto(input, mod) {
-            if (input.files && input.files[0]) {
-                const reader = new FileReader();
-                reader.onload = function(e) {
-                    photos[mod] = e.target.result;
-                    const prev = document.getElementById('preview-' + mod);
-                    prev.style.backgroundImage = `url(${e.target.result})`;
-                    prev.style.display = 'block';
-                    document.getElementById('txt-' + mod).innerText = "✅ FOTO LISTA";
-                }
-                reader.readAsDataURL(input.files[0]);
+    // Previsualizar Foto (BA1)
+    function previewImg(input, id) {
+        if (input.files && input.files[0]) {
+            const reader = new FileReader();
+            reader.onload = function(e) {
+                STATE.photos[id] = e.target.result;
+                const div = document.getElementById('prev-'+id);
+                div.style.backgroundImage = `url(${e.target.result})`;
+                div.classList.remove('hidden');
+                div.style.display = 'block';
             }
+            reader.readAsDataURL(input.files[0]);
         }
+    }
 
-        // LÓGICA AA1 (VISITAS)
-        async function submitAA1() {
-            const nom = document.getElementById('aa1-nombre').value;
-            const mot = document.getElementById('aa1-motivo').value;
-            
-            if(!nom || !mot) return showModal('❌', 'Faltan Datos', 'Llene nombre y motivo');
-            
-            showModal('⏳', 'Enviando...', 'Espere un momento');
-            const url = `${API.VISITA}&Nombre=${encodeURIComponent(nom)}&Torre=${encodeURIComponent(document.getElementById('aa1-torre').value)}&Depto=${encodeURIComponent(document.getElementById('aa1-depto').value)}&Motivo=${encodeURIComponent(mot)}&Hora=${new Date().toLocaleTimeString()}`;
-            
-            try {
-                await fetch(url, { method: 'POST' });
-                showModal('✅', 'Éxito', 'Visita registrada');
-                document.getElementById('form-aa1').reset();
-            } catch(e) { showModal('❌', 'Error', 'Fallo de conexión'); }
+    // Renderizar Lista (AA2)
+    function renderListAA2() {
+        const container = document.getElementById('list-aa2');
+        let html = "";
+        STATE.colVisita.forEach(v => {
+            html += `
+            <div class="log-item ok">
+                <div class="log-header"><span>${v.Nombre}</span><span>${v.Hora}</span></div>
+                <div class="log-sub">Torre ${v.Torre} - ${v.Depto}</div>
+            </div>`;
+        });
+        container.innerHTML = html;
+    }
+
+    // Timer para pantallas de éxito (3 seg)
+    function startTimerRedirect(currentScreen) {
+        setTimeout(() => {
+            if(currentScreen === 'EAV') navigate('INICIO'); // O EA2
+            if(currentScreen === 'QF') navigate('INICIO');
+        }, 3000);
+    }
+
+    /* --- LOGICA DE BOTONES (API CALLS) --- */
+    
+    async function logicAA1() {
+        const nom = document.getElementById('aa1-nom').value;
+        const tor = document.getElementById('aa1-tor').value;
+        const dep = document.getElementById('aa1-dep').value;
+        const mot = document.getElementById('aa1-mot').value;
+
+        if(!nom || !mot) return navigate('QF'); // Error si falta dato
+
+        navigate('LOADING'); // Spinner
+
+        // Construir URL (GET)
+        const url = `${API.VISITA}&Nombre=${encodeURIComponent(nom)}&Torre=${encodeURIComponent(tor)}&Depto=${encodeURIComponent(dep)}&Motivo=${encodeURIComponent(mot)}&Hora=${new Date().toLocaleTimeString()}`;
+
+        try {
+            await fetch(url, { method: 'POST' }); // Azure Trigger
+            // Guardar en local para la bitácora
+            STATE.colVisita.unshift({ Nombre: nom, Torre: tor, Depto: dep, Hora: new Date().toLocaleTimeString() });
+            navigate('EAV'); // Pantalla éxito
+        } catch(e) {
+            console.error(e);
+            navigate('QF'); // Pantalla error
         }
+    }
 
-        // LÓGICA BA1 (PAQUETERÍA)
-        async function submitBA1() {
-            if(!photos.ba1) return showModal('❌', 'Falta Foto', 'Tome foto del paquete');
-            showModal('⏳', 'Subiendo...', 'Guardando evidencia');
-            
-            const url = `${API.RECIBIR}&Nombre=${encodeURIComponent(document.getElementById('ba1-nombre').value)}&Estatus=${encodeURIComponent(document.getElementById('ba1-estatus').value)}`;
-            
-            try {
-                await fetch(url, { 
-                    method: 'POST', 
-                    headers: {'Content-Type': 'application/json'},
-                    body: JSON.stringify({ foto: photos.ba1 }) 
-                });
-                showModal('✅', 'Recibido', 'Paquete guardado');
-                photos.ba1 = null;
-                nav('b1');
-            } catch(e) { showModal('❌', 'Error', 'Intente de nuevo'); }
-        }
-
-        // LÓGICA BB1 (ENTREGA)
-        async function submitBB1() {
-            if(signaturePad.isEmpty()) return showModal('❌', 'Falta Firma', 'El residente debe firmar');
-            showModal('⏳', 'Finalizando...', 'Guardando firma');
-            
-            const url = `${API.ENTREGAR}&Nombre=${encodeURIComponent(document.getElementById('bb1-nombre').value)}`;
-            
-            try {
-                await fetch(url, { 
-                    method: 'POST', 
-                    headers: {'Content-Type': 'application/json'},
-                    body: JSON.stringify({ firma: signaturePad.toDataURL() }) 
-                });
-                showModal('✅', 'Entregado', 'Proceso correcto');
-                signaturePad.clear();
-                nav('b1');
-            } catch(e) { showModal('❌', 'Error', 'Fallo al guardar'); }
-        }
-
-        // QR
-        function startQR(type) {
-            qrScanner = new Html5Qrcode("qr-reader");
-            qrScanner.start({ facingMode: "environment" }, { fps: 10, qrbox: 250 }, (text) => {
-                qrScanner.stop();
-                showModal('✅', 'Código Leído', text);
+    async function logicBA1() {
+        const nom = document.getElementById('ba1-nom').value;
+        if(!STATE.photos['ba1']) return alert("Falta Foto");
+        
+        navigate('LOADING');
+        const url = `${API.RECIBIR}&Nombre=${encodeURIComponent(nom)}`;
+        
+        try {
+            await fetch(url, { 
+                method: 'POST', 
+                headers: {'Content-Type': 'application/json'},
+                body: JSON.stringify({ foto: STATE.photos['ba1'] }) 
             });
-        }
+            STATE.photos['ba1'] = null; // Limpiar
+            navigate('EAV');
+        } catch(e) { navigate('QF'); }
+    }
 
-        // MODAL
-        function showModal(icon, title, desc) {
-            document.getElementById('modal-icon').innerText = icon;
-            document.getElementById('modal-title').innerText = title;
-            document.getElementById('modal-desc').innerText = desc;
-            document.getElementById('modal').classList.add('open');
-        }
-        function closeModal() {
-            document.getElementById('modal').classList.remove('open');
-        }
-    </script>
+    async function logicBB1() {
+        if(signaturePad.isEmpty()) return alert("Falta Firma");
+        navigate('LOADING');
+        const url = `${API.ENTREGAR}&Nombre=${encodeURIComponent(document.getElementById('bb1-nom').value)}`;
+        try {
+            await fetch(url, {
+                method: 'POST',
+                headers: {'Content-Type': 'application/json'},
+                body: JSON.stringify({ firma: signaturePad.toDataURL() })
+            });
+            navigate('EAV');
+        } catch(e) { navigate('QF'); }
+    }
+
+    function initQR(type) {
+        qrScanner = new Html5Qrcode("qr-reader");
+        qrScanner.start({ facingMode: "environment" }, { fps: 10, qrbox: 250 }, (text) => {
+            qrScanner.stop();
+            navigate('LOADING');
+            setTimeout(() => navigate('EAV'), 1000); // Simulación éxito
+        });
+    }
+
+    // INICIO APP
+    window.onload = function() {
+        navigate('INICIO');
+    };
+
+</script>
+
 </body>
 </html>
