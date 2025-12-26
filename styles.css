@@ -1,26 +1,27 @@
-/* DISEÑO GROUP RAVENS - Basado en Power Apps */
 :root {
-    --ravens-wine: #800020;  /* Guinda principal */
-    --ravens-green: #36b04b; /* Éxito / Guardar */
-    --ravens-red: #b80000;   /* Error / Cancelar */
-    --ravens-dark: #050505;  /* Fondo */
-    --ravens-card: #18181b;  /* Tarjetas */
-    --ravens-gold: #eab308;  /* Iconos */
+    --ravens-wine: #800020;
+    --ravens-green: #36b04b;
+    --ravens-red: #b80000;
+    --ravens-gray: #18181b;
+    --ravens-gold: #eab308;
 }
 
 body {
-    background-color: var(--ravens-dark);
+    background-color: #050505;
     color: white;
     font-family: 'Lato', sans-serif;
     -webkit-font-smoothing: antialiased;
 }
 
-/* Scrollbar oculto */
-::-webkit-scrollbar { display: none; }
+/* Evitar rebote en iOS */
+html, body { overscroll-behavior: none; }
 
-/* Botones del Menú Principal */
+/* HEADER */
+header { background: rgba(0,0,0,0.95); backdrop-filter: blur(5px); }
+
+/* MENU CARDS */
 .menu-card {
-    background: var(--ravens-card);
+    background: var(--ravens-gray);
     border: 1px solid #27272a;
     border-radius: 1.5rem;
     padding: 1.5rem;
@@ -30,99 +31,33 @@ body {
     justify-content: center;
     gap: 1rem;
     height: 160px;
-    transition: all 0.15s cubic-bezier(0.4, 0, 0.2, 1);
-    box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.5);
-}
-
-.menu-card:active {
-    transform: scale(0.95);
-    background: #27272a;
-    border-color: var(--ravens-gold);
-}
-
-.icon-gold {
-    font-size: 2.5rem;
-    color: var(--ravens-gold);
-    filter: drop-shadow(0 0 5px rgba(234, 179, 8, 0.3));
-}
-
-.menu-card span {
-    font-weight: 900;
-    font-size: 0.7rem;
-    letter-spacing: 0.05em;
-    text-transform: uppercase;
-    text-align: center;
-    color: #e4e4e7;
-}
-
-/* Títulos y Navegación */
-.screen-title {
-    font-size: 1.5rem;
-    font-weight: 900;
-    font-style: italic;
-    text-transform: uppercase;
-    margin-bottom: 1rem;
-    letter-spacing: -0.05em;
-}
-
-.back-btn {
-    color: #71717a;
-    font-size: 0.75rem;
-    font-weight: 700;
-    text-transform: uppercase;
-    margin-bottom: 1rem;
-    display: flex;
-    align-items: center;
-    gap: 0.5rem;
-    padding: 0.5rem 0;
-}
-
-.action-btn {
-    width: 100%;
-    padding: 1.5rem;
-    border-radius: 1.25rem;
-    font-weight: 900;
-    text-align: left;
-    font-size: 0.85rem;
-    text-transform: uppercase;
-    border: 1px solid rgba(255,255,255,0.05);
-    box-shadow: 0 4px 15px rgba(0,0,0,0.3);
     transition: transform 0.1s;
+    box-shadow: 0 4px 6px rgba(0,0,0,0.5);
 }
+.menu-card:active { transform: scale(0.96); background: #27272a; border-color: var(--ravens-gold); }
+.icon-gold { font-size: 2.5rem; color: var(--ravens-gold); filter: drop-shadow(0 0 5px rgba(234, 179, 8, 0.4)); }
+.menu-card span { font-weight: 900; font-size: 0.7rem; letter-spacing: 0.05em; text-transform: uppercase; color: #e4e4e7; }
+
+/* BOTONES */
+.back-btn { color: #71717a; font-size: 0.75rem; font-weight: 700; text-transform: uppercase; margin-bottom: 1rem; display: flex; align-items: center; gap: 0.5rem; padding: 10px 0; }
+.screen-title { font-size: 1.5rem; font-weight: 900; font-style: italic; text-transform: uppercase; margin-bottom: 1rem; }
+.action-btn { width: 100%; padding: 1.5rem; border-radius: 1.25rem; font-weight: 900; text-align: left; font-size: 0.9rem; text-transform: uppercase; border: 1px solid rgba(255,255,255,0.1); transition: transform 0.1s; }
 .action-btn:active { transform: scale(0.98); }
 
-/* Inputs y Formularios */
-.input-ravens {
-    width: 100%;
-    background: #000;
-    border: 1px solid #3f3f46;
-    padding: 1rem;
-    border-radius: 1rem;
-    color: white;
-    font-size: 1rem;
-    outline: none;
-    transition: border-color 0.2s;
-}
+/* INPUTS */
+.input-ravens { width: 100%; background: black; border: 1px solid #3f3f46; padding: 1rem; border-radius: 1rem; color: white; font-size: 1rem; outline: none; }
 .input-ravens:focus { border-color: var(--ravens-gold); }
 
-.save-btn {
-    width: 100%;
-    background-color: var(--ravens-green);
-    color: white;
-    padding: 1.25rem;
-    border-radius: 1rem;
-    font-weight: 900;
-    text-transform: uppercase;
-    margin-top: 1rem;
-    box-shadow: 0 4px 20px rgba(54, 176, 75, 0.4);
-}
+.save-btn { width: 100%; background-color: var(--ravens-green); color: white; padding: 1.25rem; border-radius: 1rem; font-weight: 900; text-transform: uppercase; margin-top: 1rem; box-shadow: 0 4px 15px rgba(54, 176, 75, 0.3); }
 .save-btn:active { transform: scale(0.98); }
 
-.hidden { display: none !important; }
-
-/* Animaciones */
-.screen.active { animation: slideUp 0.3s ease-out; }
-@keyframes slideUp {
-    from { opacity: 0; transform: translateY(20px); }
-    to { opacity: 1; transform: translateY(0); }
+/* FIRMA DIGITAL - CORRECCIÓN CRÍTICA */
+#sig-canvas {
+    touch-action: none; /* Evita scroll al firmar */
+    background: white;
 }
+
+/* UTILIDADES */
+.hidden { display: none !important; }
+.screen.active { animation: slideIn 0.3s ease-out; }
+@keyframes slideIn { from { opacity: 0; transform: translateY(15px); } to { opacity: 1; transform: translateY(0); } }
