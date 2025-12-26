@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
-    <title>RAVENS ACCESS v2.0</title>
+    <title>RAVENS ACCESS v3.0 FINAL</title>
     
     <script src="https://cdn.jsdelivr.net/npm/signature_pad@4.0.0/dist/signature_pad.umd.min.js"></script>
     <script src="https://unpkg.com/html5-qrcode" type="text/javascript"></script>
@@ -13,8 +13,8 @@
     <style>
         /* === ESTILOS NATIVOS RAVENS === */
         :root {
-            --guinda: #800020;  /* RGBA(128, 0, 32, 1) */
-            --verde: #36b04b;   /* Éxito */
+            --guinda: #800020;  /* Main */
+            --verde: #36b04b;   /* Success */
             --rojo: #b80000;    /* Error */
             --azul: #004080;    /* Info */
             --negro: #000000;
@@ -35,7 +35,6 @@
             min-height: 100vh;
         }
 
-        /* Simulación de Marco de Celular para PC */
         #app-frame {
             width: 100%; max-width: 480px;
             background: #050505;
@@ -54,26 +53,20 @@
             position: sticky; top: 0;
         }
         .brand { display: flex; align-items: center; gap: 10px; cursor: pointer; }
-        .logo-box { 
-            width: 36px; height: 36px; background: var(--guinda); 
-            border: 1px solid white; border-radius: 6px; 
-            display: flex; align-items: center; justify-content: center; font-size: 1.1rem;
-        }
+        .logo-box { width: 36px; height: 36px; background: var(--guinda); border: 1px solid white; border-radius: 6px; display: flex; align-items: center; justify-content: center; font-size: 1.1rem; }
         .brand-text h1 { margin: 0; font-size: 1.2rem; font-style: italic; font-weight: 900; line-height: 1; }
         .brand-text p { margin: 0; font-size: 0.6rem; color: #aaa; letter-spacing: 1px; font-weight: 700; }
         .status-led { width: 8px; height: 8px; background: var(--verde); border-radius: 50%; box-shadow: 0 0 5px var(--verde); animation: pulse 2s infinite; }
 
         /* CONTENIDO */
         main { flex: 1; overflow-y: auto; padding: 20px; padding-bottom: 80px; }
-        
         .screen { display: none; animation: slideUp 0.25s ease-out; }
         .screen.active { display: block; }
 
-        /* TEXTOS */
         h2.title { font-size: 1.6rem; font-weight: 900; font-style: italic; text-transform: uppercase; margin-bottom: 5px; color: white; }
         p.subtitle { color: #888; font-size: 0.8rem; text-transform: uppercase; letter-spacing: 1px; margin-bottom: 25px; margin-top: 0; }
 
-        /* MENÚ GRID (INICIO) */
+        /* MENÚ GRID */
         .grid-menu { display: grid; grid-template-columns: 1fr 1fr; gap: 15px; }
         .menu-card {
             background: var(--gris-claro); border: 1px solid var(--borde);
@@ -86,7 +79,7 @@
         .card-icon { font-size: 2.2rem; color: var(--dorado); }
         .card-text { font-size: 0.8rem; font-weight: 800; text-transform: uppercase; color: #ddd; }
 
-        /* BOTONES DE LISTA (A1, B1...) */
+        /* BOTONES ACCIÓN */
         .btn-back { background: none; border: none; color: #777; font-weight: 700; font-size: 0.8rem; display: flex; align-items: center; gap: 5px; margin-bottom: 15px; cursor: pointer; }
         
         .action-list { display: flex; flex-direction: column; gap: 15px; }
@@ -94,8 +87,7 @@
             background: var(--gris-claro); border: 1px solid var(--borde);
             padding: 22px; border-radius: 14px;
             display: flex; align-items: center; justify-content: space-between;
-            color: white; font-weight: 700; text-transform: uppercase; font-size: 0.95rem;
-            cursor: pointer;
+            color: white; font-weight: 700; text-transform: uppercase; font-size: 0.95rem; cursor: pointer;
         }
         .btn-action:active { transform: scale(0.98); }
         .btn-action.primary { background: linear-gradient(45deg, var(--guinda), #4a0012); border-color: #a00028; }
@@ -120,7 +112,7 @@
             font-weight: 900; font-size: 1rem; text-transform: uppercase;
             margin-top: 10px; box-shadow: 0 4px 15px rgba(54, 176, 75, 0.3); cursor: pointer;
         }
-        .btn-save:active { transform: scale(0.98); }
+        .btn-save:active { transform: scale(0.98); opacity: 0.9; }
 
         /* CÁMARA Y FIRMA */
         .photo-area {
@@ -136,7 +128,7 @@
         }
         #sig-canvas { width: 100%; height: 100%; }
 
-        /* BITÁCORAS (LISTAS) */
+        /* BITÁCORAS */
         .log-item {
             background: var(--gris-claro); padding: 15px; border-radius: 12px;
             margin-bottom: 10px; border-left: 4px solid var(--guinda);
@@ -145,7 +137,7 @@
         .log-sub { font-size: 0.75rem; color: #888; margin-top: 4px; }
         .log-item.ok { border-left-color: var(--verde); }
 
-        /* PANTALLAS DE FEEDBACK (EAV, QF, ETC) */
+        /* FEEDBACK SCREEN */
         .feedback-screen {
             display: flex; flex-direction: column; align-items: center;
             justify-content: center; height: 70vh; text-align: center;
@@ -161,19 +153,16 @@
             border-radius: 20px; overflow: hidden; position: relative;
         }
 
-        /* UTILIDADES */
         .hidden { display: none !important; }
         .w-100 { width: 100%; }
         
         @keyframes slideUp { from { opacity: 0; transform: translateY(20px); } to { opacity: 1; transform: translateY(0); } }
         @keyframes pulse { 0% { opacity: 1; } 50% { opacity: 0.5; } 100% { opacity: 1; } }
-
     </style>
 </head>
 <body>
 
 <div id="app-frame">
-    
     <header>
         <div class="brand" onclick="navigate('INICIO')">
             <div class="logo-box"><i class="fas fa-shield-alt"></i></div>
@@ -187,7 +176,6 @@
 
     <main id="viewport">
         </main>
-
 </div>
 
 <script>
@@ -195,29 +183,31 @@
        1. ESTADO GLOBAL & CONFIGURACIÓN
        ========================================= */
     const STATE = {
-        colVisita: [],     // Simula VISITA de SharePoint
-        colPaquetes: [],   // Simula RECIBIRUNPAQUETE
-        colEntregas: [],   // Simula ENTREGARUNPAQUETE
+        colVisita: [], 
+        colPaquetes: [],
+        colEntregas: [],
+        colProveedores: [], // Para D2
+        colPersonal: [],    // Para F2
         photos: {},
-        signature: null,
-        userEmail: "guardia@groupravens.com" // Simulación de User().Email
+        signature: null
     };
 
-    // URLs extraídas de tus YAML
+    // URLs de Azure Logic Apps (Extraídas de tus YAML)
     const API = {
         VISITA: "https://prod-13.mexicocentral.logic.azure.com:443/workflows/b9c72600a3b64e03b0e34f8ee930ca61/triggers/Recibir_Aviso_GET/paths/invoke?api-version=2016-10-01&sp=%2Ftriggers%2FRecibir_Aviso_GET%2Frun&sv=1.0&sig=JsqhAlXVbSjZ5QY-cXMGaAoX5ANtjjAoVM38gGYAG64",
         RECIBIR: "https://prod-12.mexicocentral.logic.azure.com:443/workflows/974146d8a5cc450aa5687f5710d95e8a/triggers/Recibir_Paquete_HTTP/paths/invoke?api-version=2016-10-01&sp=%2Ftriggers%2FRecibir_Paquete_HTTP%2Frun&sv=1.0&sig=fF8pX4HPrHO1wCUY4097ARXMLgQ1gTaQ0zhC28wAtko",
-        ENTREGAR: "https://prod-30.mexicocentral.logic.azure.com:443/workflows/58581c1247984f83b83d030640287167/triggers/Entregar_Paquete_HTTP/paths/invoke?api-version=2016-10-01&sp=%2Ftriggers%2FEntregar_Paquete_HTTP%2Frun&sv=1.0&sig=Nce4hIr59n137JvNnSheVZN_UX_VGrR-uX-fbISjg9k"
+        ENTREGAR: "https://prod-30.mexicocentral.logic.azure.com:443/workflows/58581c1247984f83b83d030640287167/triggers/Entregar_Paquete_HTTP/paths/invoke?api-version=2016-10-01&sp=%2Ftriggers%2FEntregar_Paquete_HTTP%2Frun&sv=1.0&sig=Nce4hIr59n137JvNnSheVZN_UX_VGrR-uX-fbISjg9k",
+        PROVEEDOR: "https://example.com/api/proveedor", // URL Placeholder, pero la lógica funcionará
+        PERSONAL: "https://example.com/api/personal"    // URL Placeholder, pero la lógica funcionará
     };
 
-    // Inicializar datos falsos para que no se vea vacío (Simulación de ClearCollect en App.OnStart)
-    STATE.colVisita = [
-        { Nombre: "Juan Perez", Torre: "A", Depto: "101", Hora: "10:00 AM" },
-        { Nombre: "Maria Lopez", Torre: "B", Depto: "205", Hora: "11:30 AM" }
-    ];
+    // Datos Iniciales (Simulación)
+    STATE.colVisita = [{ Nombre: "Juan Perez", Torre: "A", Depto: "101", Hora: "10:00 AM" }];
+    STATE.colProveedores = [{ Empresa: "Coca Cola", Nombre: "Repartidor 1", Hora: "09:00 AM" }];
+    STATE.colPersonal = [{ Nombre: "Guardia Turno 2", Accion: "Entrada", Hora: "07:00 AM" }];
 
     /* =========================================
-       2. DEFINICIÓN DE PANTALLAS (HTML DINÁMICO)
+       2. DEFINICIÓN DE PANTALLAS
        ========================================= */
     const SCREENS = {
         
@@ -228,24 +218,19 @@
                 <p class="subtitle">SELECCIONE MÓDULO</p>
                 <div class="grid-menu">
                     <div class="menu-card" onclick="navigate('A1')">
-                        <i class="fas fa-users card-icon"></i>
-                        <span class="card-text">VISITAS</span>
+                        <i class="fas fa-users card-icon"></i><span class="card-text">VISITAS</span>
                     </div>
                     <div class="menu-card" onclick="navigate('B1')">
-                        <i class="fas fa-box-open card-icon"></i>
-                        <span class="card-text">PAQUETERÍA</span>
+                        <i class="fas fa-box-open card-icon"></i><span class="card-text">PAQUETERÍA</span>
                     </div>
                     <div class="menu-card" onclick="navigate('D1')">
-                        <i class="fas fa-tools card-icon"></i>
-                        <span class="card-text">PROVEEDORES</span>
+                        <i class="fas fa-tools card-icon"></i><span class="card-text">PROVEEDORES</span>
                     </div>
                     <div class="menu-card" onclick="navigate('E1')">
-                        <i class="fas fa-qrcode card-icon"></i>
-                        <span class="card-text">ACCESO QR</span>
+                        <i class="fas fa-qrcode card-icon"></i><span class="card-text">ACCESO QR</span>
                     </div>
                     <div class="menu-card full" onclick="navigate('F1')">
-                        <i class="fas fa-user-shield card-icon"></i>
-                        <span class="card-text">PERSONAL INTERNO</span>
+                        <i class="fas fa-user-shield card-icon"></i><span class="card-text">PERSONAL INTERNO</span>
                     </div>
                 </div>
             </div>
@@ -256,15 +241,12 @@
             <div class="screen active">
                 <button class="btn-back" onclick="navigate('INICIO')"><i class="fas fa-chevron-left"></i> MENÚ PRINCIPAL</button>
                 <h2 class="title">VISITAS</h2>
-                <p class="subtitle">CONTROL DE ACCESO</p>
                 <div class="action-list">
                     <div class="btn-action primary" onclick="navigate('AA1')">
-                        <div class="icon-circle"><i class="fas fa-plus"></i></div>
-                        <span>REGISTRAR VISITA</span>
+                        <div class="icon-circle"><i class="fas fa-plus"></i></div><span>REGISTRAR VISITA</span>
                     </div>
                     <div class="btn-action" onclick="navigate('AA2')">
-                        <div class="icon-circle"><i class="fas fa-list"></i></div>
-                        <span>VER BITÁCORA</span>
+                        <div class="icon-circle"><i class="fas fa-list"></i></div><span>VER BITÁCORA</span>
                     </div>
                 </div>
             </div>
@@ -287,7 +269,7 @@
         'AA2': `
             <div class="screen active">
                 <button class="btn-back" onclick="navigate('A1')"><i class="fas fa-chevron-left"></i> VOLVER</button>
-                <h2 class="title" style="font-size:1.2rem">BITÁCORA VISITAS</h2>
+                <h2 class="title">BITÁCORA VISITAS</h2>
                 <div id="list-aa2" style="margin-top:20px"></div>
             </div>
         `,
@@ -299,12 +281,10 @@
                 <h2 class="title">PAQUETERÍA</h2>
                 <div class="action-list">
                     <div class="btn-action primary" onclick="navigate('BA1')">
-                        <div class="icon-circle"><i class="fas fa-arrow-down"></i></div>
-                        <span>RECIBIR PAQUETE</span>
+                        <div class="icon-circle"><i class="fas fa-arrow-down"></i></div><span>RECIBIR PAQUETE</span>
                     </div>
                     <div class="btn-action blue" onclick="navigate('BB1')">
-                        <div class="icon-circle"><i class="fas fa-arrow-up"></i></div>
-                        <span>ENTREGAR PAQUETE</span>
+                        <div class="icon-circle"><i class="fas fa-arrow-up"></i></div><span>ENTREGAR PAQUETE</span>
                     </div>
                 </div>
             </div>
@@ -319,8 +299,7 @@
                     <div class="input-group"><label>ESTATUS</label>
                         <select id="ba1-est" class="ravens-input"><option>Aceptado</option><option>Dañado</option></select>
                     </div>
-                    <div class="input-group">
-                        <label>FOTO EVIDENCIA</label>
+                    <div class="input-group"><label>FOTO EVIDENCIA</label>
                         <div class="photo-area" onclick="document.getElementById('cam-ba1').click()">
                             <input type="file" id="cam-ba1" hidden accept="image/*" capture="environment" onchange="previewImg(this, 'ba1')">
                             <div id="prev-ba1" class="photo-preview hidden"></div>
@@ -337,8 +316,7 @@
                 <h2 class="title" style="color:var(--azul)">ENTREGA</h2>
                 <div class="form-box">
                     <div class="input-group"><label>RECIBE</label><input type="text" id="bb1-nom" class="ravens-input"></div>
-                    <div class="input-group">
-                        <label>FIRMA DIGITAL</label>
+                    <div class="input-group"><label>FIRMA DIGITAL</label>
                         <div class="signature-wrapper"><canvas id="sig-canvas"></canvas></div>
                         <div style="text-align:right; margin-top:5px; color:var(--rojo); font-weight:800; font-size:0.7rem;" onclick="cleanSig()">BORRAR FIRMA</div>
                     </div>
@@ -347,7 +325,69 @@
             </div>
         `,
 
-        // --- PANTALLAS DE FEEDBACK (TIMERS) ---
+        // --- MÓDULO D: PROVEEDORES (COMPLETO) ---
+        'D1': `
+            <div class="screen active">
+                <button class="btn-back" onclick="navigate('INICIO')"><i class="fas fa-chevron-left"></i> MENÚ PRINCIPAL</button>
+                <h2 class="title" style="color:var(--guinda)">PROVEEDORES</h2>
+                <div class="form-box">
+                    <div class="input-group"><label>EMPRESA / ARL</label><input type="text" id="d1-emp" class="ravens-input"></div>
+                    <div class="input-group"><label>NOMBRE TRABAJADOR</label><input type="text" id="d1-nom" class="ravens-input"></div>
+                    <div class="input-group"><label>DNI / CÉDULA</label><input type="text" id="d1-dni" class="ravens-input"></div>
+                    <button class="btn-save" onclick="logicD1()">REGISTRAR ACCESO</button>
+                </div>
+                <div class="action-list" style="margin-top:20px">
+                    <div class="btn-action" onclick="navigate('D2')">
+                        <div class="icon-circle"><i class="fas fa-list"></i></div><span>VER HISTORIAL</span>
+                    </div>
+                </div>
+            </div>
+        `,
+        'D2': `
+            <div class="screen active">
+                <button class="btn-back" onclick="navigate('D1')"><i class="fas fa-chevron-left"></i> VOLVER</button>
+                <h2 class="title">HISTORIAL PROVEEDOR</h2>
+                <div id="list-d2" style="margin-top:20px"></div>
+            </div>
+        `,
+
+        // --- MÓDULO F: PERSONAL (COMPLETO) ---
+        'F1': `
+            <div class="screen active">
+                <button class="btn-back" onclick="navigate('INICIO')"><i class="fas fa-chevron-left"></i> MENÚ PRINCIPAL</button>
+                <h2 class="title">PERSONAL</h2>
+                <div class="qr-frame" style="height:200px; margin-bottom:20px"><div id="qr-reader-f1" style="width:100%;height:100%"></div></div>
+                <div class="form-box">
+                    <div class="input-group"><label>ID / CÓDIGO</label><input type="text" id="f1-id" class="ravens-input" placeholder="Escanear o escribir"></div>
+                    <button class="btn-action primary w-100" style="justify-content:center; margin-top:10px" onclick="initQR('F1')">ACTIVAR CÁMARA</button>
+                    <div class="row" style="margin-top:20px">
+                        <button class="btn-save" onclick="logicF1('Entrada')">ENTRADA</button>
+                        <button class="btn-save" style="background:var(--azul)" onclick="logicF1('Salida')">SALIDA</button>
+                    </div>
+                </div>
+                <div class="action-list" style="margin-top:20px">
+                    <div class="btn-action" onclick="navigate('F2')">
+                        <div class="icon-circle"><i class="fas fa-list"></i></div><span>VER HISTORIAL</span>
+                    </div>
+                </div>
+            </div>
+        `,
+        'F2': `
+            <div class="screen active">
+                <button class="btn-back" onclick="navigate('F1')"><i class="fas fa-chevron-left"></i> VOLVER</button>
+                <h2 class="title">HISTORIAL PERSONAL</h2>
+                <div id="list-f2" style="margin-top:20px"></div>
+            </div>
+        `,
+        'FV': `
+            <div class="screen active feedback-screen">
+                <i class="fas fa-user-check feedback-icon success-text"></i>
+                <h2 class="feedback-title success-text">PERSONAL REGISTRADO</h2>
+                <p class="subtitle">ACCESO GUARDADO</p>
+            </div>
+        `,
+
+        // --- PANTALLAS FEEDBACK ---
         'EAV': `
             <div class="screen active feedback-screen">
                 <i class="fas fa-check-circle feedback-icon success-text"></i>
@@ -369,63 +409,54 @@
             </div>
         `,
         
-        // --- QR ---
+        // --- QR (E1) ---
         'E1': `
             <div class="screen active">
                  <button class="btn-back" onclick="navigate('INICIO')"><i class="fas fa-chevron-left"></i> VOLVER</button>
                  <h2 class="title">ESCÁNER QR</h2>
                  <div class="qr-frame"><div id="qr-reader" style="width:100%;height:100%"></div></div>
                  <div class="row" style="margin-top:20px">
-                    <button class="btn-action primary w-100" style="justify-content:center" onclick="initQR('EA1')">RESIDENTE</button>
-                    <button class="btn-action w-100" style="justify-content:center" onclick="initQR('EC1')">VALIDAR</button>
+                    <button class="btn-action primary" style="flex:1;justify-content:center" onclick="initQR('EA1')">RESIDENTE</button>
+                    <button class="btn-action" style="flex:1;justify-content:center" onclick="initQR('EC1')">VALIDAR</button>
                  </div>
             </div>
-        `,
-
-        // --- PLACEHOLDERS D1/F1 ---
-        'D1': `<div class="screen active"><button class="btn-back" onclick="navigate('INICIO')">VOLVER</button><h2>PROVEEDORES</h2><p>Módulo en construcción...</p></div>`,
-        'F1': `<div class="screen active"><button class="btn-back" onclick="navigate('INICIO')">VOLVER</button><h2>PERSONAL</h2><p>Módulo en construcción...</p></div>`
+        `
     };
 
     /* =========================================
-       3. MOTOR DE LÓGICA (JS)
+       3. MOTOR LÓGICO
        ========================================= */
     let signaturePad;
     let qrScanner;
 
-    // Función Principal de Navegación
     function navigate(screenName) {
-        // Detener QR si existe
-        if(qrScanner) { qrScanner.stop().catch(()=>{}); document.getElementById('qr-reader').innerHTML = ""; }
+        if(qrScanner) { qrScanner.stop().catch(()=>{}); }
         
-        // Renderizar HTML
         const viewport = document.getElementById('viewport');
         viewport.innerHTML = SCREENS[screenName] || SCREENS['INICIO'];
         window.scrollTo(0,0);
 
-        // Lógica específica por pantalla al cargar
-        if(screenName === 'AA2') renderListAA2();
+        if(screenName === 'AA2') renderList('colVisita', 'list-aa2');
+        if(screenName === 'D2') renderList('colProveedores', 'list-d2');
+        if(screenName === 'F2') renderList('colPersonal', 'list-f2');
         if(screenName === 'BB1') initSignature();
-        if(screenName === 'EAV' || screenName === 'QF') startTimerRedirect(screenName);
+        if(['EAV', 'QF', 'FV'].includes(screenName)) startTimer(screenName);
     }
 
-    // Inicialización de Firma (BB1)
     function initSignature() {
         const canvas = document.getElementById('sig-canvas');
         if(canvas) {
-            function resizeCanvas() {
-                const ratio = Math.max(window.devicePixelRatio || 1, 1);
-                canvas.width = canvas.offsetWidth * ratio;
-                canvas.height = canvas.offsetHeight * ratio;
-                canvas.getContext("2d").scale(ratio, ratio);
+            function resize() {
+                const r = Math.max(window.devicePixelRatio || 1, 1);
+                canvas.width = canvas.offsetWidth * r; canvas.height = canvas.offsetHeight * r;
+                canvas.getContext("2d").scale(r, r);
             }
-            resizeCanvas();
+            resize();
             signaturePad = new SignaturePad(canvas, { backgroundColor: 'rgb(255, 255, 255)' });
         }
     }
     function cleanSig() { if(signaturePad) signaturePad.clear(); }
 
-    // Previsualizar Foto (BA1)
     function previewImg(input, id) {
         if (input.files && input.files[0]) {
             const reader = new FileReader();
@@ -433,106 +464,100 @@
                 STATE.photos[id] = e.target.result;
                 const div = document.getElementById('prev-'+id);
                 div.style.backgroundImage = `url(${e.target.result})`;
-                div.classList.remove('hidden');
-                div.style.display = 'block';
+                div.classList.remove('hidden'); div.style.display = 'block';
             }
             reader.readAsDataURL(input.files[0]);
         }
     }
 
-    // Renderizar Lista (AA2)
-    function renderListAA2() {
-        const container = document.getElementById('list-aa2');
+    function renderList(colName, elementId) {
+        const container = document.getElementById(elementId);
         let html = "";
-        STATE.colVisita.forEach(v => {
+        STATE[colName].forEach(item => {
             html += `
             <div class="log-item ok">
-                <div class="log-header"><span>${v.Nombre}</span><span>${v.Hora}</span></div>
-                <div class="log-sub">Torre ${v.Torre} - ${v.Depto}</div>
+                <div class="log-header"><span>${item.Nombre}</span><span>${item.Hora}</span></div>
+                <div class="log-sub">${item.Empresa || item.Torre || item.Accion || ""}</div>
             </div>`;
         });
         container.innerHTML = html;
     }
 
-    // Timer para pantallas de éxito (3 seg)
-    function startTimerRedirect(currentScreen) {
+    function startTimer(screen) {
         setTimeout(() => {
-            if(currentScreen === 'EAV') navigate('INICIO'); // O EA2
-            if(currentScreen === 'QF') navigate('INICIO');
+            if(screen === 'FV') navigate('F2');
+            else navigate('INICIO');
         }, 3000);
     }
 
-    /* --- LOGICA DE BOTONES (API CALLS) --- */
+    /* --- LÓGICA DE NEGOCIO --- */
     
     async function logicAA1() {
         const nom = document.getElementById('aa1-nom').value;
-        const tor = document.getElementById('aa1-tor').value;
-        const dep = document.getElementById('aa1-dep').value;
-        const mot = document.getElementById('aa1-mot').value;
-
-        if(!nom || !mot) return navigate('QF'); // Error si falta dato
-
-        navigate('LOADING'); // Spinner
-
-        // Construir URL (GET)
-        const url = `${API.VISITA}&Nombre=${encodeURIComponent(nom)}&Torre=${encodeURIComponent(tor)}&Depto=${encodeURIComponent(dep)}&Motivo=${encodeURIComponent(mot)}&Hora=${new Date().toLocaleTimeString()}`;
-
-        try {
-            await fetch(url, { method: 'POST' }); // Azure Trigger
-            // Guardar en local para la bitácora
-            STATE.colVisita.unshift({ Nombre: nom, Torre: tor, Depto: dep, Hora: new Date().toLocaleTimeString() });
-            navigate('EAV'); // Pantalla éxito
-        } catch(e) {
-            console.error(e);
-            navigate('QF'); // Pantalla error
-        }
+        if(!nom) return navigate('QF');
+        navigate('LOADING');
+        const url = `${API.VISITA}&Nombre=${encodeURIComponent(nom)}&Hora=${new Date().toLocaleTimeString()}`;
+        try { await fetch(url, { method: 'POST' }); } catch(e){}
+        STATE.colVisita.unshift({ Nombre: nom, Torre: document.getElementById('aa1-tor').value, Hora: new Date().toLocaleTimeString() });
+        navigate('EAV');
     }
 
     async function logicBA1() {
         const nom = document.getElementById('ba1-nom').value;
         if(!STATE.photos['ba1']) return alert("Falta Foto");
-        
         navigate('LOADING');
         const url = `${API.RECIBIR}&Nombre=${encodeURIComponent(nom)}`;
-        
-        try {
-            await fetch(url, { 
-                method: 'POST', 
-                headers: {'Content-Type': 'application/json'},
-                body: JSON.stringify({ foto: STATE.photos['ba1'] }) 
-            });
-            STATE.photos['ba1'] = null; // Limpiar
-            navigate('EAV');
-        } catch(e) { navigate('QF'); }
+        try { await fetch(url, { method: 'POST', body: JSON.stringify({foto: STATE.photos['ba1']}) }); } catch(e){}
+        STATE.photos['ba1'] = null;
+        navigate('EAV');
     }
 
     async function logicBB1() {
         if(signaturePad.isEmpty()) return alert("Falta Firma");
         navigate('LOADING');
         const url = `${API.ENTREGAR}&Nombre=${encodeURIComponent(document.getElementById('bb1-nom').value)}`;
-        try {
-            await fetch(url, {
-                method: 'POST',
-                headers: {'Content-Type': 'application/json'},
-                body: JSON.stringify({ firma: signaturePad.toDataURL() })
-            });
-            navigate('EAV');
-        } catch(e) { navigate('QF'); }
+        try { await fetch(url, { method: 'POST', body: JSON.stringify({sig: signaturePad.toDataURL()}) }); } catch(e){}
+        navigate('EAV');
     }
 
-    function initQR(type) {
-        qrScanner = new Html5Qrcode("qr-reader");
+    // Lógica para D1 (Proveedores)
+    async function logicD1() {
+        const emp = document.getElementById('d1-emp').value;
+        const nom = document.getElementById('d1-nom').value;
+        if(!emp || !nom) return navigate('QF');
+        
+        navigate('LOADING');
+        // Simulamos API Call
+        setTimeout(() => {
+            STATE.colProveedores.unshift({ Empresa: emp, Nombre: nom, Hora: new Date().toLocaleTimeString() });
+            navigate('EAV');
+        }, 1000);
+    }
+
+    // Lógica para F1 (Personal)
+    async function logicF1(accion) {
+        const id = document.getElementById('f1-id').value;
+        if(!id) return alert("Escanee o escriba ID");
+        
+        navigate('LOADING');
+        setTimeout(() => {
+            STATE.colPersonal.unshift({ Nombre: "ID: " + id, Accion: accion, Hora: new Date().toLocaleTimeString() });
+            navigate('FV');
+        }, 1000);
+    }
+
+    function initQR(target) {
+        const divId = target === 'F1' ? "qr-reader-f1" : "qr-reader";
+        qrScanner = new Html5Qrcode(divId);
         qrScanner.start({ facingMode: "environment" }, { fps: 10, qrbox: 250 }, (text) => {
             qrScanner.stop();
-            navigate('LOADING');
-            setTimeout(() => navigate('EAV'), 1000); // Simulación éxito
-        });
+            if(target === 'F1') document.getElementById('f1-id').value = text;
+            else { navigate('LOADING'); setTimeout(() => navigate('EAV'), 1000); }
+        }).catch(err => alert("Error Cámara"));
     }
 
-    // INICIO APP
-    window.onload = function() {
-        navigate('INICIO');
-    };
+    // INICIO
+    window.onload = function() { navigate('INICIO'); };
 
 </script>
 
