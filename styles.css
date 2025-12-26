@@ -1,30 +1,23 @@
-body { background: #050505; }
-.screen { animation: fadeIn 0.3s ease-out; }
-
+.module-card {
+    transition: transform 0.1s ease;
+    cursor: pointer;
+}
+.module-card:active {
+    transform: scale(0.95);
+    background-color: #18181b;
+}
+.screen {
+    animation: fadeIn 0.3s ease-in-out;
+}
 @keyframes fadeIn {
     from { opacity: 0; transform: translateY(10px); }
     to { opacity: 1; transform: translateY(0); }
 }
-
-.menu-card {
-    transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
+input {
+    outline: none !important;
+    border: 1px solid #27272a;
+    transition: border-color 0.2s;
 }
-
-.menu-card:hover {
-    border-color: #eab308;
-    background: #121214;
-}
-
-#reader {
-    border: none !important;
-}
-
-#reader video {
-    object-fit: cover;
-}
-
-/* Estilo para los inputs */
 input:focus {
-    outline: none;
-    background: #1f1f23 !important;
+    border-color: #eab308;
 }
