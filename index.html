@@ -2,202 +2,497 @@
 <html lang="es">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
     <title>RAVENS ACCESS</title>
-    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" rel="stylesheet">
-    <link href="https://fonts.googleapis.com/css2?family=Lato:wght@300;400;700;900&display=swap" rel="stylesheet">
-    <link rel="stylesheet" href="style.css">
     <script src="https://cdn.jsdelivr.net/npm/signature_pad@4.0.0/dist/signature_pad.umd.min.js"></script>
     <script src="https://unpkg.com/html5-qrcode" type="text/javascript"></script>
+
+    <style>
+        /* === RESET & ESTRUCTURA BASE === */
+        :root {
+            --guinda: #800020;  /* RGBA(128, 0, 32, 1) */
+            --verde: #36b04b;   /* RGBA(54, 176, 75, 1) */
+            --negro: #000000;
+            --gris-card: #1c1c1e;
+            --borde: #2c2c2e;
+            --texto: #ffffff;
+            --dorado: #FFD700;
+        }
+
+        * { box-sizing: border-box; -webkit-tap-highlight-color: transparent; }
+        
+        body {
+            margin: 0; padding: 0;
+            background-color: var(--negro);
+            color: var(--texto);
+            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+            height: 100vh;
+            display: flex;
+            flex-direction: column;
+            overflow: hidden; /* Evita scroll global */
+        }
+
+        /* === HEADER FIJO === */
+        header {
+            height: 60px;
+            background: #111;
+            border-bottom: 1px solid var(--borde);
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            padding: 0 16px;
+            flex-shrink: 0;
+            z-index: 10;
+        }
+
+        .logo { 
+            font-weight: 900; font-size: 1.2rem; font-style: italic; letter-spacing: -1px;
+            display: flex; align-items: center; gap: 10px;
+        }
+        .logo-icon {
+            width: 32px; height: 32px; background: var(--guinda); 
+            border-radius: 6px; display: flex; align-items: center; justify-content: center;
+            border: 1px solid white; font-size: 1.2rem;
+        }
+        .status { width: 8px; height: 8px; background: var(--verde); border-radius: 50%; box-shadow: 0 0 8px var(--verde); }
+
+        /* === ÁREA PRINCIPAL SCROLLABLE === */
+        main {
+            flex: 1;
+            overflow-y: auto;
+            padding: 20px;
+            -webkit-overflow-scrolling: touch;
+            padding-bottom: 40px;
+        }
+
+        /* === PANTALLAS === */
+        .screen { display: none; animation: fadeIn 0.2s ease-out; }
+        .screen.active { display: block; }
+        @keyframes fadeIn { from { opacity: 0; transform: translateY(10px); } to { opacity: 1; transform: translateY(0); } }
+
+        /* === TEXTOS === */
+        h2 { font-size: 1.8rem; font-weight: 800; font-style: italic; margin: 0 0 5px 0; text-transform: uppercase; line-height: 1; }
+        p.subtitle { color: #888; font-size: 0.8rem; letter-spacing: 1px; margin-bottom: 25px; text-transform: uppercase; }
+
+        /* === GRID DE MENÚS (Tipo Power Apps) === */
+        .grid-menu {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 12px;
+        }
+
+        .card {
+            background: var(--gris-card);
+            border: 1px solid var(--borde);
+            border-radius: 16px;
+            height: 140px; /* Altura fija como tus rectángulos */
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            gap: 10px;
+            cursor: pointer;
+            transition: transform 0.1s;
+            position: relative;
+            overflow: hidden;
+        }
+        .card:active { transform: scale(0.96); background: #2c2c2e; border-color: var(--dorado); }
+        .card.full { grid-column: span 2; height: 100px; flex-direction: row; gap: 20px; }
+
+        .card-emoji { font-size: 3rem; line-height: 1; }
+        .card-text { font-size: 0.8rem; font-weight: 800; text-transform: uppercase; color: #ddd; letter-spacing: 0.5px; }
+
+        /* === BOTONES DE ACCIÓN === */
+        .btn-list {
+            display: flex; flex-direction: column; gap: 12px;
+        }
+        .btn-action {
+            background: var(--gris-card);
+            border: 1px solid var(--borde);
+            padding: 20px;
+            border-radius: 12px;
+            display: flex; align-items: center; gap: 15px;
+            font-size: 1rem; font-weight: 700; color: white;
+            text-transform: uppercase;
+        }
+        .btn-action:active { background: #333; }
+        .btn-action.primary { background: var(--guinda); border-color: #a00028; }
+        .btn-action.blue { background: #004080; border-color: #0059b3; }
+        
+        .btn-back {
+            background: none; border: none; color: #888;
+            font-weight: 700; font-size: 0.8rem;
+            margin-bottom: 15px; display: flex; align-items: center; gap: 5px;
+            padding: 0;
+        }
+
+        /* === FORMULARIOS === */
+        .form-group { margin-bottom: 15px; }
+        .form-group label { display: block; color: #888; font-size: 0.7rem; font-weight: 800; margin-bottom: 6px; margin-left: 4px; }
+        
+        input, select {
+            width: 100%;
+            background: black;
+            border: 1px solid #333;
+            color: white;
+            padding: 16px;
+            border-radius: 12px;
+            font-size: 1rem;
+            outline: none;
+            -webkit-appearance: none; /* Quita estilo default iOS */
+        }
+        input:focus { border-color: var(--dorado); }
+        .row { display: flex; gap: 10px; }
+        .row > div { flex: 1; }
+
+        .btn-save {
+            width: 100%; padding: 18px;
+            background: var(--verde);
+            color: white; font-weight: 900; font-size: 1rem;
+            border-radius: 12px; border: none;
+            text-transform: uppercase;
+            margin-top: 10px;
+            box-shadow: 0 4px 15px rgba(54, 176, 75, 0.3);
+        }
+        .btn-save:active { transform: scale(0.98); opacity: 0.9; }
+
+        /* === FIRMA Y CÁMARA === */
+        .signature-area {
+            background: white; border-radius: 12px;
+            height: 160px; overflow: hidden;
+            touch-action: none; /* CRÍTICO PARA MÓVIL */
+        }
+        .photo-btn {
+            border: 2px dashed #444; border-radius: 12px;
+            height: 120px; display: flex; flex-direction: column;
+            align-items: center; justify-content: center;
+            color: #666; font-weight: 700; font-size: 0.8rem;
+            position: relative; overflow: hidden;
+        }
+        .photo-preview { position: absolute; inset: 0; background-size: cover; background-position: center; }
+
+        /* === MODAL FEEDBACK === */
+        .modal {
+            position: fixed; inset: 0; background: rgba(0,0,0,0.9);
+            z-index: 100; display: none;
+            align-items: center; justify-content: center;
+            padding: 20px;
+            backdrop-filter: blur(5px);
+        }
+        .modal.open { display: flex; }
+        .modal-card {
+            background: #1a1a1a; width: 100%; max-width: 320px;
+            padding: 30px; border-radius: 20px; border: 1px solid #333;
+            text-align: center;
+        }
+        .modal-emoji { font-size: 4rem; margin-bottom: 10px; display: block; }
+        .modal h3 { color: white; margin: 0 0 10px 0; font-size: 1.4rem; font-style: italic; }
+        .modal p { color: #aaa; font-size: 0.9rem; margin: 0 0 20px 0; }
+        .btn-modal { background: white; color: black; width: 100%; padding: 14px; border-radius: 10px; font-weight: 900; }
+
+    </style>
 </head>
 <body>
 
-    <div class="mobile-wrapper">
+    <header>
+        <div class="logo" onclick="nav('inicio')">
+            <div class="logo-icon">R</div>
+            <span>RAVENS</span>
+        </div>
+        <div class="status"></div>
+    </header>
 
-        <header class="app-header">
-            <div class="logo-section" onclick="nav('screen-inicio')">
-                <div class="logo-icon"><i class="fas fa-shield-alt"></i></div>
-                <div class="logo-text">
-                    <h1>RAVENS</h1>
-                    <small>ACCESS CONTROL</small>
+    <main>
+        
+        <div id="screen-inicio" class="screen active">
+            <h2>PANEL DE CONTROL</h2>
+            <p class="subtitle">SELECCIONE MÓDULO OPERATIVO</p>
+
+            <div class="grid-menu">
+                <div class="card" onclick="nav('a1')">
+                    <span class="card-emoji">👥</span>
+                    <span class="card-text">VISITAS</span>
                 </div>
-            </div>
-            <div class="status-dot"></div>
-        </header>
-
-        <main class="app-content">
-
-            <section id="screen-inicio" class="screen active">
-                <div class="hero-section">
-                    <h2>PANEL DE CONTROL</h2>
-                    <p>Seleccione Módulo Operativo</p>
+                <div class="card" onclick="nav('b1')">
+                    <span class="card-emoji">📦</span>
+                    <span class="card-text">PAQUETERÍA</span>
                 </div>
-
-                <div class="grid-menu">
-                    <div class="card" onclick="nav('screen-a1')">
-                        <div class="card-icon"><i class="fas fa-users"></i></div>
-                        <span class="card-title">VISITAS</span>
-                    </div>
-                    <div class="card" onclick="nav('screen-b1')">
-                        <div class="card-icon"><i class="fas fa-box-open"></i></div>
-                        <span class="card-title">PAQUETERÍA</span>
-                    </div>
-                    <div class="card" onclick="nav('screen-d1')">
-                        <div class="card-icon"><i class="fas fa-tools"></i></div>
-                        <span class="card-title">PROVEEDOR</span>
-                    </div>
-                    <div class="card" onclick="nav('screen-e1')">
-                        <div class="card-icon"><i class="fas fa-qrcode"></i></div>
-                        <span class="card-title">QR ACCESO</span>
-                    </div>
-                    <div class="card full-width" onclick="nav('screen-f1')">
-                        <div class="card-icon"><i class="fas fa-user-shield"></i></div>
-                        <span class="card-title">PERSONAL INTERNO</span>
-                    </div>
+                <div class="card" onclick="nav('d1')">
+                    <span class="card-emoji">🛠️</span>
+                    <span class="card-text">PROVEEDORES</span>
                 </div>
-            </section>
-
-            <section id="screen-a1" class="screen hidden">
-                <button onclick="nav('screen-inicio')" class="btn-back"><i class="fas fa-chevron-left"></i> MENÚ PRINCIPAL</button>
-                <h2 class="page-title">Gestión de Visitas</h2>
-                
-                <div class="list-menu">
-                    <button onclick="nav('screen-aa1')" class="list-item primary">
-                        <i class="fas fa-plus-circle"></i>
-                        <span>Registrar Nueva Visita</span>
-                        <i class="fas fa-chevron-right arrow"></i>
-                    </button>
-                    <button onclick="nav('screen-aa2')" class="list-item">
-                        <i class="fas fa-list-alt"></i>
-                        <span>Ver Bitácora (AA2)</span>
-                        <i class="fas fa-chevron-right arrow"></i>
-                    </button>
+                <div class="card" onclick="nav('e1')">
+                    <span class="card-emoji">📷</span>
+                    <span class="card-text">ACCESO QR</span>
                 </div>
-            </section>
-
-            <section id="screen-aa1" class="screen hidden">
-                <button onclick="nav('screen-a1')" class="btn-back"><i class="fas fa-chevron-left"></i> VISITAS</button>
-                <h2 class="page-title">Nueva Visita</h2>
-                
-                <form id="form-aa1" class="form-box">
-                    <div class="input-field">
-                        <label>VISITANTE</label>
-                        <input type="text" id="aa1-nombre" placeholder="Nombre Completo">
-                    </div>
-                    <div class="row">
-                        <div class="input-field">
-                            <label>TORRE</label>
-                            <input type="text" id="aa1-torre" placeholder="Ej. A">
-                        </div>
-                        <div class="input-field">
-                            <label>DEPTO</label>
-                            <input type="text" id="aa1-depto" placeholder="Ej. 101">
-                        </div>
-                    </div>
-                    <div class="input-field">
-                        <label>MOTIVO</label>
-                        <input type="text" id="aa1-motivo" placeholder="Ej. Fiesta / Trabajo">
-                    </div>
-                    <button type="button" onclick="submitAA1()" class="btn-submit">GUARDAR REGISTRO</button>
-                </form>
-            </section>
-
-            <section id="screen-b1" class="screen hidden">
-                <button onclick="nav('screen-inicio')" class="btn-back"><i class="fas fa-chevron-left"></i> MENÚ PRINCIPAL</button>
-                <h2 class="page-title">Paquetería</h2>
-                
-                <div class="list-menu">
-                    <button onclick="nav('screen-ba1')" class="list-item primary">
-                        <i class="fas fa-arrow-down"></i>
-                        <span>Recibir Paquete</span>
-                        <i class="fas fa-chevron-right arrow"></i>
-                    </button>
-                    <button onclick="nav('screen-bb1')" class="list-item blue">
-                        <i class="fas fa-arrow-up"></i>
-                        <span>Entregar a Residente</span>
-                        <i class="fas fa-chevron-right arrow"></i>
-                    </button>
+                <div class="card full" onclick="nav('f1')">
+                    <span class="card-emoji">🛡️</span>
+                    <span class="card-text">PERSONAL INTERNO</span>
                 </div>
-            </section>
-
-            <section id="screen-ba1" class="screen hidden">
-                <button onclick="nav('screen-b1')" class="btn-back"><i class="fas fa-chevron-left"></i> PAQUETERÍA</button>
-                <h2 class="page-title">Recepción</h2>
-                
-                <form id="form-ba1" class="form-box">
-                    <div class="input-field">
-                        <label>DESTINATARIO</label>
-                        <input type="text" id="ba1-nombre" placeholder="Nombre Residente">
-                    </div>
-                    <div class="input-field">
-                        <label>PAQUETERÍA</label>
-                        <input type="text" id="ba1-paqueteria" placeholder="Ej. Amazon, DHL">
-                    </div>
-                    <div class="input-field">
-                        <label>ESTATUS</label>
-                        <select id="ba1-estatus">
-                            <option>Aceptado</option>
-                            <option>Dañado</option>
-                        </select>
-                    </div>
-                    <div class="photo-area">
-                        <input type="file" id="ba1-foto-input" accept="image/*" capture="environment" onchange="handlePhoto(this, 'ba1')">
-                        <div id="ba1-preview" class="photo-preview hidden"></div>
-                        <div id="ba1-placeholder" class="photo-placeholder">
-                            <i class="fas fa-camera"></i>
-                            <span>FOTO EVIDENCIA</span>
-                        </div>
-                    </div>
-                    <button type="button" onclick="submitBA1()" class="btn-submit">REGISTRAR ENTRADA</button>
-                </form>
-            </section>
-
-            <section id="screen-bb1" class="screen hidden">
-                <button onclick="nav('screen-b1')" class="btn-back"><i class="fas fa-chevron-left"></i> PAQUETERÍA</button>
-                <h2 class="page-title">Entrega</h2>
-                
-                <form id="form-bb1" class="form-box">
-                    <div class="input-field">
-                        <label>RECIBE</label>
-                        <input type="text" id="bb1-nombre" placeholder="Nombre quien recoge">
-                    </div>
-                    <div class="input-field">
-                        <label>FIRMA DIGITAL</label>
-                        <div class="signature-pad-box">
-                            <canvas id="sig-canvas"></canvas>
-                        </div>
-                        <div class="text-right mt-2">
-                            <span onclick="clearSignature()" class="text-red-500 text-xs font-bold cursor-pointer">BORRAR FIRMA</span>
-                        </div>
-                    </div>
-                    <button type="button" onclick="submitBB1()" class="btn-submit blue">CONFIRMAR ENTREGA</button>
-                </form>
-            </section>
-            
-            <section id="screen-e1" class="screen hidden">
-                <button onclick="nav('screen-inicio')" class="btn-back"><i class="fas fa-chevron-left"></i> VOLVER</button>
-                <h2 class="page-title">Escáner QR</h2>
-                <div class="qr-box">
-                    <div id="qr-reader"></div>
-                    <div class="qr-overlay"></div>
-                </div>
-                <div class="row mt-4">
-                    <button onclick="startScanner('EA1')" class="btn-qr">RESIDENTE</button>
-                    <button onclick="startScanner('EC1')" class="btn-qr">VALIDAR</button>
-                </div>
-            </section>
-
-        </main>
-
-        <div id="modal-feedback" class="modal hidden">
-            <div class="modal-content">
-                <div id="fb-icon" class="modal-icon"></div>
-                <h3 id="fb-title"></h3>
-                <p id="fb-desc"></p>
-                <button onclick="closeModal()" class="btn-modal">ACEPTAR</button>
             </div>
         </div>
 
-    </div> <script src="app.js"></script>
+        <div id="screen-a1" class="screen">
+            <button class="btn-back" onclick="nav('inicio')">⬅ MENÚ PRINCIPAL</button>
+            <h2>VISITAS</h2>
+            <p class="subtitle">GESTIÓN DE ACCESOS</p>
+
+            <div class="btn-list">
+                <div class="btn-action primary" onclick="nav('aa1')">
+                    <span>➕ NUEVA VISITA</span>
+                </div>
+                <div class="btn-action" onclick="nav('aa2')">
+                    <span>📋 VER BITÁCORA</span>
+                </div>
+            </div>
+        </div>
+
+        <div id="screen-aa1" class="screen">
+            <button class="btn-back" onclick="nav('a1')">⬅ VOLVER</button>
+            <h2>NUEVA VISITA</h2>
+            <p class="subtitle">INGRESE DATOS DEL VISITANTE</p>
+
+            <div class="form-group">
+                <label>NOMBRE VISITANTE</label>
+                <input type="text" id="aa1-nombre" placeholder="Nombre completo">
+            </div>
+            <div class="row">
+                <div class="form-group">
+                    <label>TORRE</label>
+                    <input type="text" id="aa1-torre" placeholder="Ej. A">
+                </div>
+                <div class="form-group">
+                    <label>DEPTO</label>
+                    <input type="text" id="aa1-depto" placeholder="Ej. 101">
+                </div>
+            </div>
+            <div class="form-group">
+                <label>MOTIVO</label>
+                <input type="text" id="aa1-motivo" placeholder="Visita / Fiesta / Trabajo">
+            </div>
+            <button class="btn-save" onclick="submitAA1()">GUARDAR Y NOTIFICAR</button>
+        </div>
+
+        <div id="screen-b1" class="screen">
+            <button class="btn-back" onclick="nav('inicio')">⬅ MENÚ PRINCIPAL</button>
+            <h2>PAQUETERÍA</h2>
+            <p class="subtitle">RECEPCIÓN Y ENTREGA</p>
+
+            <div class="btn-list">
+                <div class="btn-action primary" onclick="nav('ba1')">
+                    <span>⬇ RECIBIR PAQUETE</span>
+                </div>
+                <div class="btn-action blue" onclick="nav('bb1')">
+                    <span>⬆ ENTREGAR A RESIDENTE</span>
+                </div>
+            </div>
+        </div>
+
+        <div id="screen-ba1" class="screen">
+            <button class="btn-back" onclick="nav('b1')">⬅ VOLVER</button>
+            <h2>RECEPCIÓN</h2>
+            <p class="subtitle">REGISTRO DE PAQUETE</p>
+
+            <div class="form-group">
+                <label>DESTINATARIO</label>
+                <input type="text" id="ba1-nombre" placeholder="Nombre Residente">
+            </div>
+            <div class="form-group">
+                <label>EMPRESA</label>
+                <input type="text" id="ba1-paqueteria" placeholder="Amazon, DHL...">
+            </div>
+            <div class="form-group">
+                <label>ESTATUS</label>
+                <select id="ba1-estatus">
+                    <option>Aceptado</option>
+                    <option>Dañado</option>
+                </select>
+            </div>
+            
+            <div class="form-group">
+                <label>FOTO EVIDENCIA</label>
+                <div class="photo-btn" onclick="document.getElementById('cam-ba1').click()">
+                    <span id="txt-ba1">📷 TOCAR PARA FOTO</span>
+                    <div id="preview-ba1" class="photo-preview" style="display:none"></div>
+                    <input type="file" id="cam-ba1" accept="image/*" capture="environment" hidden onchange="previewPhoto(this, 'ba1')">
+                </div>
+            </div>
+
+            <button class="btn-save" onclick="submitBA1()">REGISTRAR ENTRADA</button>
+        </div>
+
+        <div id="screen-bb1" class="screen">
+            <button class="btn-back" onclick="nav('b1')">⬅ VOLVER</button>
+            <h2>ENTREGA</h2>
+            <p class="subtitle">FIRMA DE CONFORMIDAD</p>
+
+            <div class="form-group">
+                <label>QUIEN RECIBE</label>
+                <input type="text" id="bb1-nombre" placeholder="Nombre completo">
+            </div>
+
+            <div class="form-group">
+                <label>FIRMA DIGITAL</label>
+                <div class="signature-area">
+                    <canvas id="sig-canvas"></canvas>
+                </div>
+                <div style="text-align: right; margin-top: 5px;">
+                    <span onclick="signaturePad.clear()" style="color: #ff4444; font-size: 0.7rem; font-weight: 800; cursor: pointer;">BORRAR FIRMA</span>
+                </div>
+            </div>
+
+            <button class="btn-save" style="background: #004080;" onclick="submitBB1()">CONFIRMAR ENTREGA</button>
+        </div>
+
+        <div id="screen-e1" class="screen">
+            <button class="btn-back" onclick="nav('inicio')">⬅ MENÚ PRINCIPAL</button>
+            <h2>ESCANER QR</h2>
+            <div style="height: 300px; background: black; border: 4px solid var(--guinda); border-radius: 20px; overflow: hidden; position: relative;">
+                 <div id="qr-reader" style="width:100%; height:100%;"></div>
+            </div>
+            <div class="row" style="margin-top: 20px;">
+                <button class="btn-action" style="flex:1; justify-content:center;" onclick="startQR('EA1')">RESIDENTE</button>
+                <button class="btn-action" style="flex:1; justify-content:center;" onclick="startQR('EC1')">VALIDAR</button>
+            </div>
+        </div>
+
+    </main>
+
+    <div id="modal" class="modal">
+        <div class="modal-card">
+            <span id="modal-icon" class="modal-emoji">⏳</span>
+            <h3 id="modal-title">Cargando...</h3>
+            <p id="modal-desc">Por favor espere</p>
+            <button class="btn-modal" onclick="closeModal()">ACEPTAR</button>
+        </div>
+    </div>
+
+    <script>
+        // CONFIGURACIÓN API (URLs Reales)
+        const API = {
+            VISITA: "https://prod-13.mexicocentral.logic.azure.com:443/workflows/b9c72600a3b64e03b0e34f8ee930ca61/triggers/Recibir_Aviso_GET/paths/invoke?api-version=2016-10-01&sp=%2Ftriggers%2FRecibir_Aviso_GET%2Frun&sv=1.0&sig=JsqhAlXVbSjZ5QY-cXMGaAoX5ANtjjAoVM38gGYAG64",
+            RECIBIR: "https://prod-12.mexicocentral.logic.azure.com:443/workflows/974146d8a5cc450aa5687f5710d95e8a/triggers/Recibir_Paquete_HTTP/paths/invoke?api-version=2016-10-01&sp=%2Ftriggers%2FRecibir_Paquete_HTTP%2Frun&sv=1.0&sig=fF8pX4HPrHO1wCUY4097ARXMLgQ1gTaQ0zhC28wAtko",
+            ENTREGAR: "https://prod-30.mexicocentral.logic.azure.com:443/workflows/58581c1247984f83b83d030640287167/triggers/Entregar_Paquete_HTTP/paths/invoke?api-version=2016-10-01&sp=%2Ftriggers%2FEntregar_Paquete_HTTP%2Frun&sv=1.0&sig=Nce4hIr59n137JvNnSheVZN_UX_VGrR-uX-fbISjg9k"
+        };
+
+        let signaturePad;
+        let photos = {};
+        let qrScanner;
+
+        // INICIO
+        window.onload = function() {
+            // Inicializar Firma
+            const canvas = document.getElementById('sig-canvas');
+            if (canvas) {
+                function resize() {
+                    const ratio = Math.max(window.devicePixelRatio || 1, 1);
+                    canvas.width = canvas.offsetWidth * ratio;
+                    canvas.height = canvas.offsetHeight * ratio;
+                    canvas.getContext("2d").scale(ratio, ratio);
+                }
+                window.onresize = resize;
+                resize();
+                signaturePad = new SignaturePad(canvas, { backgroundColor: 'rgb(255, 255, 255)' });
+            }
+        };
+
+        // NAVEGACIÓN
+        function nav(id) {
+            if(qrScanner) qrScanner.stop().catch(()=>{});
+            document.querySelectorAll('.screen').forEach(el => el.classList.remove('active'));
+            document.getElementById('screen-' + id).classList.add('active');
+            window.scrollTo(0,0);
+        }
+
+        // FOTOS
+        function previewPhoto(input, mod) {
+            if (input.files && input.files[0]) {
+                const reader = new FileReader();
+                reader.onload = function(e) {
+                    photos[mod] = e.target.result;
+                    const prev = document.getElementById('preview-' + mod);
+                    prev.style.backgroundImage = `url(${e.target.result})`;
+                    prev.style.display = 'block';
+                    document.getElementById('txt-' + mod).innerText = "✅ FOTO LISTA";
+                }
+                reader.readAsDataURL(input.files[0]);
+            }
+        }
+
+        // LÓGICA AA1 (VISITAS)
+        async function submitAA1() {
+            const nom = document.getElementById('aa1-nombre').value;
+            const mot = document.getElementById('aa1-motivo').value;
+            
+            if(!nom || !mot) return showModal('❌', 'Faltan Datos', 'Llene nombre y motivo');
+            
+            showModal('⏳', 'Enviando...', 'Espere un momento');
+            const url = `${API.VISITA}&Nombre=${encodeURIComponent(nom)}&Torre=${encodeURIComponent(document.getElementById('aa1-torre').value)}&Depto=${encodeURIComponent(document.getElementById('aa1-depto').value)}&Motivo=${encodeURIComponent(mot)}&Hora=${new Date().toLocaleTimeString()}`;
+            
+            try {
+                await fetch(url, { method: 'POST' });
+                showModal('✅', 'Éxito', 'Visita registrada');
+                document.getElementById('form-aa1').reset();
+            } catch(e) { showModal('❌', 'Error', 'Fallo de conexión'); }
+        }
+
+        // LÓGICA BA1 (PAQUETERÍA)
+        async function submitBA1() {
+            if(!photos.ba1) return showModal('❌', 'Falta Foto', 'Tome foto del paquete');
+            showModal('⏳', 'Subiendo...', 'Guardando evidencia');
+            
+            const url = `${API.RECIBIR}&Nombre=${encodeURIComponent(document.getElementById('ba1-nombre').value)}&Estatus=${encodeURIComponent(document.getElementById('ba1-estatus').value)}`;
+            
+            try {
+                await fetch(url, { 
+                    method: 'POST', 
+                    headers: {'Content-Type': 'application/json'},
+                    body: JSON.stringify({ foto: photos.ba1 }) 
+                });
+                showModal('✅', 'Recibido', 'Paquete guardado');
+                photos.ba1 = null;
+                nav('b1');
+            } catch(e) { showModal('❌', 'Error', 'Intente de nuevo'); }
+        }
+
+        // LÓGICA BB1 (ENTREGA)
+        async function submitBB1() {
+            if(signaturePad.isEmpty()) return showModal('❌', 'Falta Firma', 'El residente debe firmar');
+            showModal('⏳', 'Finalizando...', 'Guardando firma');
+            
+            const url = `${API.ENTREGAR}&Nombre=${encodeURIComponent(document.getElementById('bb1-nombre').value)}`;
+            
+            try {
+                await fetch(url, { 
+                    method: 'POST', 
+                    headers: {'Content-Type': 'application/json'},
+                    body: JSON.stringify({ firma: signaturePad.toDataURL() }) 
+                });
+                showModal('✅', 'Entregado', 'Proceso correcto');
+                signaturePad.clear();
+                nav('b1');
+            } catch(e) { showModal('❌', 'Error', 'Fallo al guardar'); }
+        }
+
+        // QR
+        function startQR(type) {
+            qrScanner = new Html5Qrcode("qr-reader");
+            qrScanner.start({ facingMode: "environment" }, { fps: 10, qrbox: 250 }, (text) => {
+                qrScanner.stop();
+                showModal('✅', 'Código Leído', text);
+            });
+        }
+
+        // MODAL
+        function showModal(icon, title, desc) {
+            document.getElementById('modal-icon').innerText = icon;
+            document.getElementById('modal-title').innerText = title;
+            document.getElementById('modal-desc').innerText = desc;
+            document.getElementById('modal').classList.add('open');
+        }
+        function closeModal() {
+            document.getElementById('modal').classList.remove('open');
+        }
+    </script>
 </body>
 </html>
