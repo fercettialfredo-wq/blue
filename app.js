@@ -12,7 +12,7 @@ let qrScanner = null;
 
 // INICIALIZACIÓN
 document.addEventListener('DOMContentLoaded', () => {
-    // Canvas Firma (Critico para móviles)
+    // Config Canvas Firma (Crítico)
     const canvas = document.getElementById('sig-canvas');
     if (canvas) {
         function resizeCanvas() {
@@ -31,7 +31,7 @@ document.addEventListener('DOMContentLoaded', () => {
 function nav(screenId) {
     if (qrScanner) { qrScanner.stop().catch(()=>{}); }
     document.querySelectorAll('.screen').forEach(s => s.classList.remove('active', 'hidden'));
-    document.querySelectorAll('.screen').forEach(s => s.style.display = 'none'); // Force hide
+    document.querySelectorAll('.screen').forEach(s => s.style.display = 'none');
     
     const target = document.getElementById(screenId);
     target.style.display = 'block';
@@ -45,40 +45,37 @@ function handlePhoto(input, module) {
         const reader = new FileReader();
         reader.onload = function(e) {
             photos[module] = e.target.result;
-            // Mostrar preview
-            const preview = document.getElementById(`${module}-preview`);
-            const placeholder = document.getElementById(`${module}-placeholder`);
-            preview.style.backgroundImage = `url(${e.target.result})`;
-            preview.classList.remove('hidden');
-            placeholder.style.opacity = 0;
+            document.getElementById(`${module}-preview`).style.backgroundImage = `url(${e.target.result})`;
+            document.getElementById(`${module}-preview`).classList.remove('hidden');
+            document.getElementById(`${module}-placeholder`).style.opacity = 0;
         }
         reader.readAsDataURL(input.files[0]);
     }
 }
 
-// === ENVIAR VISITA (AA1) ===
+// ENVIAR VISITA (AA1)
 async function submitAA1() {
     const nombre = document.getElementById('aa1-nombre').value;
     const torre = document.getElementById('aa1-torre').value || "--";
     const depto = document.getElementById('aa1-depto').value || "--";
     const motivo = document.getElementById('aa1-motivo').value;
 
-    if(!nombre || !motivo) return showModal('error', 'Faltan Datos', 'Ingrese Nombre y Motivo');
+    if(!nombre || !motivo) return showModal('error', 'Faltan Datos');
 
     showModal('loading', 'Enviando...');
     const url = `${API.VISITA}&Nombre=${encodeURIComponent(nombre)}&Torre=${encodeURIComponent(torre)}&Depto=${encodeURIComponent(depto)}&Motivo=${encodeURIComponent(motivo)}&Hora=${new Date().toLocaleTimeString()}`;
 
     try {
         await fetch(url, { method: 'POST' });
-        showModal('success', 'Registro Exitoso', 'El residente ha sido notificado.');
+        showModal('success', 'Registro Exitoso');
         document.getElementById('form-aa1').reset();
-    } catch(e) { showModal('error', 'Error Conexión', 'Intente nuevamente.'); }
+    } catch(e) { showModal('error', 'Error Conexión'); }
 }
 
-// === RECIBIR PAQUETE (BA1) ===
+// RECIBIR PAQUETE (BA1)
 async function submitBA1() {
     const nombre = document.getElementById('ba1-nombre').value;
-    if(!photos.ba1) return showModal('error', 'Falta Foto', 'Tome una foto del paquete.');
+    if(!photos.ba1) return showModal('error', 'Falta Foto');
 
     showModal('loading', 'Subiendo...');
     const url = `${API.RECIBIR}&Nombre=${encodeURIComponent(nombre)}&Estatus=${encodeURIComponent(document.getElementById('ba1-estatus').value)}`;
@@ -89,16 +86,16 @@ async function submitBA1() {
             headers: {'Content-Type': 'application/json'},
             body: JSON.stringify({ foto: photos.ba1 })
         });
-        showModal('success', 'Paquete Recibido', 'Guardado en bitácora.');
+        showModal('success', 'Paquete Recibido');
         photos.ba1 = null;
         document.getElementById('form-ba1').reset();
         nav('screen-b1');
-    } catch(e) { showModal('error', 'Error', 'No se pudo guardar.'); }
+    } catch(e) { showModal('error', 'Error al guardar'); }
 }
 
-// === ENTREGAR PAQUETE (BB1) ===
+// ENTREGAR PAQUETE (BB1)
 async function submitBB1() {
-    if(signaturePad.isEmpty()) return showModal('error', 'Falta Firma', 'El residente debe firmar.');
+    if(signaturePad.isEmpty()) return showModal('error', 'Falta Firma');
     
     showModal('loading', 'Finalizando...');
     const url = `${API.ENTREGAR}&Nombre=${encodeURIComponent(document.getElementById('bb1-nombre').value)}`;
@@ -109,11 +106,11 @@ async function submitBB1() {
             headers: {'Content-Type': 'application/json'},
             body: JSON.stringify({ firma: signaturePad.toDataURL() })
         });
-        showModal('success', 'Entrega Completa', 'Firma guardada.');
+        showModal('success', 'Entrega Completa');
         signaturePad.clear();
         document.getElementById('form-bb1').reset();
         nav('screen-b1');
-    } catch(e) { showModal('error', 'Error', 'Fallo al guardar.'); }
+    } catch(e) { showModal('error', 'Fallo al guardar'); }
 }
 
 function clearSignature() { signaturePad.clear(); }
@@ -125,30 +122,33 @@ function startScanner(type) {
     qrScanner = new Html5Qrcode("qr-reader");
     qrScanner.start({ facingMode: "environment" }, { fps: 10, qrbox: 250 }, (text) => {
         qrScanner.stop();
-        showModal('success', 'Código Leído', text);
+        showModal('success', 'Código Leído: ' + text);
     });
 }
 
-// UI MODAL
-function showModal(type, title, desc) {
+// MODAL UI
+function showModal(type, title, desc = "") {
     const modal = document.getElementById('modal-feedback');
     const icon = document.getElementById('fb-icon');
     const t = document.getElementById('fb-title');
+    const d = document.getElementById('fb-desc');
     
     modal.classList.remove('hidden');
     
     if(type === 'loading') {
         icon.innerHTML = '<i class="fas fa-spinner fa-spin" style="color:#007bff"></i>';
+        t.innerText = title;
     } else if(type === 'success') {
         icon.innerHTML = '<i class="fas fa-check-circle" style="color:#36b04b"></i>';
+        t.innerText = title;
         t.style.color = '#36b04b';
+        setTimeout(closeModal, 2500);
     } else {
         icon.innerHTML = '<i class="fas fa-times-circle" style="color:#b80000"></i>';
+        t.innerText = title;
         t.style.color = '#b80000';
     }
-    
-    document.getElementById('fb-title').innerText = title;
-    document.getElementById('fb-desc').innerText = desc;
+    d.innerText = desc;
 }
 
 function closeModal() { document.getElementById('modal-feedback').classList.add('hidden'); }
