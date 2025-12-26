@@ -1,91 +1,36 @@
-/* style.css */
-@import url('https://fonts.googleapis.com/css2?family=Lato:wght@300;400;700;900&display=swap');
-
+/* Colores de Group Ravens */
 :root {
-    --bg-color: #000000;
-    --card-color: #800020; /* Ese rojo vino que usas (128, 0, 32) */
-    --text-color: #ffffff;
-    --accent-blue: #3860B2;
-    --border-thickness: 5px; /* Reduje a 5px para web, 10px es mucho */
+    --ravens-gold: #eab308; /* Yellow-500 */
+    --ravens-black: #09090b; /* Zinc-950 */
+    --ravens-gray: #27272a; /* Zinc-800 */
 }
 
 body {
-    background-color: var(--bg-color);
-    color: var(--text-color);
-    font-family: 'Lato', sans-serif;
-    margin: 0;
-    padding: 0;
-    display: flex;
-    justify-content: center;
+    background-color: var(--ravens-black);
 }
 
-/* Contenedor tipo móvil */
-.app-container {
-    width: 100%;
-    max-width: 480px; /* Simula el ancho de un celular */
-    min-height: 100vh;
-    position: relative;
-    overflow-x: hidden;
+#reader {
+    border: none !important;
 }
 
-/* Pantallas (Screens) */
-.screen {
-    display: none; /* Ocultas por defecto */
-    padding: 20px;
-    animation: fadeIn 0.3s;
+/* El recuadro del scanner de la librería */
+#reader__scan_region {
+    background: #000;
 }
 
-.screen.active {
-    display: block; /* Solo la activa se ve */
+/* Botones de la librería (Ocultar para usar los nuestros) */
+#reader button {
+    display: none;
 }
 
-/* Grid del Menú INICIO */
-.menu-grid {
-    display: grid;
-    grid-template-columns: 1fr 1fr;
-    gap: 15px;
+/* Efecto de escaneo */
+#reader video {
+    filter: grayscale(0.2) contrast(1.1);
 }
 
-.menu-item {
-    background-color: var(--card-color);
-    border: var(--border-thickness) solid #000;
-    height: 150px;
-    display: flex;
-    flex-direction: column;
-    align-items: center;
-    justify-content: center;
-    cursor: pointer;
-    text-align: center;
-    border-radius: 10px;
-}
-
-.menu-item img {
-    height: 60px;
-    margin-bottom: 10px;
-}
-
-/* Botones e Inputs */
-input, select {
-    width: 100%;
-    padding: 15px;
-    margin-bottom: 15px;
-    background: #fff;
-    border: 2px solid #000;
-    font-size: 18px;
-    font-family: 'Lato', sans-serif;
-}
-
-button.primary-btn {
-    background-color: #36b04b; /* Verde Guardar */
-    color: white;
-    width: 100%;
-    padding: 20px;
-    font-size: 20px;
-    border: none;
-    cursor: pointer;
-}
-
-@keyframes fadeIn {
-    from { opacity: 0; }
-    to { opacity: 1; }
+/* Estilo para los Toasts */
+#toast {
+    z-index: 100;
+    transition: all 0.3s ease;
+    border: 1px solid rgba(255,255,255,0.1);
 }
