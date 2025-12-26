@@ -4,221 +4,200 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
     <title>RAVENS ACCESS</title>
-    
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" rel="stylesheet">
     <link href="https://fonts.googleapis.com/css2?family=Lato:wght@300;400;700;900&display=swap" rel="stylesheet">
-    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
-    
     <link rel="stylesheet" href="style.css">
-    
     <script src="https://cdn.jsdelivr.net/npm/signature_pad@4.0.0/dist/signature_pad.umd.min.js"></script>
     <script src="https://unpkg.com/html5-qrcode" type="text/javascript"></script>
 </head>
 <body>
 
-    <header class="app-header">
-        <div class="brand" onclick="nav('screen-inicio')">
-            <div class="logo-box">
-                <i class="fas fa-shield-alt"></i>
-            </div>
-            <div class="brand-text">
-                <h1>RAVENS</h1>
-                <p>ACCESS CONTROL</p>
-            </div>
-        </div>
-        <div class="status-indicator"></div>
-    </header>
+    <div class="mobile-wrapper">
 
-    <main class="app-container">
-
-        <section id="screen-inicio" class="screen active">
-            <div class="screen-header">
-                <h2>PANEL DE CONTROL</h2>
-                <p>Seleccione un módulo</p>
+        <header class="app-header">
+            <div class="logo-section" onclick="nav('screen-inicio')">
+                <div class="logo-icon"><i class="fas fa-shield-alt"></i></div>
+                <div class="logo-text">
+                    <h1>RAVENS</h1>
+                    <small>ACCESS CONTROL</small>
+                </div>
             </div>
+            <div class="status-dot"></div>
+        </header>
 
-            <div class="menu-grid">
-                <button onclick="nav('screen-a1')" class="card">
-                    <i class="fas fa-users card-icon"></i>
-                    <span>VISITAS</span>
-                </button>
-                <button onclick="nav('screen-b1')" class="card">
-                    <i class="fas fa-box-open card-icon"></i>
-                    <span>PAQUETERÍA</span>
-                </button>
-                <button onclick="nav('screen-d1')" class="card">
-                    <i class="fas fa-tools card-icon"></i>
-                    <span>PROVEEDORES</span>
-                </button>
-                <button onclick="nav('screen-e1')" class="card">
-                    <i class="fas fa-qrcode card-icon"></i>
-                    <span>ACCESO QR</span>
-                </button>
-                <button onclick="nav('screen-f1')" class="card full-width">
-                    <i class="fas fa-user-shield card-icon"></i>
-                    <span>PERSONAL INTERNO</span>
-                </button>
-            </div>
-        </section>
+        <main class="app-content">
 
-        <section id="screen-a1" class="screen hidden">
-            <button onclick="nav('screen-inicio')" class="btn-back"><i class="fas fa-arrow-left"></i> Volver</button>
-            <h2 class="module-title">Gestión de Visitas</h2>
-            
-            <div class="action-list">
-                <button onclick="nav('screen-aa1')" class="btn-action primary">
-                    <div class="icon-circle"><i class="fas fa-plus"></i></div>
-                    <span>Registrar Nueva Visita</span>
-                    <i class="fas fa-chevron-right arrow"></i>
-                </button>
-                <button onclick="nav('screen-aa2')" class="btn-action secondary">
-                    <div class="icon-circle"><i class="fas fa-list"></i></div>
-                    <span>Ver Bitácora</span>
-                    <i class="fas fa-chevron-right arrow"></i>
-                </button>
-            </div>
-        </section>
+            <section id="screen-inicio" class="screen active">
+                <div class="hero-section">
+                    <h2>PANEL DE CONTROL</h2>
+                    <p>Seleccione Módulo Operativo</p>
+                </div>
 
-        <section id="screen-aa1" class="screen hidden">
-            <button onclick="nav('screen-a1')" class="btn-back"><i class="fas fa-arrow-left"></i> Volver</button>
-            <div class="form-container">
-                <h3 class="form-title">Nueva Visita</h3>
-                <form id="form-aa1">
-                    <div class="input-group">
-                        <label>NOMBRE DEL VISITANTE</label>
-                        <input type="text" id="aa1-nombre" placeholder="Nombre completo">
+                <div class="grid-menu">
+                    <div class="card" onclick="nav('screen-a1')">
+                        <div class="card-icon"><i class="fas fa-users"></i></div>
+                        <span class="card-title">VISITAS</span>
+                    </div>
+                    <div class="card" onclick="nav('screen-b1')">
+                        <div class="card-icon"><i class="fas fa-box-open"></i></div>
+                        <span class="card-title">PAQUETERÍA</span>
+                    </div>
+                    <div class="card" onclick="nav('screen-d1')">
+                        <div class="card-icon"><i class="fas fa-tools"></i></div>
+                        <span class="card-title">PROVEEDOR</span>
+                    </div>
+                    <div class="card" onclick="nav('screen-e1')">
+                        <div class="card-icon"><i class="fas fa-qrcode"></i></div>
+                        <span class="card-title">QR ACCESO</span>
+                    </div>
+                    <div class="card full-width" onclick="nav('screen-f1')">
+                        <div class="card-icon"><i class="fas fa-user-shield"></i></div>
+                        <span class="card-title">PERSONAL INTERNO</span>
+                    </div>
+                </div>
+            </section>
+
+            <section id="screen-a1" class="screen hidden">
+                <button onclick="nav('screen-inicio')" class="btn-back"><i class="fas fa-chevron-left"></i> MENÚ PRINCIPAL</button>
+                <h2 class="page-title">Gestión de Visitas</h2>
+                
+                <div class="list-menu">
+                    <button onclick="nav('screen-aa1')" class="list-item primary">
+                        <i class="fas fa-plus-circle"></i>
+                        <span>Registrar Nueva Visita</span>
+                        <i class="fas fa-chevron-right arrow"></i>
+                    </button>
+                    <button onclick="nav('screen-aa2')" class="list-item">
+                        <i class="fas fa-list-alt"></i>
+                        <span>Ver Bitácora (AA2)</span>
+                        <i class="fas fa-chevron-right arrow"></i>
+                    </button>
+                </div>
+            </section>
+
+            <section id="screen-aa1" class="screen hidden">
+                <button onclick="nav('screen-a1')" class="btn-back"><i class="fas fa-chevron-left"></i> VISITAS</button>
+                <h2 class="page-title">Nueva Visita</h2>
+                
+                <form id="form-aa1" class="form-box">
+                    <div class="input-field">
+                        <label>VISITANTE</label>
+                        <input type="text" id="aa1-nombre" placeholder="Nombre Completo">
                     </div>
                     <div class="row">
-                        <div class="input-group">
+                        <div class="input-field">
                             <label>TORRE</label>
                             <input type="text" id="aa1-torre" placeholder="Ej. A">
                         </div>
-                        <div class="input-group">
+                        <div class="input-field">
                             <label>DEPTO</label>
                             <input type="text" id="aa1-depto" placeholder="Ej. 101">
                         </div>
                     </div>
-                    <div class="input-group">
+                    <div class="input-field">
                         <label>MOTIVO</label>
-                        <input type="text" id="aa1-motivo" placeholder="Visita / Fiesta / Trabajo">
+                        <input type="text" id="aa1-motivo" placeholder="Ej. Fiesta / Trabajo">
                     </div>
-                    <button type="button" onclick="submitAA1()" class="btn-submit">GUARDAR Y NOTIFICAR</button>
+                    <button type="button" onclick="submitAA1()" class="btn-submit">GUARDAR REGISTRO</button>
                 </form>
-            </div>
-        </section>
+            </section>
 
-        <section id="screen-b1" class="screen hidden">
-            <button onclick="nav('screen-inicio')" class="btn-back"><i class="fas fa-arrow-left"></i> Volver</button>
-            <h2 class="module-title">Paquetería</h2>
-            
-            <div class="action-list">
-                <button onclick="nav('screen-ba1')" class="btn-action primary">
-                    <div class="icon-circle"><i class="fas fa-arrow-down"></i></div>
-                    <span>Recibir Paquete</span>
-                    <i class="fas fa-chevron-right arrow"></i>
-                </button>
-                <button onclick="nav('screen-bb1')" class="btn-action blue">
-                    <div class="icon-circle"><i class="fas fa-arrow-up"></i></div>
-                    <span>Entregar a Residente</span>
-                    <i class="fas fa-chevron-right arrow"></i>
-                </button>
-            </div>
-        </section>
+            <section id="screen-b1" class="screen hidden">
+                <button onclick="nav('screen-inicio')" class="btn-back"><i class="fas fa-chevron-left"></i> MENÚ PRINCIPAL</button>
+                <h2 class="page-title">Paquetería</h2>
+                
+                <div class="list-menu">
+                    <button onclick="nav('screen-ba1')" class="list-item primary">
+                        <i class="fas fa-arrow-down"></i>
+                        <span>Recibir Paquete</span>
+                        <i class="fas fa-chevron-right arrow"></i>
+                    </button>
+                    <button onclick="nav('screen-bb1')" class="list-item blue">
+                        <i class="fas fa-arrow-up"></i>
+                        <span>Entregar a Residente</span>
+                        <i class="fas fa-chevron-right arrow"></i>
+                    </button>
+                </div>
+            </section>
 
-        <section id="screen-ba1" class="screen hidden">
-            <button onclick="nav('screen-b1')" class="btn-back"><i class="fas fa-arrow-left"></i> Volver</button>
-            <div class="form-container">
-                <h3 class="form-title">Recepción de Paquete</h3>
-                <form id="form-ba1">
-                    <div class="input-group">
+            <section id="screen-ba1" class="screen hidden">
+                <button onclick="nav('screen-b1')" class="btn-back"><i class="fas fa-chevron-left"></i> PAQUETERÍA</button>
+                <h2 class="page-title">Recepción</h2>
+                
+                <form id="form-ba1" class="form-box">
+                    <div class="input-field">
                         <label>DESTINATARIO</label>
-                        <input type="text" id="ba1-nombre" placeholder="Nombre del residente">
+                        <input type="text" id="ba1-nombre" placeholder="Nombre Residente">
                     </div>
-                    <div class="input-group">
-                        <label>EMPRESA</label>
-                        <input type="text" id="ba1-paqueteria" placeholder="Amazon, DHL, MercadoLibre...">
+                    <div class="input-field">
+                        <label>PAQUETERÍA</label>
+                        <input type="text" id="ba1-paqueteria" placeholder="Ej. Amazon, DHL">
                     </div>
-                    <div class="row">
-                        <div class="input-group">
-                            <label>TORRE</label>
-                            <input type="text" id="ba1-torre" placeholder="--">
-                        </div>
-                        <div class="input-group">
-                            <label>DEPTO</label>
-                            <input type="text" id="ba1-depto" placeholder="--">
-                        </div>
-                    </div>
-                    <div class="input-group">
+                    <div class="input-field">
                         <label>ESTATUS</label>
                         <select id="ba1-estatus">
-                            <option value="Aceptado">Aceptado</option>
-                            <option value="Dañado">Dañado / Abierto</option>
+                            <option>Aceptado</option>
+                            <option>Dañado</option>
                         </select>
                     </div>
-
-                    <div class="photo-upload-box">
+                    <div class="photo-area">
                         <input type="file" id="ba1-foto-input" accept="image/*" capture="environment" onchange="handlePhoto(this, 'ba1')">
-                        <div class="photo-placeholder" id="ba1-placeholder">
+                        <div id="ba1-preview" class="photo-preview hidden"></div>
+                        <div id="ba1-placeholder" class="photo-placeholder">
                             <i class="fas fa-camera"></i>
-                            <span>TOCAR PARA TOMAR FOTO</span>
+                            <span>FOTO EVIDENCIA</span>
                         </div>
-                        <div class="photo-preview hidden" id="ba1-preview"></div>
                     </div>
-
                     <button type="button" onclick="submitBA1()" class="btn-submit">REGISTRAR ENTRADA</button>
                 </form>
-            </div>
-        </section>
+            </section>
 
-        <section id="screen-bb1" class="screen hidden">
-            <button onclick="nav('screen-b1')" class="btn-back"><i class="fas fa-arrow-left"></i> Volver</button>
-            <div class="form-container">
-                <h3 class="form-title blue-theme">Entrega a Residente</h3>
-                <form id="form-bb1">
-                    <div class="input-group">
+            <section id="screen-bb1" class="screen hidden">
+                <button onclick="nav('screen-b1')" class="btn-back"><i class="fas fa-chevron-left"></i> PAQUETERÍA</button>
+                <h2 class="page-title">Entrega</h2>
+                
+                <form id="form-bb1" class="form-box">
+                    <div class="input-field">
                         <label>RECIBE</label>
-                        <input type="text" id="bb1-nombre" placeholder="Nombre de quien recoge">
+                        <input type="text" id="bb1-nombre" placeholder="Nombre quien recoge">
                     </div>
-
-                    <div class="signature-box">
+                    <div class="input-field">
                         <label>FIRMA DIGITAL</label>
-                        <div class="sig-pad-wrapper">
+                        <div class="signature-pad-box">
                             <canvas id="sig-canvas"></canvas>
                         </div>
-                        <button type="button" onclick="clearSignature()" class="btn-clear-sig">Borrar Firma</button>
+                        <div class="text-right mt-2">
+                            <span onclick="clearSignature()" class="text-red-500 text-xs font-bold cursor-pointer">BORRAR FIRMA</span>
+                        </div>
                     </div>
-
-                    <button type="button" onclick="submitBB1()" class="btn-submit blue-theme">CONFIRMAR ENTREGA</button>
+                    <button type="button" onclick="submitBB1()" class="btn-submit blue">CONFIRMAR ENTREGA</button>
                 </form>
-            </div>
-        </section>
-        
-        <section id="screen-e1" class="screen hidden">
-             <button onclick="nav('screen-inicio')" class="btn-back"><i class="fas fa-arrow-left"></i> Volver</button>
-             <h2 class="module-title">Escáner QR</h2>
-             <div class="qr-viewport">
-                 <div id="qr-reader"></div>
-                 <div class="qr-overlay"></div>
-             </div>
-             <div class="qr-controls">
-                 <button onclick="startScanner('EA1')" class="btn-qr">RESIDENTE</button>
-                 <button onclick="startScanner('EC1')" class="btn-qr">VALIDAR</button>
-             </div>
-        </section>
-        
-        <section id="screen-d1" class="screen hidden"><button onclick="nav('screen-inicio')" class="btn-back">Volver</button><div class="wip">Módulo Proveedores</div></section>
-        <section id="screen-f1" class="screen hidden"><button onclick="nav('screen-inicio')" class="btn-back">Volver</button><div class="wip">Módulo Personal</div></section>
-        
+            </section>
+            
+            <section id="screen-e1" class="screen hidden">
+                <button onclick="nav('screen-inicio')" class="btn-back"><i class="fas fa-chevron-left"></i> VOLVER</button>
+                <h2 class="page-title">Escáner QR</h2>
+                <div class="qr-box">
+                    <div id="qr-reader"></div>
+                    <div class="qr-overlay"></div>
+                </div>
+                <div class="row mt-4">
+                    <button onclick="startScanner('EA1')" class="btn-qr">RESIDENTE</button>
+                    <button onclick="startScanner('EC1')" class="btn-qr">VALIDAR</button>
+                </div>
+            </section>
+
+        </main>
+
         <div id="modal-feedback" class="modal hidden">
             <div class="modal-content">
                 <div id="fb-icon" class="modal-icon"></div>
-                <h2 id="fb-title"></h2>
+                <h3 id="fb-title"></h3>
                 <p id="fb-desc"></p>
                 <button onclick="closeModal()" class="btn-modal">ACEPTAR</button>
             </div>
         </div>
 
-    </main>
-
-    <script src="app.js"></script>
+    </div> <script src="app.js"></script>
 </body>
 </html>
