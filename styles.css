@@ -1,23 +1,60 @@
-.module-card {
-    transition: transform 0.1s ease;
-    cursor: pointer;
+/* Paleta de Colores Ravens Access */
+:root {
+    --ravens-wine: #800020; /* RGBA(128, 0, 32, 1) */
+    --ravens-green: #36b04b; /* RGBA(54, 176, 75, 1) */
+    --ravens-red: #b80000; /* RGBA(184, 0, 0, 1) */
+    --ravens-black: #000000;
 }
-.module-card:active {
-    transform: scale(0.95);
-    background-color: #18181b;
+
+body {
+    background-color: var(--ravens-black);
 }
-.screen {
-    animation: fadeIn 0.3s ease-in-out;
+
+.header-vino {
+    background-color: var(--ravens-wine);
+    padding: 1.5rem;
+    font-weight: 900;
+    font-style: italic;
+    text-transform: uppercase;
+    text-align: center;
+    border-radius: 1.5rem;
+    font-size: 1.25rem;
 }
-@keyframes fadeIn {
-    from { opacity: 0; transform: translateY(10px); }
-    to { opacity: 1; transform: translateY(0); }
+
+.nav-btn {
+    background-color: var(--ravens-wine);
+    border: 5px solid #000;
+    height: 180px;
+    border-radius: 2rem;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    font-weight: 900;
+    text-transform: uppercase;
+    font-size: 0.75rem;
+    letter-spacing: 0.1rem;
+    transition: transform 0.1s;
 }
-input {
-    outline: none !important;
-    border: 1px solid #27272a;
-    transition: border-color 0.2s;
+
+.nav-btn:active { transform: scale(0.95); }
+
+.input-ravens {
+    width: 100%;
+    background: #111;
+    border: 2px solid #333;
+    padding: 1rem;
+    border-radius: 1rem;
+    color: white;
+    outline: none;
 }
-input:focus {
-    border-color: #eab308;
+
+.btn-save {
+    background-color: var(--ravens-green);
+    width: 100%;
+    padding: 1.25rem;
+    border-radius: 1.25rem;
+    font-weight: 900;
+    font-style: italic;
+    text-transform: uppercase;
 }
