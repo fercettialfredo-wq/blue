@@ -1,26 +1,21 @@
 /**
- * RAVENS ACCESS - Lógica Completa
- * Reconstrucción de Power Apps a Web
+ * RAVENS ACCESS - LÓGICA DEFINITIVA
  */
 
-// CONFIGURACIÓN DE ENDPOINTS (Extraídos de tus YAML)
 const API = {
-    // Visitas [AA1]
+    // URLs extraídas de tus archivos YAML
     VISITA: "https://prod-13.mexicocentral.logic.azure.com:443/workflows/b9c72600a3b64e03b0e34f8ee930ca61/triggers/Recibir_Aviso_GET/paths/invoke?api-version=2016-10-01&sp=%2Ftriggers%2FRecibir_Aviso_GET%2Frun&sv=1.0&sig=JsqhAlXVbSjZ5QY-cXMGaAoX5ANtjjAoVM38gGYAG64",
-    // Recibir Paquete [BA1]
     RECIBIR: "https://prod-12.mexicocentral.logic.azure.com:443/workflows/974146d8a5cc450aa5687f5710d95e8a/triggers/Recibir_Paquete_HTTP/paths/invoke?api-version=2016-10-01&sp=%2Ftriggers%2FRecibir_Paquete_HTTP%2Frun&sv=1.0&sig=fF8pX4HPrHO1wCUY4097ARXMLgQ1gTaQ0zhC28wAtko",
-    // Entregar Paquete [BB1]
     ENTREGAR: "https://prod-30.mexicocentral.logic.azure.com:443/workflows/58581c1247984f83b83d030640287167/triggers/Entregar_Paquete_HTTP/paths/invoke?api-version=2016-10-01&sp=%2Ftriggers%2FEntregar_Paquete_HTTP%2Frun&sv=1.0&sig=Nce4hIr59n137JvNnSheVZN_UX_VGrR-uX-fbISjg9k"
 };
 
-// Variables de Estado
 let signaturePad;
 let photos = { ba1: null };
 let qrScanner = null;
 
-// --- INICIALIZACIÓN ---
+// INICIALIZACIÓN
 document.addEventListener('DOMContentLoaded', () => {
-    // Configurar Canvas de Firma (BB1)
+    // Configurar Canvas Firma
     const canvas = document.getElementById('sig-canvas');
     if (canvas) {
         function resizeCanvas() {
@@ -34,90 +29,95 @@ document.addEventListener('DOMContentLoaded', () => {
         signaturePad = new SignaturePad(canvas, { backgroundColor: 'rgb(255, 255, 255)' });
     }
     
-    // Cargar historial simulado (AA2)
-    loadHistoryAA2();
+    // Cargar Historial AA2 (Simulado)
+    renderHistoryAA2();
 });
 
-// --- NAVEGACIÓN ---
+// NAVEGACIÓN
 function nav(screenId) {
-    if (qrScanner) { qrScanner.stop().catch(()=>{}); qrScanner.clear(); }
+    if (qrScanner) { qrScanner.stop().catch(()=>{}); }
     document.querySelectorAll('.screen').forEach(s => s.classList.add('hidden'));
     document.getElementById(screenId).classList.remove('hidden');
     window.scrollTo(0,0);
 }
 
-// --- FOTOS (Cámara Nativa) ---
+// MANEJO DE FOTOS
 function handlePhoto(input, module) {
     if (input.files && input.files[0]) {
         const reader = new FileReader();
         reader.onload = function(e) {
             photos[module] = e.target.result; // Base64
-            const status = document.getElementById(`${module}-foto-status`);
-            status.innerText = "✅ FOTO LISTA";
-            status.classList.remove('text-zinc-400');
-            status.classList.add('text-green-500', 'font-bold');
+            // Feedback Visual
+            document.getElementById(`${module}-foto-status`).innerText = "✅ FOTO LISTA";
+            document.getElementById(`${module}-foto-status`).classList.add('text-green-500', 'font-bold');
+            // Mostrar Preview
+            if(module === 'ba1'){
+                const prev = document.getElementById('ba1-preview');
+                prev.style.backgroundImage = `url(${e.target.result})`;
+                prev.classList.remove('hidden');
+            }
         }
         reader.readAsDataURL(input.files[0]);
     }
 }
 
-// --- MÓDULO A: VISITAS (AA1) ---
+// LOGICA AA1: VISITA
 async function submitAA1() {
     const nombre = document.getElementById('aa1-nombre').value;
     const torre = document.getElementById('aa1-torre').value;
     const depto = document.getElementById('aa1-depto').value;
     const motivo = document.getElementById('aa1-motivo').value;
 
-    if(!nombre || !motivo) return alert("Faltan datos obligatorios");
+    if(!nombre || !motivo) return alert("Por favor complete Nombre y Motivo");
 
-    showFeedback('loading', 'Enviando Aviso...');
+    showModal('loading', 'Enviando Aviso...');
 
-    // URL Parametrizada (GET)
+    // URL PARAMETRIZADA (GET Request)
     const url = `${API.VISITA}&Nombre=${encodeURIComponent(nombre)}&Torre=${encodeURIComponent(torre)}&Depto=${encodeURIComponent(depto)}&Motivo=${encodeURIComponent(motivo)}&Hora=${new Date().toLocaleTimeString()}&Tipo_Lista=VISITA`;
 
     try {
-        await fetch(url, { method: 'POST' });
-        showFeedback('success', 'Aviso Enviado', 'Residente notificado por WhatsApp');
+        await fetch(url, { method: 'POST' }); // Azure a veces prefiere POST aunque sea GET trigger
+        showModal('success', 'Aviso Enviado', 'Residente notificado');
         document.getElementById('form-aa1').reset();
     } catch(e) {
-        showFeedback('error', 'Error Conexión', 'Intente de nuevo');
+        console.error(e);
+        showModal('error', 'Error Conexión', 'Intente de nuevo');
     }
 }
 
-// --- MÓDULO B: PAQUETERÍA (BA1 - Recibir) ---
+// LOGICA BA1: RECIBIR PAQUETE
 async function submitBA1() {
     const nombre = document.getElementById('ba1-nombre').value;
+    const empresa = document.getElementById('ba1-paqueteria').value;
     const estatus = document.getElementById('ba1-estatus').value;
-    
+
     if(!photos.ba1) return alert("⚠️ Falta la foto del paquete");
 
-    showFeedback('loading', 'Registrando...');
+    showModal('loading', 'Registrando Paquete...');
 
-    const url = `${API.RECIBIR}&Nombre=${encodeURIComponent(nombre)}&Estatus=${encodeURIComponent(estatus)}&Motivo=${encodeURIComponent(document.getElementById('ba1-paqueteria').value)}`;
+    const url = `${API.RECIBIR}&Nombre=${encodeURIComponent(nombre)}&Motivo=${encodeURIComponent(empresa)}&Estatus=${encodeURIComponent(estatus)}`;
 
     try {
-        // Enviamos Foto en Body (POST) para no romper la URL
         await fetch(url, {
             method: 'POST',
             headers: {'Content-Type': 'application/json'},
             body: JSON.stringify({ foto: photos.ba1 }) 
         });
-        showFeedback('success', 'Paquete Recibido', 'Registro guardado exitosamente');
+        showModal('success', 'Paquete Recibido', 'Registro Exitoso');
         photos.ba1 = null;
-        document.getElementById('ba1-foto-status').innerText = "Tocar para FOTO EVIDENCIA";
         document.getElementById('form-ba1').reset();
         nav('screen-b1');
     } catch(e) {
-        showFeedback('error', 'Error', 'No se pudo guardar');
+        showModal('error', 'Error', 'No se pudo guardar');
     }
 }
 
-// --- MÓDULO B: ENTREGA (BB1 - Firma) ---
+// LOGICA BB1: ENTREGAR PAQUETE
 async function submitBB1() {
-    if(signaturePad.isEmpty()) return alert("⚠️ Falta la firma de recibido");
+    if(signaturePad.isEmpty()) return alert("⚠️ Falta la firma");
     
     const nombre = document.getElementById('bb1-nombre').value;
-    showFeedback('loading', 'Guardando Entrega...');
+    showModal('loading', 'Guardando Entrega...');
 
     const url = `${API.ENTREGAR}&Nombre=${encodeURIComponent(nombre)}`;
 
@@ -125,23 +125,23 @@ async function submitBB1() {
         await fetch(url, {
             method: 'POST',
             headers: {'Content-Type': 'application/json'},
-            body: JSON.stringify({ firma: signaturePad.toDataURL() }) // Firma Base64
+            body: JSON.stringify({ firma: signaturePad.toDataURL() })
         });
-        showFeedback('success', 'Entrega Exitosa', 'Proceso cerrado');
+        showModal('success', 'Entrega Exitosa', 'Proceso Finalizado');
         signaturePad.clear();
         document.getElementById('form-bb1').reset();
         nav('screen-b1');
     } catch(e) {
-        showFeedback('error', 'Error', 'Fallo al guardar');
+        showModal('error', 'Error', 'Fallo al guardar');
     }
 }
 
 function clearSignature() { signaturePad.clear(); }
 
-// --- MÓDULO E: QR SCANNER ---
+// LOGICA QR (EA1 / EC1)
 function startScanner(type) {
-    const qrRegion = document.getElementById('qr-reader');
-    if(!qrRegion) return;
+    const readerDiv = document.getElementById('qr-reader');
+    if(!readerDiv) return;
     
     qrScanner = new Html5Qrcode("qr-reader");
     qrScanner.start(
@@ -149,16 +149,16 @@ function startScanner(type) {
         { fps: 10, qrbox: 250 },
         (decodedText) => {
             qrScanner.stop();
-            // Lógica de validación (Simulada para Web)
-            if(type === 'EA1') showFeedback('success', 'Acceso Permitido', 'Residente Validado: ' + decodedText);
-            if(type === 'EC1') showFeedback('success', 'Código Válido', 'Pase único aceptado');
+            // Lógica simulada de validación
+            if(type === 'EA1') showModal('success', 'Acceso Residente', `QR: ${decodedText}`);
+            if(type === 'EC1') showModal('success', 'Código Válido', 'Pase único aceptado');
         }
-    ).catch(err => alert("Error cámara: " + err));
+    ).catch(err => alert("Active la cámara para escanear"));
 }
 
-// --- UTILIDADES ---
-function showFeedback(type, title, desc = "") {
-    const modal = document.getElementById('feedback-modal');
+// UI HELPERS
+function showModal(type, title, desc = "") {
+    const modal = document.getElementById('modal-feedback');
     const icon = document.getElementById('fb-icon');
     const t = document.getElementById('fb-title');
     const d = document.getElementById('fb-desc');
@@ -166,12 +166,12 @@ function showFeedback(type, title, desc = "") {
     modal.classList.remove('hidden');
 
     if(type === 'loading') {
-        icon.innerHTML = '<i class="fas fa-circle-notch fa-spin text-blue-500"></i>';
+        icon.innerHTML = '<i class="fas fa-spinner fa-spin text-blue-500"></i>';
         t.style.color = 'white';
     } else if(type === 'success') {
         icon.innerHTML = '<i class="fas fa-check-circle text-green-500"></i>';
         t.style.color = '#36b04b';
-        setTimeout(closeModal, 3000); // Auto-cerrar 3s
+        setTimeout(closeModal, 3000);
     } else {
         icon.innerHTML = '<i class="fas fa-times-circle text-red-500"></i>';
         t.style.color = '#b80000';
@@ -181,22 +181,26 @@ function showFeedback(type, title, desc = "") {
 }
 
 function closeModal() {
-    document.getElementById('feedback-modal').classList.add('hidden');
+    document.getElementById('modal-feedback').classList.add('hidden');
 }
 
-// Datos de prueba para historial AA2
-function loadHistoryAA2() {
+// RENDERIZADO DE HISTORIAL (AA2)
+function renderHistoryAA2() {
     const list = document.getElementById('list-aa2');
-    if(!list) return;
-    // Esto vendría de tu API en producción
-    list.innerHTML = `
-        <div class="bg-zinc-900 p-4 rounded-xl border-l-4 border-green-500">
-            <div class="flex justify-between"><span class="font-bold">Juan Pérez</span><span class="text-xs text-zinc-500">10:45 AM</span></div>
-            <p class="text-xs text-zinc-400 mt-1">Torre A - 101 • Visita Familiar</p>
+    // Datos falsos para que no se vea vacío
+    const data = [
+        { nombre: "Juan Pérez", torre: "A-101", hora: "10:45 AM", tipo: "Visita", status: "ok" },
+        { nombre: "Uber Eats", torre: "B-205", hora: "11:20 AM", tipo: "Paquete", status: "ok" },
+        { nombre: "María G.", torre: "C-PH", hora: "12:00 PM", tipo: "Denegado", status: "error" }
+    ];
+
+    list.innerHTML = data.map(item => `
+        <div class="bg-zinc-900 p-4 rounded-xl border-l-4 ${item.status === 'ok' ? 'border-green-500' : 'border-red-500'}">
+            <div class="flex justify-between items-center">
+                <span class="font-bold text-sm">${item.nombre}</span>
+                <span class="text-[10px] text-zinc-500 font-bold">${item.hora}</span>
+            </div>
+            <p class="text-xs text-zinc-400 mt-1">${item.torre} • ${item.tipo}</p>
         </div>
-        <div class="bg-zinc-900 p-4 rounded-xl border-l-4 border-red-500">
-            <div class="flex justify-between"><span class="font-bold">Uber Eats</span><span class="text-xs text-zinc-500">09:12 AM</span></div>
-            <p class="text-xs text-zinc-400 mt-1">Acceso Denegado (Anti-passback)</p>
-        </div>
-    `;
+    `).join('');
 }
