@@ -3,108 +3,90 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>RAVENS ACCESS - Sistema Integral</title>
+    <title>GROUP RAVENS - ACCESS CONTROL</title>
+    <link href="https://fonts.googleapis.com/css2?family=Lato:wght@400;700;900&display=swap" rel="stylesheet">
     <script src="https://cdn.tailwindcss.com"></script>
     <script src="https://unpkg.com/html5-qrcode"></script>
-    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
     <link rel="stylesheet" href="style.css">
 </head>
-<body class="bg-zinc-950 text-white font-sans">
+<body class="bg-black text-white font-['Lato']">
 
-    <nav class="bg-black border-b border-zinc-800 p-4 flex justify-between items-center sticky top-0 z-50">
-        <div class="font-bold text-xl tracking-tighter cursor-pointer" onclick="navigateTo('screen-menu')">
-            GROUP <span class="text-yellow-500">RAVENS</span> <span class="text-xs font-light text-zinc-500 ml-2">ACCESS v2.0</span>
-        </div>
-        <div id="connection-dot" class="flex items-center text-[10px] text-green-500 font-mono">
-            <span class="mr-2">SISTEMA ACTIVO</span>
+    <header class="p-6 border-b border-zinc-800 bg-black sticky top-0 z-50 flex justify-between items-center">
+        <h1 class="text-2xl font-black uppercase italic tracking-tighter">RAVENS <span class="text-[#800020]">ACCESS</span></h1>
+        <div id="status-indicator" class="flex items-center text-[10px] text-green-500 font-bold uppercase">
+            <span class="mr-2">Sistema Operativo</span>
             <div class="w-2 h-2 bg-green-500 rounded-full animate-pulse"></div>
         </div>
-    </nav>
+    </header>
 
-    <main id="app-container" class="max-w-xl mx-auto p-4 pb-24">
+    <main id="view-viewport" class="max-w-xl mx-auto p-4 min-h-[85vh]">
         
-        <section id="screen-menu" class="screen active space-y-3">
-            <div class="py-6 text-center">
-                <h2 class="text-2xl font-black uppercase tracking-widest">Panel de Control</h2>
-                <p class="text-zinc-500 text-sm">Seleccione el módulo de operación</p>
-            </div>
-            
-            <div class="grid grid-cols-2 gap-3">
-                <button onclick="navigateTo('screen-residents')" class="module-card bg-zinc-900 p-6 rounded-2xl border border-zinc-800 text-center hover:border-yellow-600 transition">
-                    <i class="fas fa-home text-yellow-500 text-3xl mb-3"></i>
-                    <p class="font-bold block text-sm">RESIDENTES</p>
-                </button>
-                <button onclick="navigateTo('screen-visitors')" class="module-card bg-zinc-900 p-6 rounded-2xl border border-zinc-800 text-center hover:border-yellow-600 transition">
-                    <i class="fas fa-user-friends text-yellow-500 text-3xl mb-3"></i>
-                    <p class="font-bold block text-sm">VISITANTES</p>
-                </button>
-                <button onclick="navigateTo('screen-service')" class="module-card bg-zinc-900 p-6 rounded-2xl border border-zinc-800 text-center hover:border-yellow-600 transition">
-                    <i class="fas fa-tools text-yellow-500 text-3xl mb-3"></i>
-                    <p class="font-bold block text-sm">SERVICIO</p>
-                </button>
-                <button onclick="navigateTo('screen-reports')" class="module-card bg-zinc-900 p-6 rounded-2xl border border-zinc-800 text-center hover:border-yellow-600 transition">
-                    <i class="fas fa-file-invoice text-yellow-500 text-3xl mb-3"></i>
-                    <p class="font-bold block text-sm">REPORTES</p>
-                </button>
-            </div>
+        <section id="screen-inicio" class="screen active pt-10 grid grid-cols-2 gap-4">
+            <button onclick="nav('screen-a1')" class="nav-btn"><i class="fas fa-users"></i><span>Visitas</span></button>
+            <button onclick="nav('screen-b1')" class="nav-btn"><i class="fas fa-box"></i><span>Paquetería</span></button>
+            <button onclick="nav('screen-d1')" class="nav-btn"><i class="fas fa-tools"></i><span>Servicio</span></button>
+            <button onclick="nav('screen-e1')" class="nav-btn"><i class="fas fa-qrcode"></i><span>Módulos QR</span></button>
+            <button onclick="nav('screen-f1')" class="nav-btn col-span-2"><i class="fas fa-user-shield"></i><span>Personal</span></button>
         </section>
 
-        <section id="screen-visitors" class="screen hidden">
-            <div class="flex items-center mb-6">
-                <button onclick="navigateTo('screen-menu')" class="bg-zinc-800 p-3 rounded-full mr-4"><i class="fas fa-arrow-left"></i></button>
-                <h2 class="text-xl font-bold italic">REGISTRO DE VISITANTES</h2>
-            </div>
-            
-            <form id="visitor-form" class="space-y-4 bg-zinc-900 p-6 rounded-3xl border border-zinc-800">
-                <div class="space-y-1">
-                    <label class="text-xs text-zinc-500 font-bold ml-1">NOMBRE COMPLETO</label>
-                    <input type="text" name="nombre" class="w-full bg-black border-zinc-700 rounded-xl p-3 focus:border-yellow-500" placeholder="Ej. Juan Pérez">
+        <section id="screen-aa1" class="screen hidden space-y-4">
+            <div class="header-vino">Registro de Visita</div>
+            <form id="form-aa1" class="space-y-3">
+                <input type="text" name="nombre" placeholder="Nombre del Visitante" class="input-ravens" required>
+                <div class="flex gap-2">
+                    <input type="text" id="aa1-torre" placeholder="Torre" class="input-ravens w-1/2">
+                    <input type="text" id="aa1-depto" placeholder="Depto" class="input-ravens w-1/2">
                 </div>
-                <div class="grid grid-cols-2 gap-3">
-                    <div class="space-y-1">
-                        <label class="text-xs text-zinc-500 font-bold ml-1">DNI / ID</label>
-                        <input type="text" name="dni" class="w-full bg-black border-zinc-700 rounded-xl p-3 focus:border-yellow-500">
-                    </div>
-                    <div class="space-y-1">
-                        <label class="text-xs text-zinc-500 font-bold ml-1">PLACA VEHÍCULO</label>
-                        <input type="text" name="placa" class="w-full bg-black border-zinc-700 rounded-xl p-3 focus:border-yellow-500">
-                    </div>
-                </div>
-                <div class="space-y-1">
-                    <label class="text-xs text-zinc-500 font-bold ml-1">MOTIVO / PERSONA VISITADA</label>
-                    <input type="text" name="motivo" class="w-full bg-black border-zinc-700 rounded-xl p-3 focus:border-yellow-500">
-                </div>
-                <button type="button" onclick="submitAppForm('VISITANTE')" class="w-full bg-yellow-600 text-black py-4 rounded-xl font-black mt-4 hover:bg-yellow-500">REGISTRAR ENTRADA</button>
+                <button type="button" onclick="openResidentSearch('aa1')" class="btn-select">Buscar Residente</button>
+                <input type="text" name="motivo" placeholder="Motivo" class="input-ravens" required>
+                <button type="button" onclick="submitAA1()" class="btn-save">GUARDAR Y AVISAR</button>
             </form>
         </section>
 
-        <section id="screen-service" class="screen hidden">
-            <div class="flex items-center mb-6">
-                <button onclick="navigateTo('screen-menu')" class="bg-zinc-800 p-3 rounded-full mr-4"><i class="fas fa-arrow-left"></i></button>
-                <h2 class="text-xl font-bold italic">PERSONAL DE SERVICIO</h2>
-            </div>
-            
-            <div id="service-scanner-area" class="mb-6 rounded-2xl overflow-hidden border-2 border-zinc-800 bg-black">
-                <div id="service-reader"></div>
-            </div>
-
-            <div class="space-y-4">
-                <input type="text" id="service-dni" placeholder="DNI de Trabajador" class="w-full bg-zinc-900 border-zinc-800 rounded-xl p-4">
-                <button onclick="validarAccesoPersonal()" class="w-full bg-white text-black py-4 rounded-xl font-black">VALIDAR CREDENCIAL</button>
-            </div>
+        <section id="screen-ba1" class="screen hidden space-y-4">
+            <div class="header-vino">Recibir Paquete</div>
+            <form id="form-ba1" class="space-y-3">
+                <input type="text" name="nombre" placeholder="Nombre" class="input-ravens">
+                <input type="text" name="paqueteria" placeholder="Empresa (Servientrega, etc)" class="input-ravens">
+                <select name="estatus" class="input-ravens">
+                    <option value="Aceptado">Aceptado</option>
+                    <option value="Dañado/Devuelto">Dañado/Devuelto</option>
+                </select>
+                <div class="camera-box" id="camera-ba1"></div>
+                <button type="button" onclick="takePhoto('ba1')" class="btn-photo">Capturar Foto</button>
+                <button type="button" onclick="submitBA1()" class="btn-save">REGISTRAR</button>
+            </form>
         </section>
+
+        <section id="screen-bb1" class="screen hidden space-y-4">
+            <div class="header-vino">Entregar Paquete</div>
+            <form id="form-bb1" class="space-y-3">
+                <input type="text" name="nombre" placeholder="Nombre de quien recibe" class="input-ravens">
+                <div class="camera-box" id="camera-bb1"></div>
+                <div class="bg-white p-2 rounded-xl">
+                    <canvas id="sig-pad" class="w-full h-40"></canvas>
+                </div>
+                <button type="button" onclick="submitBB1()" class="btn-save">FIRMAR Y ENTREGAR</button>
+            </form>
+        </section>
+
+        <section id="screen-e1" class="screen hidden grid grid-cols-2 gap-4">
+            <button onclick="nav('screen-ea1')" class="nav-btn"><span>QR Residente 1</span></button>
+            <button onclick="nav('screen-eb1')" class="nav-btn"><span>QR Residente 2</span></button>
+            <button onclick="nav('screen-ec1')" class="nav-btn"><span>Validar QR</span></button>
+            <button onclick="nav('screen-ed1')" class="nav-btn"><span>Timer Acceso</span></button>
+        </section>
+
+        <div id="result-overlay" class="fixed inset-0 bg-black/95 z-[100] hidden flex flex-col items-center justify-center p-10 text-center">
+            <div id="res-icon" class="text-8xl mb-4"></div>
+            <h2 id="res-title" class="text-3xl font-black italic uppercase"></h2>
+            <p id="res-desc" class="text-zinc-500 mt-2"></p>
+            <button onclick="closeResult()" class="mt-10 btn-save w-full">Continuar</button>
+        </div>
 
     </main>
 
-    <div id="modal-result" class="fixed inset-0 bg-black/90 z-[100] hidden flex items-center justify-center p-6">
-        <div class="bg-zinc-900 border border-zinc-700 w-full max-w-sm rounded-[40px] p-8 text-center">
-            <div id="res-icon" class="text-7xl mb-4"></div>
-            <h3 id="res-title" class="text-2xl font-bold mb-2 uppercase italic"></h3>
-            <p id="res-msg" class="text-zinc-500 mb-6"></p>
-            <button onclick="closeModal()" class="w-full py-4 bg-zinc-100 text-black font-black rounded-2xl">ENTENDIDO</button>
-        </div>
-    </div>
-
+    <script src="https://kit.fontawesome.com/a076d05399.js" crossorigin="anonymous"></script>
     <script src="app.js"></script>
 </body>
 </html>
