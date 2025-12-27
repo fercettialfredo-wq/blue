@@ -1,26 +1,25 @@
 /* =========================================
-   ESTADO GLOBAL (Mapeo Colecciones Power Apps)
+   1. DATOS Y ESTADO (Simulación SharePoint)
    ========================================= */
 const STATE = {
     colBaserFiltrada: [
         { Torre: "A", Departamento: "101", Nombre: "Juan Perez", Número: "525511223344" },
-        { Torre: "A", Departamento: "102", Nombre: "Ana Gomez", Número: "525599887766" }
+        { Torre: "B", Departamento: "205", Nombre: "Ana Gomez", Número: "525599887766" }
     ],
-    // Bitácoras
-    colvisitaOrdenada: [], 
-    colpersonalaviso: [],
+    colvisitaOrdenada: [], //
+    colpersonalaviso: [],  //
     
-    // UI State
-    aa1: { residente: "", numero: "", paloma: false },
-    ac1: { residente: "", numero: "", paloma: false },
+    // UI Context
+    aa1: { residente: "", numero: "", torre: "", depto: "" },
+    ac1: { residente: "", numero: "", torre: "", depto: "" },
     currentContext: "",
-    selectedLog: null
+    selectedItem: null
 };
 
 const API_URL = "https://prod-13.mexicocentral.logic.azure.com:443/workflows/b9c72600a3b64e03b0e34f8ee930ca61/triggers/Recibir_Aviso_GET/paths/invoke?api-version=2016-10-01&sp=%2Ftriggers%2FRecibir_Aviso_GET%2Frun&sv=1.0&sig=JsqhAlXVbSjZ5QY-cXMGaAoX5ANtjjAoVM38gGYAG64";
 
 /* =========================================
-   SISTEMA DE NAVEGACIÓN
+   2. NAVEGACIÓN Y PANTALLAS
    ========================================= */
 const SCREENS = {
     'INICIO': `
@@ -40,15 +39,15 @@ const SCREENS = {
             <div class="btn-back" onclick="navigate('INICIO')">⬅ MENÚ PRINCIPAL</div>
             <h2 class="title">VISITAS</h2>
             <div class="action-list">
-                <div class="btn-action primary" onclick="navigate('AA1')"><span>➕ REGISTRAR VISITA</span><i class="fas fa-chevron-right"></i></div>
-                <div class="btn-action primary" style="background:#4a0012" onclick="navigate('AC1')"><span>👷 PERSONAL DE SERVICIO</span><i class="fas fa-chevron-right"></i></div>
+                <button class="btn-action primary" onclick="navigate('AA1')"><span>➕ REGISTRAR VISITA</span><i class="fas fa-chevron-right"></i></button>
+                <button class="btn-action primary" style="background:#4a0012" onclick="navigate('AC1')"><span>👷 PERSONAL DE SERVICIO</span><i class="fas fa-chevron-right"></i></button>
             </div>
         </div>
     `,
     'AA1': `
         <div class="screen active">
             <div class="btn-back" onclick="navigate('A1')">⬅ VOLVER</div>
-            <h2 class="title" style="color:var(--guinda)">REGISTRO VISITA</h2>
+            <h2 class="title" style="color:var(--guinda)">NUEVA VISITA</h2>
             <div class="form-box">
                 <div class="input-group"><label>NOMBRE VISITANTE</label><input type="text" id="aa1-nombre" class="ravens-input"></div>
                 <div class="row">
@@ -56,11 +55,12 @@ const SCREENS = {
                     <div class="input-group"><label>DEPTO</label><input type="text" id="aa1-depto" class="ravens-input" readonly></div>
                 </div>
                 <button class="btn-save" style="background:var(--azul); margin-bottom:15px;" onclick="openResidenteModal('aa1')">🔍 SELECCIONAR RESIDENTE</button>
+                <div class="input-group"><label>RESIDENTE ASIGNADO</label><input type="text" id="aa1-res-name" class="ravens-input" readonly style="color:#888;"></div>
                 <div class="input-group"><label>MOTIVO</label><input type="text" id="aa1-motivo" class="ravens-input"></div>
                 <div class="input-group"><label>PLACA</label><input type="text" id="aa1-placa" class="ravens-input"></div>
-                <button class="btn-save" id="btn-aa1-save" onclick="logicAA1()">GUARDAR REGISTRO</button>
+                <button class="btn-save" id="btn-save-aa1" onclick="logicAA1()">GUARDAR REGISTRO</button>
             </div>
-            <div class="btn-action" style="margin-top:20px; background:#111;" onclick="navigate('AA2')"><span>📋 VER LIBRETA VISITAS</span><i class="fas fa-chevron-right"></i></div>
+            <button class="btn-action" style="margin-top:20px; background:#111" onclick="navigate('AA2')"><span>📋 VER LIBRETA VISITAS</span><i class="fas fa-chevron-right"></i></button>
         </div>
     `,
     'AC1': `
@@ -74,153 +74,90 @@ const SCREENS = {
                     <div class="input-group"><label>DEPTO</label><input type="text" id="ac1-depto" class="ravens-input" readonly></div>
                 </div>
                 <button class="btn-save" style="background:var(--azul); margin-bottom:15px;" onclick="openResidenteModal('ac1')">🔍 SELECCIONAR RESIDENTE</button>
+                <div class="input-group"><label>RESIDENTE QUE AUTORIZA</label><input type="text" id="ac1-res-name" class="ravens-input" readonly style="color:#888;"></div>
                 <div class="input-group"><label>CARGO / EMPRESA</label><input type="text" id="ac1-cargo" class="ravens-input"></div>
-                <button class="btn-save" id="btn-ac1-save" onclick="logicAC1()">GUARDAR REGISTRO</button>
+                <button class="btn-save" id="btn-save-ac1" onclick="logicAC1()">GUARDAR REGISTRO</button>
             </div>
-            <div class="btn-action" style="margin-top:20px; background:#111;" onclick="navigate('AC2')"><span>📋 VER LIBRETA PERSONAL</span><i class="fas fa-chevron-right"></i></div>
+            <button class="btn-action" style="margin-top:20px; background:#111" onclick="navigate('AC2')"><span>📋 VER LIBRETA PERSONAL</span><i class="fas fa-chevron-right"></i></button>
         </div>
     `,
-    // BITÁCORA AA2 (VISITAS)
     'AA2': `
         <div class="screen active">
             <div class="btn-back" onclick="navigate('AA1')">⬅ VOLVER</div>
-            <div class="gallery-header">
-                <h2 class="title" style="font-size:1.1rem">Libreta Visitas</h2>
-                <i class="fas fa-sync-alt" onclick="refresh('AA2')" style="color:var(--dorado); cursor:pointer;"></i>
-            </div>
+            <div class="gallery-header"><h2 class="title">Libreta Visitas</h2><i class="fas fa-sync" onclick="refresh('AA2')"></i></div>
             <div class="gallery-container" id="gal-aa2"></div>
-            <div class="view-form" id="form-aa2-detail">
+            <div class="view-form" id="detail-aa2">
                 <h3>Detalle de Registro</h3>
-                <div id="aa2-content">Seleccione un elemento de la lista</div>
+                <div id="content-aa2">Seleccione un elemento</div>
             </div>
         </div>
     `,
-    // BITÁCORA AC2 (PERSONAL)
     'AC2': `
         <div class="screen active">
             <div class="btn-back" onclick="navigate('AC1')">⬅ VOLVER</div>
-            <div class="gallery-header">
-                <h2 class="title" style="font-size:1.1rem">Libreta Personal</h2>
-                <i class="fas fa-sync-alt" onclick="refresh('AC2')" style="color:var(--dorado); cursor:pointer;"></i>
-            </div>
+            <div class="gallery-header"><h2 class="title">Libreta Personal</h2><i class="fas fa-sync" onclick="refresh('AC2')"></i></div>
             <div class="gallery-container" id="gal-ac2"></div>
-            <div class="view-form" id="form-ac2-detail">
+            <div class="view-form" id="detail-ac2">
                 <h3>Detalle de Registro</h3>
-                <div id="ac2-content">Seleccione un elemento de la lista</div>
+                <div id="content-ac2">Seleccione un elemento</div>
             </div>
         </div>
     `,
     'SUCCESS': `<div class="screen active" style="text-align:center; padding-top:100px;"><i class="fas fa-check-circle fa-5x" style="color:var(--verde)"></i><h2 style="margin-top:20px">AVISO ENVIADO</h2></div>`
 };
 
+/* =========================================
+   3. MOTOR LÓGICO (CORE)
+   ========================================= */
 function navigate(screen) {
     document.getElementById('viewport').innerHTML = SCREENS[screen] || SCREENS['INICIO'];
-    if(screen === 'AA1') syncUI('aa1');
-    if(screen === 'AC1') syncUI('ac1');
-    if(screen === 'AA2') renderGallery('colvisitaOrdenada', 'gal-aa2');
-    if(screen === 'AC2') renderGallery('colpersonalaviso', 'gal-ac2');
+    if(screen === 'AA1') syncForm('aa1');
+    if(screen === 'AC1') syncForm('ac1');
+    if(screen === 'AA2') renderGal('colvisitaOrdenada', 'gal-aa2');
+    if(screen === 'AC2') renderGal('colpersonalaviso', 'gal-ac2');
     if(screen === 'SUCCESS') setTimeout(() => navigate('INICIO'), 2500);
-    window.scrollTo(0,0);
 }
 
-/* =========================================
-   LÓGICA DE GALERÍA Y DETALLE (AA2 / AC2)
-   ========================================= */
-function renderGallery(colName, elementId) {
+function renderGal(col, elementId) {
     const container = document.getElementById(elementId);
-    const data = STATE[colName];
+    const data = STATE[col]; // Filtro 30 días simulado (la colección ya viene filtrada)
+    if(data.length === 0) return container.innerHTML = `<p style="text-align:center; padding-top:100px; color:#444;">Sin registros</p>`;
     
-    if(data.length === 0) {
-        container.innerHTML = `<p style="text-align:center; color:#444; padding-top:100px; font-size:0.8rem;">Sin registros recientes</p>`;
-        return;
-    }
-
-    container.innerHTML = data.map((item, index) => `
-        <div class="gallery-item" onclick="selectLog('${colName}', ${index}, this)">
-            <div class="gallery-text">
-                <h4>${item.Nombre}</h4>
-                <p>${item.Torre}-${item.Depto} • ${item.Fechayhora}</p>
-            </div>
+    container.innerHTML = data.map((item, idx) => `
+        <div class="gallery-item" onclick="showDetail('${col}', ${idx}, this)">
+            <div class="gallery-text"><h4>${item.Nombre}</h4><p>${item.Torre}-${item.Depto} • ${item.Fecha}</p></div>
             <i class="fas fa-chevron-right" style="color:#222"></i>
         </div>
     `).join('');
 }
 
-function selectLog(colName, index, el) {
-    // UI Selection
+function showDetail(col, idx, el) {
     document.querySelectorAll('.gallery-item').forEach(i => i.classList.remove('selected'));
     el.classList.add('selected');
-
-    const item = STATE[colName][index];
-    const contentId = colName === 'colvisitaOrdenada' ? 'aa2-content' : 'ac2-content';
+    const item = STATE[col][idx];
+    const contentId = col === 'colvisitaOrdenada' ? 'content-aa2' : 'content-ac2';
     
-    // Mapeo de campos YAML Form2_1 y Form2_9
+    // Mapeo de campos YAML Form2_1 / Form2_9
     let html = `
         <div class="data-field"><label>Estatus</label><span class="status-${item.Estatus.toLowerCase()}">${item.Estatus}</span></div>
         <div class="data-field"><label>Nombre</label><span>${item.Nombre}</span></div>
         <div class="data-field"><label>Torre</label><span>${item.Torre}</span></div>
         <div class="data-field"><label>Departamento</label><span>${item.Depto}</span></div>
-        <div class="data-field"><label>Fecha y Hora</label><span>${item.Fechayhora}</span></div>
+        <div class="data-field"><label>Fecha y Hora</label><span>${item.Fecha}</span></div>
     `;
-
-    if(colName === 'colvisitaOrdenada') {
-        html += `<div class="data-field"><label>Placa</label><span>${item.Placa || '---'}</span></div>
-                 <div class="data-field"><label>Motivo</label><span>${item.Motivo}</span></div>`;
+    if(col === 'colvisitaOrdenada') {
+        html += `<div class="data-field"><label>Placa</label><span>${item.Placa || 'N/A'}</span></div><div class="data-field"><label>Motivo</label><span>${item.Motivo}</span></div>`;
     } else {
         html += `<div class="data-field"><label>Cargo / Empresa</label><span>${item.Cargo}</span></div>`;
     }
-
     document.getElementById(contentId).innerHTML = html;
 }
 
-function refresh(screen) {
-    alert("✅ Lista actualizada correctamente"); //
-    navigate(screen);
-}
-
 /* =========================================
-   LÓGICA DE REGISTRO (AA1 / AC1)
+   4. SELECTOR DE RESIDENTES
    ========================================= */
-async function logicAA1() {
-    const nom = document.getElementById('aa1-nombre').value;
-    const mot = document.getElementById('aa1-motivo').value;
-    if(!nom || !mot || !STATE.aa1.residente) return alert("Faltan campos");
-
-    const record = {
-        Nombre: nom, Torre: document.getElementById('aa1-torre').value,
-        Depto: document.getElementById('aa1-depto').value,
-        Placa: document.getElementById('aa1-placa').value,
-        Motivo: mot, Estatus: "Aceptado",
-        Fechayhora: new Date().toLocaleString('es-MX', {hour12: true})
-    };
-
-    STATE.colvisitaOrdenada.unshift(record);
-    await fetch(API_URL, { method: 'POST' }); // Trigger Logic App
-    navigate('SUCCESS');
-}
-
-async function logicAC1() {
-    const nom = document.getElementById('ac1-nombre').value;
-    const cargo = document.getElementById('ac1-cargo').value;
-    if(!nom || !cargo || !STATE.ac1.residente) return alert("Faltan campos");
-
-    const record = {
-        Nombre: nom, Torre: document.getElementById('ac1-torre').value,
-        Depto: document.getElementById('ac1-depto').value,
-        Cargo: cargo, Estatus: "Nuevo",
-        Fechayhora: new Date().toLocaleString('es-MX', {hour12: true})
-    };
-
-    STATE.colpersonalaviso.unshift(record);
-    await fetch(API_URL, { method: 'POST' });
-    navigate('SUCCESS');
-}
-
-/* =========================================
-   SELECTOR DE RESIDENTES
-   ========================================= */
-function openResidenteModal(context) {
-    STATE.currentContext = context;
+function openResidenteModal(ctx) {
+    STATE.currentContext = ctx;
     const torres = [...new Set(STATE.colBaserFiltrada.map(i => i.Torre))].sort();
     document.getElementById('sel-torre').innerHTML = torres.map(t => `<option value="${t}">${t}</option>`).join('');
     updateDeptos();
@@ -237,21 +174,48 @@ function updateDeptos() {
 function updateResidentes() {
     const t = document.getElementById('sel-torre').value;
     const d = document.getElementById('sel-depto').value;
-    const res = STATE.colBaserFiltrada.filter(i => i.Torre === t && i.Departamento === d);
-    document.getElementById('sel-nombre').innerHTML = res.map(r => `<option value="${r.Nombre}">${r.Nombre}</option>`).join('');
+    const res = STATE.colBaserFiltrada.filter(i => i.Torre === t && i.Departamento === d).map(r => r.Nombre);
+    document.getElementById('sel-nombre').innerHTML = res.map(n => `<option value="${n}">${n}</option>`).join('');
 }
 
 function confirmResidente() {
     const prefix = STATE.currentContext;
     const item = STATE.colBaserFiltrada.find(i => i.Nombre === document.getElementById('sel-nombre').value);
-    STATE[prefix].residente = item.Nombre;
-    STATE[prefix].numero = item.Número;
+    STATE[prefix] = { residente: item.Nombre, numero: item.Número, torre: item.Torre, depto: item.Departamento };
     document.getElementById(`${prefix}-torre`).value = item.Torre;
     document.getElementById(`${prefix}-depto`).value = item.Departamento;
+    document.getElementById(`${prefix}-res-name`).value = item.Nombre;
     closeResidenteModal();
 }
 
 function closeResidenteModal() { document.getElementById('modal-selector').classList.remove('active'); }
-function syncUI(p) { if(STATE[p].residente) document.getElementById(`${p}-res-name`)?.value = STATE[p].residente; }
+function syncForm(p) { if(STATE[p].residente) document.getElementById(`${p}-res-name`).value = STATE[p].residente; }
+
+/* =========================================
+   5. LÓGICA DE ENVÍO
+   ========================================= */
+async function logicAA1() {
+    const n = document.getElementById('aa1-nombre').value;
+    const m = document.getElementById('aa1-motivo').value;
+    if(!n || !m || !STATE.aa1.residente) return alert("Faltan datos");
+    
+    const rec = { Nombre: n, Torre: STATE.aa1.torre, Depto: STATE.aa1.depto, Motivo: m, Placa: document.getElementById('aa1-placa').value, Estatus: "Aceptado", Fecha: new Date().toLocaleString() };
+    STATE.colvisitaOrdenada.unshift(rec);
+    await fetch(API_URL, { method: 'POST' });
+    navigate('SUCCESS');
+}
+
+async function logicAC1() {
+    const n = document.getElementById('ac1-nombre').value;
+    const c = document.getElementById('ac1-cargo').value;
+    if(!n || !c || !STATE.ac1.residente) return alert("Faltan datos");
+    
+    const rec = { Nombre: n, Torre: STATE.ac1.torre, Depto: STATE.ac1.depto, Cargo: c, Estatus: "Nuevo", Fecha: new Date().toLocaleString() };
+    STATE.colpersonalaviso.unshift(rec);
+    await fetch(API_URL, { method: 'POST' });
+    navigate('SUCCESS');
+}
+
+function refresh(scr) { alert("✅ Lista actualizada correctamente"); navigate(scr); }
 
 window.onload = () => navigate('INICIO');
