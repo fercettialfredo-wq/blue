@@ -1,38 +1,33 @@
 /* =========================================
-   ESTADO GLOBAL (Mapeo de Variables YAML)
+   ESTADO Y DATOS
    ========================================= */
 const STATE = {
     colBaserFiltrada: [
         { Torre: "A", Departamento: "101", Nombre: "Juan Perez", Número: "525511223344" },
-        { Torre: "A", Departamento: "102", Nombre: "Ana Gomez", Número: "525599887766" },
-        { Torre: "B", Departamento: "201", Nombre: "Carlos Ruiz", Número: "525555443322" }
+        { Torre: "A", Departamento: "102", Nombre: "Ana Gomez", Número: "525599887766" }
     ],
-    // Variables para Visitas (AA1)
-    aa1: { residente: "", numero: "", procesando: false, paloma: false },
-    // Variables para Personal (AC1)
-    ac1: { residente: "", numero: "", procesando: false, paloma: false },
-    
-    colvisitaOrdenada: [],
-    colpersonalaviso: [],
-    currentContext: "" // Para saber qué modal abrir
+    colvisitaOrdenada: [], //
+    colpersonalaviso: [],  //
+    selectedItem: null,
+    aa1: { residente: "", numero: "", paloma: false },
+    ac1: { residente: "", numero: "", paloma: false },
+    currentContext: ""
 };
 
 const API_URL = "https://prod-13.mexicocentral.logic.azure.com:443/workflows/b9c72600a3b64e03b0e34f8ee930ca61/triggers/Recibir_Aviso_GET/paths/invoke?api-version=2016-10-01&sp=%2Ftriggers%2FRecibir_Aviso_GET%2Frun&sv=1.0&sig=JsqhAlXVbSjZ5QY-cXMGaAoX5ANtjjAoVM38gGYAG64";
 
 /* =========================================
-   PANTALLAS (HTML)
+   SISTEMA DE NAVEGACIÓN
    ========================================= */
 const SCREENS = {
     'INICIO': `
         <div class="screen active">
             <h2 class="title">PANEL DE CONTROL</h2>
-            <p class="subtitle">Seleccione un módulo</p>
             <div class="grid-menu">
                 <div class="menu-card" onclick="navigate('A1')"><i class="fas fa-users card-icon"></i><span class="card-text">VISITAS</span></div>
                 <div class="menu-card" onclick="navigate('B1')"><i class="fas fa-box-open card-icon"></i><span class="card-text">PAQUETERÍA</span></div>
                 <div class="menu-card" onclick="navigate('D1')"><i class="fas fa-tools card-icon"></i><span class="card-text">PROVEEDORES</span></div>
                 <div class="menu-card" onclick="navigate('E1')"><i class="fas fa-qrcode card-icon"></i><span class="card-text">ACCESO QR</span></div>
-                <div class="menu-card full" onclick="navigate('F1')"><i class="fas fa-user-shield card-icon"></i><span class="card-text">PERSONAL INTERNO</span></div>
             </div>
         </div>
     `,
@@ -43,7 +38,6 @@ const SCREENS = {
             <div class="action-list">
                 <div class="btn-action primary" onclick="navigate('AA1')"><span>➕ REGISTRAR VISITA</span><i class="fas fa-chevron-right"></i></div>
                 <div class="btn-action primary" style="background:#4a0012" onclick="navigate('AC1')"><span>👷 PERSONAL DE SERVICIO</span><i class="fas fa-chevron-right"></i></div>
-                <div class="btn-action" onclick="navigate('AA2')"><span>📋 VER BITÁCORA</span><i class="fas fa-chevron-right"></i></div>
             </div>
         </div>
     `,
@@ -58,19 +52,11 @@ const SCREENS = {
                     <div class="input-group"><label>DEPTO</label><input type="text" id="aa1-depto" class="ravens-input" readonly></div>
                 </div>
                 <button class="btn-save" style="background:var(--azul); margin-bottom:15px;" onclick="openResidenteModal('aa1')">🔍 SELECCIONAR RESIDENTE</button>
-                <div class="input-group">
-                    <label>RESIDENTE ASIGNADO</label>
-                    <div style="display:flex; align-items:center; gap:10px;">
-                        <input type="text" id="aa1-res-name" class="ravens-input" readonly style="background:#080808; color:#888;">
-                        <span id="check-aa1" style="display:none;">✅</span>
-                    </div>
-                </div>
                 <div class="input-group"><label>MOTIVO</label><input type="text" id="aa1-motivo" class="ravens-input"></div>
-                <div class="btn-row">
-                    <button class="btn-save btn-new" onclick="resetFormAA1()">NUEVO</button>
-                    <button class="btn-save" id="btn-save-aa1" onclick="logicAA1()">GUARDAR</button>
-                </div>
+                <div class="input-group"><label>PLACA</label><input type="text" id="aa1-placa" class="ravens-input"></div>
+                <button class="btn-save" onclick="logicAA1()">GUARDAR</button>
             </div>
+            <div class="btn-action" style="margin-top:20px" onclick="navigate('AA2')"><span>📋 VER BITÁCORA VISITAS</span><i class="fas fa-chevron-right"></i></div>
         </div>
     `,
     'AC1': `
@@ -84,50 +70,142 @@ const SCREENS = {
                     <div class="input-group"><label>DEPTO</label><input type="text" id="ac1-depto" class="ravens-input" readonly></div>
                 </div>
                 <button class="btn-save" style="background:var(--azul); margin-bottom:15px;" onclick="openResidenteModal('ac1')">🔍 SELECCIONAR RESIDENTE</button>
-                <div class="input-group">
-                    <label>RESIDENTE QUE AUTORIZA</label>
-                    <div style="display:flex; align-items:center; gap:10px;">
-                        <input type="text" id="ac1-res-name" class="ravens-input" readonly style="background:#080808; color:#888;">
-                        <span id="check-ac1" style="display:none;">✅</span>
-                    </div>
-                </div>
                 <div class="input-group"><label>CARGO / EMPRESA</label><input type="text" id="ac1-cargo" class="ravens-input"></div>
-                <div class="btn-row">
-                    <button class="btn-save btn-new" onclick="resetFormAC1()">NUEVO</button>
-                    <button class="btn-save" id="btn-save-ac1" onclick="logicAC1()">GUARDAR</button>
-                </div>
+                <button class="btn-save" onclick="logicAC1()">GUARDAR</button>
+            </div>
+            <div class="btn-action" style="margin-top:20px" onclick="navigate('AC2')"><span>📋 VER BITÁCORA PERSONAL</span><i class="fas fa-chevron-right"></i></div>
+        </div>
+    `,
+    'AA2': `
+        <div class="screen active">
+            <div class="btn-back" onclick="navigate('AA1')">⬅ VOLVER</div>
+            <div style="display:flex; justify-content:space-between; align-items:center;">
+                <h2 class="title">LIBRETA VISITAS</h2>
+                <i class="fas fa-sync-alt" onclick="refreshData('AA2')" style="cursor:pointer"></i>
+            </div>
+            <div class="gallery-container" id="gal-aa2"></div>
+            <div class="view-form" id="form-aa2-detail">
+                <h3>Detalle de Registro</h3>
+                <div id="aa2-detail-content">Seleccione un elemento de la lista</div>
             </div>
         </div>
     `,
-    'AA2': `<div class="screen active"><div class="btn-back" onclick="navigate('A1')">⬅ VOLVER</div><h2 class="title">BITÁCORA</h2><div id="list-logs"></div></div>`,
-    'SUCCESS': `<div class="screen active" style="text-align:center; padding-top:100px;"><i class="fas fa-check-circle fa-5x" style="color:var(--verde)"></i><h2 style="margin-top:20px;">REGISTRO ÉXITOSO</h2><p>Aviso enviado correctamente</p></div>`,
-    'ERROR': `<div class="screen active" style="text-align:center; padding-top:100px;"><i class="fas fa-times-circle fa-5x" style="color:var(--rojo)"></i><h2 style="margin-top:20px;">ERROR</h2><p>Llene los campos obligatorios</p></div>`
+    'AC2': `
+        <div class="screen active">
+            <div class="btn-back" onclick="navigate('AC1')">⬅ VOLVER</div>
+            <div style="display:flex; justify-content:space-between; align-items:center;">
+                <h2 class="title">LIBRETA PERSONAL</h2>
+                <i class="fas fa-sync-alt" onclick="refreshData('AC2')" style="cursor:pointer"></i>
+            </div>
+            <div class="gallery-container" id="gal-ac2"></div>
+            <div class="view-form" id="form-ac2-detail">
+                <h3>Detalle de Registro</h3>
+                <div id="ac2-detail-content">Seleccione un elemento de la lista</div>
+            </div>
+        </div>
+    `,
+    'SUCCESS': `<div class="screen active" style="text-align:center; padding-top:100px;"><i class="fas fa-check-circle fa-5x" style="color:var(--verde)"></i><h2>REGISTRO ÉXITOSO</h2></div>`
 };
 
-/* =========================================
-   MOTOR DE NAVEGACIÓN Y SELECTOR
-   ========================================= */
 function navigate(screen) {
-    const vp = document.getElementById('viewport');
-    vp.innerHTML = SCREENS[screen] || SCREENS['INICIO'];
-    
-    // Sync UI states
-    if(screen === 'AA1') syncUI('aa1');
-    if(screen === 'AC1') syncUI('ac1');
-    if(screen === 'AA2') renderLogs();
-    if(screen === 'SUCCESS' || screen === 'ERROR') setTimeout(() => navigate('INICIO'), 2500);
-    
+    document.getElementById('viewport').innerHTML = SCREENS[screen] || SCREENS['INICIO'];
+    if(screen === 'AA2') renderGallery('colvisitaOrdenada', 'gal-aa2');
+    if(screen === 'AC2') renderGallery('colpersonalaviso', 'gal-ac2');
+    if(screen === 'SUCCESS') setTimeout(() => navigate('INICIO'), 2000);
     window.scrollTo(0,0);
 }
 
-function syncUI(prefix) {
-    const data = STATE[prefix];
-    if(data.residente) {
-        document.getElementById(`${prefix}-res-name`).value = data.residente;
-        document.getElementById(`check-${prefix}`).style.display = 'block';
-    }
+/* =========================================
+   LÓGICA DE GALERÍA Y FORM DETALLE
+   ========================================= */
+function renderGallery(colName, elementId) {
+    const container = document.getElementById(elementId);
+    // Filtro 30 días
+    const data = STATE[colName]; 
+    
+    container.innerHTML = data.map((item, index) => `
+        <div class="gallery-item" onclick="selectItem('${colName}', ${index})">
+            <div class="gallery-text">
+                <h4>${item.Nombre}</h4>
+                <p>${item.Fechayhora}</p>
+            </div>
+            <i class="fas fa-chevron-right" style="color:#333"></i>
+        </div>
+    `).join('');
 }
 
+function selectItem(colName, index) {
+    const item = STATE[colName][index];
+    const detailId = colName === 'colvisitaOrdenada' ? 'aa2-detail-content' : 'ac2-detail-content';
+    
+    let html = `
+        <div class="data-field"><label>Estatus</label><span class="status-${item.Estatus.toLowerCase()}">${item.Estatus}</span></div>
+        <div class="data-field"><label>Nombre</label><span>${item.Nombre}</span></div>
+        <div class="data-field"><label>Torre</label><span>${item.Torre}</span></div>
+        <div class="data-field"><label>Departamento</label><span>${item.Depto}</span></div>
+        <div class="data-field"><label>Fecha y Hora</label><span>${item.Fechayhora}</span></div>
+    `;
+
+    if(colName === 'colvisitaOrdenada') {
+        html += `<div class="data-field"><label>Placa</label><span>${item.Placa || 'N/A'}</span></div>
+                 <div class="data-field"><label>Motivo</label><span>${item.Motivo}</span></div>`;
+    } else {
+        html += `<div class="data-field"><label>Cargo / Empresa</label><span>${item.Cargo}</span></div>`;
+    }
+
+    document.getElementById(detailId).innerHTML = html;
+}
+
+function refreshData(screen) {
+    alert("✅ Lista actualizada correctamente"); //
+    navigate(screen);
+}
+
+/* =========================================
+   LÓGICA DE ENVÍO (YAML AA1 / AC1)
+   ========================================= */
+async function logicAA1() {
+    const nom = document.getElementById('aa1-nombre').value;
+    const mot = document.getElementById('aa1-motivo').value;
+    if(!nom || !mot) return alert("Faltan datos");
+
+    const record = {
+        Nombre: nom,
+        Torre: document.getElementById('aa1-torre').value,
+        Depto: document.getElementById('aa1-depto').value,
+        Placa: document.getElementById('aa1-placa').value,
+        Motivo: mot,
+        Estatus: "Aceptado",
+        Fechayhora: new Date().toLocaleString()
+    };
+
+    STATE.colvisitaOrdenada.unshift(record);
+    await fetch(API_URL, { method: 'POST' }); // Disparo trigger
+    navigate('SUCCESS');
+}
+
+async function logicAC1() {
+    const nom = document.getElementById('ac1-nombre').value;
+    const cargo = document.getElementById('ac1-cargo').value;
+    if(!nom || !cargo) return alert("Faltan datos");
+
+    const record = {
+        Nombre: nom,
+        Torre: document.getElementById('ac1-torre').value,
+        Depto: document.getElementById('ac1-depto').value,
+        Cargo: cargo,
+        Estatus: "Nuevo",
+        Fechayhora: new Date().toLocaleString()
+    };
+
+    STATE.colpersonalaviso.unshift(record);
+    await fetch(API_URL, { method: 'POST' });
+    navigate('SUCCESS');
+}
+
+/* =========================================
+   SELECTOR DE RESIDENTES
+   ========================================= */
 function openResidenteModal(context) {
     STATE.currentContext = context;
     const torres = [...new Set(STATE.colBaserFiltrada.map(i => i.Torre))].sort();
@@ -152,95 +230,12 @@ function updateResidentes() {
 
 function confirmResidente() {
     const prefix = STATE.currentContext;
-    const nombre = document.getElementById('sel-nombre').value;
-    const item = STATE.colBaserFiltrada.find(i => i.Nombre === nombre);
-    
-    STATE[prefix].residente = item.Nombre;
-    STATE[prefix].numero = item.Número;
-    STATE[prefix].paloma = true;
-
-    // Actualizar Formulario activo
+    const item = STATE.colBaserFiltrada.find(i => i.Nombre === document.getElementById('sel-nombre').value);
     document.getElementById(`${prefix}-torre`).value = item.Torre;
     document.getElementById(`${prefix}-depto`).value = item.Departamento;
-    document.getElementById(`${prefix}-res-name`).value = item.Nombre;
-    document.getElementById(`check-${prefix}`).style.display = 'block';
-    
     closeResidenteModal();
 }
 
 function closeResidenteModal() { document.getElementById('modal-selector').classList.remove('active'); }
-
-/* =========================================
-   LÓGICA DE REGISTRO (Mapeo de OnSuccess)
-   ========================================= */
-
-// AA1: Visita
-async function logicAA1() {
-    const nombreVis = document.getElementById('aa1-nombre').value;
-    const motivo = document.getElementById('aa1-motivo').value;
-    const prefix = 'aa1';
-
-    if(!nombreVis || !motivo || !STATE[prefix].residente) return navigate('ERROR');
-
-    document.getElementById('btn-save-aa1').disabled = true;
-    
-    const params = {
-        Nombre: nombreVis,
-        Telefono: STATE[prefix].numero,
-        Torre: document.getElementById('aa1-torre').value,
-        Depto: document.getElementById('aa1-depto').value,
-        Motivo: motivo,
-        Tipo_Lista: "VISITA"
-    };
-
-    sendToAzure(params, prefix);
-}
-
-// AC1: Personal de Servicio
-async function logicAC1() {
-    const nombreTra = document.getElementById('ac1-nombre').value;
-    const cargo = document.getElementById('ac1-cargo').value;
-    const prefix = 'ac1';
-
-    if(!nombreTra || !cargo || !STATE[prefix].residente) return navigate('ERROR');
-
-    document.getElementById('btn-save-ac1').disabled = true;
-
-    const params = {
-        Nombre: nombreTra,
-        Telefono: STATE[prefix].numero,
-        Torre: document.getElementById('ac1-torre').value,
-        Depto: document.getElementById('ac1-depto').value,
-        Cargo: cargo,
-        Motivo: "Personal de Servicio",
-        Tipo_Lista: "PERSONALAVISO"
-    };
-
-    sendToAzure(params, prefix);
-}
-
-async function sendToAzure(p, prefix) {
-    const hora = new Date().toLocaleTimeString('es-MX', {hour: '2-digit', minute:'2-digit'});
-    const url = `${API_URL}&Nombre=${encodeURIComponent(p.Nombre)}&Telefono=${encodeURIComponent(p.Telefono)}&Torre=${encodeURIComponent(p.Torre)}&Depto=${encodeURIComponent(p.Depto)}&Motivo=${encodeURIComponent(p.Motivo)}&Condominio=RAVENS_ACCESS&Hora=${hora}&Ignorar=${Date.now()}&ID_Item=${Date.now()}&Tipo_Lista=${p.Tipo_Lista}${p.Cargo ? `&Cargo=${encodeURIComponent(p.Cargo)}` : ''}`;
-
-    try {
-        await fetch(url, { method: 'POST' });
-        // Limpiar como en YAML OnSuccess
-        STATE[prefix].residente = "";
-        STATE[prefix].paloma = false;
-        navigate('SUCCESS');
-    } catch(e) {
-        alert("Error de conexión");
-        document.getElementById(`btn-save-${prefix}`).disabled = false;
-    }
-}
-
-function resetFormAA1() { STATE.aa1 = { residente: "", numero: "", procesando: false, paloma: false }; navigate('AA1'); }
-function resetFormAC1() { STATE.ac1 = { residente: "", numero: "", procesando: false, paloma: false }; navigate('AC1'); }
-
-function renderLogs() {
-    const container = document.getElementById('list-logs');
-    container.innerHTML = `<p style="text-align:center; color:#555; padding:20px;">Historial cargado desde SharePoint...</p>`;
-}
 
 window.onload = () => navigate('INICIO');
