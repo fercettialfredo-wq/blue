@@ -2,8 +2,9 @@
     --guinda: #800020;
     --verde: #36b04b;
     --rojo: #b80000;
-    --azul: #004080;
+    --azul: #005e92; /* Color buttonGoToScreen2_24 */
     --negro: #000000;
+    --gris-dark: #050505;
     --gris-claro: #1c1c1e;
     --borde: #333;
     --dorado: #eab308;
@@ -17,13 +18,14 @@ body {
     font-family: 'Lato', sans-serif;
     margin: 0; padding: 0;
     display: flex; justify-content: center;
+    overflow: hidden; /* Evita scroll en el body, lo hace el main */
 }
 
 #app-frame {
     width: 100%; max-width: 480px;
-    background: #050505;
+    background: var(--gris-dark);
     display: flex; flex-direction: column;
-    min-height: 100vh;
+    height: 100vh;
     box-shadow: 0 0 50px rgba(0,0,0,0.5);
 }
 
@@ -31,34 +33,36 @@ header {
     height: 65px; background: #121212;
     border-bottom: 1px solid var(--borde);
     display: flex; align-items: center; justify-content: space-between;
-    padding: 0 20px; z-index: 100;
-    position: sticky; top: 0;
+    padding: 0 20px; z-index: 100; flex-shrink: 0;
 }
 
-/* --- SOLUCIÓN AL DESLIZAMIENTO --- */
+/* --- SCROLL FLUIDO --- */
 main {
     flex: 1;
-    overflow-y: auto; /* Permite deslizar hacia abajo */
+    overflow-y: auto;
     overflow-x: hidden;
     padding: 20px;
-    padding-bottom: 100px; /* Espacio extra para el botón guardar */
+    -webkit-overflow-scrolling: touch; /* Mejora scroll en iOS */
 }
 
-/* --- ESTILOS DE PANTALLA --- */
-.screen { animation: slideUp 0.3s ease; }
-h2.title { font-size: 1.6rem; font-weight: 900; font-style: italic; text-transform: uppercase; margin-bottom: 5px; }
+.screen { animation: slideUp 0.3s ease; padding-bottom: 40px; }
 
-/* Menú Principal */
+/* MENÚS */
 .grid-menu { display: grid; grid-template-columns: 1fr 1fr; gap: 15px; }
 .menu-card {
     background: var(--gris-claro); border: 1px solid var(--borde);
     border-radius: 18px; height: 140px;
-    display: flex; flex-direction: column; align-items: center; justify-content: center;
-    gap: 12px; cursor: pointer;
+    display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 12px; cursor: pointer;
 }
-.menu-card:active { border-color: var(--dorado); }
 
-/* Formulario */
+.btn-action {
+    background: var(--gris-claro); border: 1px solid var(--borde);
+    padding: 22px; border-radius: 14px; display: flex; align-items: center; justify-content: space-between;
+    color: white; font-weight: 700; text-transform: uppercase; cursor: pointer; margin-bottom: 12px;
+}
+.btn-action.primary { background: var(--guinda); }
+
+/* FORMULARIOS */
 .form-box { background: var(--gris-claro); padding: 25px; border-radius: 20px; border: 1px solid var(--borde); margin-bottom: 20px; }
 .input-group { margin-bottom: 15px; }
 .input-group label { display: block; font-size: 0.7rem; color: #888; font-weight: 800; margin-bottom: 6px; }
@@ -67,24 +71,25 @@ h2.title { font-size: 1.6rem; font-weight: 900; font-style: italic; text-transfo
     color: white; padding: 14px; border-radius: 12px; font-size: 1rem; outline: none;
 }
 
+.btn-row { display: flex; gap: 10px; margin-top: 10px; }
 .btn-save {
-    width: 100%; padding: 18px; border-radius: 12px; border: none;
+    flex: 1; padding: 18px; border-radius: 12px; border: none;
     font-weight: 900; font-size: 1rem; text-transform: uppercase;
     color: white; background: var(--verde); cursor: pointer;
 }
-.btn-save:disabled { background: #333; opacity: 0.7; }
+.btn-new { background: var(--azul); }
+.btn-save:disabled { background: #333; opacity: 0.5; cursor: not-allowed; }
 
-/* Modal */
+/* MODALES */
 .modal-residente {
     position: fixed; inset: 0; background: rgba(0,0,0,0.9);
     z-index: 200; display: none; justify-content: center; align-items: center; padding: 20px;
 }
 .modal-residente.active { display: flex; }
-.selector-box { background: #1a1a1a; padding: 25px; border-radius: 25px; border: 1px solid var(--guinda); width: 100%; }
+.selector-box { background: #1a1a1a; padding: 25px; border-radius: 25px; border: 1px solid var(--guinda); width: 100%; max-width: 400px; }
 .modal-buttons { display: flex; gap: 10px; margin-top: 20px; }
 .btn-cancel { background: var(--rojo) !important; }
 
-/* Utilidades */
 .row { display: flex; gap: 10px; }
 .hidden { display: none !important; }
 @keyframes slideUp { from { opacity: 0; transform: translateY(20px); } to { opacity: 1; transform: translateY(0); } }
