@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
-    <title>RAVENS ACCESS v3.0 FINAL</title>
+    <title>RAVENS ACCESS v4.0</title>
     
     <script src="https://cdn.jsdelivr.net/npm/signature_pad@4.0.0/dist/signature_pad.umd.min.js"></script>
     <script src="https://unpkg.com/html5-qrcode" type="text/javascript"></script>
@@ -13,10 +13,10 @@
     <style>
         /* === ESTILOS NATIVOS RAVENS === */
         :root {
-            --guinda: #800020;  /* Main */
-            --verde: #36b04b;   /* Success */
-            --rojo: #b80000;    /* Error */
-            --azul: #004080;    /* Info */
+            --guinda: #800020;
+            --verde: #36b04b;
+            --rojo: #b80000;
+            --azul: #004080;
             --negro: #000000;
             --gris-dark: #121212;
             --gris-claro: #1c1c1e;
@@ -33,6 +33,7 @@
             margin: 0; padding: 0;
             display: flex; justify-content: center;
             min-height: 100vh;
+            overflow: hidden;
         }
 
         #app-frame {
@@ -44,29 +45,27 @@
             min-height: 100vh;
         }
 
-        /* HEADER */
         header {
             height: 65px; background: rgba(18, 18, 18, 0.95);
             border-bottom: 1px solid var(--borde);
             display: flex; align-items: center; justify-content: space-between;
-            padding: 0 20px; z-index: 50; backdrop-filter: blur(10px);
+            padding: 0 20px; z-index: 100; backdrop-filter: blur(10px);
             position: sticky; top: 0;
         }
+
         .brand { display: flex; align-items: center; gap: 10px; cursor: pointer; }
         .logo-box { width: 36px; height: 36px; background: var(--guinda); border: 1px solid white; border-radius: 6px; display: flex; align-items: center; justify-content: center; font-size: 1.1rem; }
         .brand-text h1 { margin: 0; font-size: 1.2rem; font-style: italic; font-weight: 900; line-height: 1; }
         .brand-text p { margin: 0; font-size: 0.6rem; color: #aaa; letter-spacing: 1px; font-weight: 700; }
-        .status-led { width: 8px; height: 8px; background: var(--verde); border-radius: 50%; box-shadow: 0 0 5px var(--verde); animation: pulse 2s infinite; }
+        .status-led { width: 8px; height: 8px; background: var(--verde); border-radius: 50%; box-shadow: 0 0 5px var(--verde); }
 
-        /* CONTENIDO */
         main { flex: 1; overflow-y: auto; padding: 20px; padding-bottom: 80px; }
         .screen { display: none; animation: slideUp 0.25s ease-out; }
         .screen.active { display: block; }
 
         h2.title { font-size: 1.6rem; font-weight: 900; font-style: italic; text-transform: uppercase; margin-bottom: 5px; color: white; }
-        p.subtitle { color: #888; font-size: 0.8rem; text-transform: uppercase; letter-spacing: 1px; margin-bottom: 25px; margin-top: 0; }
+        p.subtitle { color: #888; font-size: 0.8rem; text-transform: uppercase; letter-spacing: 1px; margin-bottom: 25px; }
 
-        /* MENÚ GRID */
         .grid-menu { display: grid; grid-template-columns: 1fr 1fr; gap: 15px; }
         .menu-card {
             background: var(--gris-claro); border: 1px solid var(--borde);
@@ -74,13 +73,12 @@
             display: flex; flex-direction: column; align-items: center; justify-content: center;
             gap: 12px; cursor: pointer; transition: 0.1s;
         }
-        .menu-card:active { transform: scale(0.97); background: #2a2a2a; border-color: var(--dorado); }
+        .menu-card:active { transform: scale(0.97); border-color: var(--dorado); }
         .menu-card.full { grid-column: span 2; height: 100px; flex-direction: row; gap: 20px; }
         .card-icon { font-size: 2.2rem; color: var(--dorado); }
         .card-text { font-size: 0.8rem; font-weight: 800; text-transform: uppercase; color: #ddd; }
 
-        /* BOTONES ACCIÓN */
-        .btn-back { background: none; border: none; color: #777; font-weight: 700; font-size: 0.8rem; display: flex; align-items: center; gap: 5px; margin-bottom: 15px; cursor: pointer; }
+        .btn-back { background: none; border: none; color: #777; font-weight: 700; font-size: 0.8rem; display: flex; align-items: center; gap: 5px; margin-bottom: 15px; cursor: pointer; padding: 10px 0; }
         
         .action-list { display: flex; flex-direction: column; gap: 15px; }
         .btn-action {
@@ -89,75 +87,44 @@
             display: flex; align-items: center; justify-content: space-between;
             color: white; font-weight: 700; text-transform: uppercase; font-size: 0.95rem; cursor: pointer;
         }
-        .btn-action:active { transform: scale(0.98); }
-        .btn-action.primary { background: linear-gradient(45deg, var(--guinda), #4a0012); border-color: #a00028; }
-        .btn-action.blue { background: linear-gradient(45deg, var(--azul), #002244); border-color: #0059b3; }
-        .icon-circle { width: 35px; height: 35px; background: rgba(0,0,0,0.3); border-radius: 50%; display: flex; align-items: center; justify-content: center; margin-right: 15px; }
+        .btn-action.primary { background: var(--guinda); }
+        .btn-action.blue { background: var(--azul); }
 
-        /* FORMULARIOS */
         .form-box { background: var(--gris-claro); padding: 25px; border-radius: 20px; border: 1px solid var(--borde); }
         .input-group { margin-bottom: 15px; }
         .input-group label { display: block; font-size: 0.7rem; color: #888; font-weight: 800; margin-bottom: 6px; margin-left: 5px; }
         .ravens-input {
             width: 100%; background: black; border: 1px solid #444;
             color: white; padding: 14px; border-radius: 12px;
-            font-size: 1rem; outline: none; transition: border-color 0.2s;
+            font-size: 1rem; outline: none;
         }
-        .ravens-input:focus { border-color: var(--dorado); }
-        .row { display: flex; gap: 10px; }
-        
-        .btn-save {
-            width: 100%; background: var(--verde); color: white;
-            padding: 16px; border: none; border-radius: 12px;
-            font-weight: 900; font-size: 1rem; text-transform: uppercase;
-            margin-top: 10px; box-shadow: 0 4px 15px rgba(54, 176, 75, 0.3); cursor: pointer;
-        }
-        .btn-save:active { transform: scale(0.98); opacity: 0.9; }
 
-        /* CÁMARA Y FIRMA */
-        .photo-area {
-            position: relative; height: 140px; border: 2px dashed #444;
-            border-radius: 12px; background: #080808; overflow: hidden;
-            display: flex; align-items: center; justify-content: center;
-            flex-direction: column; color: #555; cursor: pointer;
+        .btn-save {
+            width: 100%; padding: 18px; border: none; border-radius: 12px;
+            font-weight: 900; font-size: 1rem; text-transform: uppercase;
+            margin-top: 10px; cursor: pointer; color: white; background: var(--verde);
         }
-        .photo-preview { position: absolute; inset: 0; background-size: cover; background-position: center; z-index: 2; }
-        .signature-wrapper {
-            height: 160px; background: white; border-radius: 12px;
-            overflow: hidden; touch-action: none; border: 2px solid #444;
+        .btn-save:disabled { background: #333; color: #666; cursor: not-allowed; }
+
+        /* MODAL SELECTOR RESIDENTE */
+        .modal-residente {
+            position: fixed; inset: 0; background: rgba(0,0,0,0.95);
+            z-index: 200; display: none; flex-direction: column; padding: 20px;
         }
+        .modal-residente.active { display: flex; }
+        .selector-box { background: #1a1a1a; padding: 20px; border-radius: 25px; border: 1px solid var(--guinda); margin-top: auto; margin-bottom: auto; }
+
+        /* FIRMA Y FOTO */
+        .photo-area { position: relative; height: 140px; border: 2px dashed #444; border-radius: 12px; display: flex; align-items: center; justify-content: center; flex-direction: column; overflow: hidden; }
+        .photo-preview { position: absolute; inset: 0; background-size: cover; background-position: center; z-index: 10; }
+        .signature-wrapper { height: 160px; background: white; border-radius: 12px; overflow: hidden; touch-action: none; }
         #sig-canvas { width: 100%; height: 100%; }
 
-        /* BITÁCORAS */
-        .log-item {
-            background: var(--gris-claro); padding: 15px; border-radius: 12px;
-            margin-bottom: 10px; border-left: 4px solid var(--guinda);
-        }
-        .log-header { display: flex; justify-content: space-between; font-weight: bold; font-size: 0.9rem; }
-        .log-sub { font-size: 0.75rem; color: #888; margin-top: 4px; }
-        .log-item.ok { border-left-color: var(--verde); }
-
         /* FEEDBACK SCREEN */
-        .feedback-screen {
-            display: flex; flex-direction: column; align-items: center;
-            justify-content: center; height: 70vh; text-align: center;
-        }
+        .feedback-screen { display: flex; flex-direction: column; align-items: center; justify-content: center; height: 70vh; text-align: center; }
         .feedback-icon { font-size: 5rem; margin-bottom: 20px; }
-        .feedback-title { font-size: 2rem; font-weight: 900; font-style: italic; margin-bottom: 10px; }
-        .success-text { color: var(--verde); }
-        .error-text { color: var(--rojo); }
 
-        /* QR */
-        .qr-frame {
-            height: 300px; background: black; border: 4px solid var(--guinda);
-            border-radius: 20px; overflow: hidden; position: relative;
-        }
-
-        .hidden { display: none !important; }
-        .w-100 { width: 100%; }
-        
         @keyframes slideUp { from { opacity: 0; transform: translateY(20px); } to { opacity: 1; transform: translateY(0); } }
-        @keyframes pulse { 0% { opacity: 1; } 50% { opacity: 0.5; } 100% { opacity: 1; } }
     </style>
 </head>
 <body>
@@ -165,7 +132,7 @@
 <div id="app-frame">
     <header>
         <div class="brand" onclick="navigate('INICIO')">
-            <div class="logo-box"><i class="fas fa-shield-alt"></i></div>
+            <div class="logo-box">R</div>
             <div class="brand-text">
                 <h1>RAVENS</h1>
                 <p>ACCESS SYSTEM</p>
@@ -174,80 +141,77 @@
         <div class="status-led"></div>
     </header>
 
-    <main id="viewport">
-        </main>
+    <main id="viewport"></main>
+</div>
+
+<div id="modal-selector" class="modal-residente">
+    <div class="selector-box">
+        <h3 style="text-align: center; margin-bottom: 20px;">SELECCIONAR RESIDENTE</h3>
+        <div class="input-group">
+            <label>TORRE</label>
+            <select id="sel-torre" class="ravens-input" onchange="updateDeptos()"></select>
+        </div>
+        <div class="input-group">
+            <label>DEPARTAMENTO</label>
+            <select id="sel-depto" class="ravens-input" onchange="updateResidentes()"></select>
+        </div>
+        <div class="input-group">
+            <label>RESIDENTE</label>
+            <select id="sel-nombre" class="ravens-input"></select>
+        </div>
+        <div style="display: flex; gap: 10px; margin-top: 20px;">
+            <button class="btn-save" style="background: var(--rojo);" onclick="closeResidenteModal()">CANCELAR</button>
+            <button class="btn-save" onclick="confirmResidente()">ACEPTAR</button>
+        </div>
+    </div>
 </div>
 
 <script>
     /* =========================================
-       1. ESTADO GLOBAL & CONFIGURACIÓN
+       1. CONFIGURACIÓN Y DATOS
        ========================================= */
-    const STATE = {
-        colVisita: [], 
-        colPaquetes: [],
-        colEntregas: [],
-        colProveedores: [], // Para D2
-        colPersonal: [],    // Para F2
-        photos: {},
-        signature: null
-    };
-
-    // URLs de Azure Logic Apps (Extraídas de tus YAML)
     const API = {
-        VISITA: "https://prod-13.mexicocentral.logic.azure.com:443/workflows/b9c72600a3b64e03b0e34f8ee930ca61/triggers/Recibir_Aviso_GET/paths/invoke?api-version=2016-10-01&sp=%2Ftriggers%2FRecibir_Aviso_GET%2Frun&sv=1.0&sig=JsqhAlXVbSjZ5QY-cXMGaAoX5ANtjjAoVM38gGYAG64",
-        RECIBIR: "https://prod-12.mexicocentral.logic.azure.com:443/workflows/974146d8a5cc450aa5687f5710d95e8a/triggers/Recibir_Paquete_HTTP/paths/invoke?api-version=2016-10-01&sp=%2Ftriggers%2FRecibir_Paquete_HTTP%2Frun&sv=1.0&sig=fF8pX4HPrHO1wCUY4097ARXMLgQ1gTaQ0zhC28wAtko",
-        ENTREGAR: "https://prod-30.mexicocentral.logic.azure.com:443/workflows/58581c1247984f83b83d030640287167/triggers/Entregar_Paquete_HTTP/paths/invoke?api-version=2016-10-01&sp=%2Ftriggers%2FEntregar_Paquete_HTTP%2Frun&sv=1.0&sig=Nce4hIr59n137JvNnSheVZN_UX_VGrR-uX-fbISjg9k",
-        PROVEEDOR: "https://example.com/api/proveedor", // URL Placeholder, pero la lógica funcionará
-        PERSONAL: "https://example.com/api/personal"    // URL Placeholder, pero la lógica funcionará
+        VISITA: "https://prod-13.mexicocentral.logic.azure.com:443/workflows/b9c72600a3b64e03b0e34f8ee930ca61/triggers/Recibir_Aviso_GET/paths/invoke?api-version=2016-10-01&sp=%2Ftriggers%2FRecibir_Aviso_GET%2Frun&sv=1.0&sig=JsqhAlXVbSjZ5QY-cXMGaAoX5ANtjjAoVM38gGYAG64"
     };
 
-    // Datos Iniciales (Simulación)
-    STATE.colVisita = [{ Nombre: "Juan Perez", Torre: "A", Depto: "101", Hora: "10:00 AM" }];
-    STATE.colProveedores = [{ Empresa: "Coca Cola", Nombre: "Repartidor 1", Hora: "09:00 AM" }];
-    STATE.colPersonal = [{ Nombre: "Guardia Turno 2", Accion: "Entrada", Hora: "07:00 AM" }];
+    const STATE = {
+        colBaserFiltrada: [
+            { Torre: "A", Departamento: "101", Nombre: "Juan Perez", Número: "525512345678" },
+            { Torre: "A", Departamento: "102", Nombre: "Ana Gomez", Número: "525587654321" },
+            { Torre: "B", Departamento: "201", Nombre: "Carlos Ruiz", Número: "525522334455" }
+        ],
+        colvisitaOrdenada: [],
+        varNumeroSeleccionado1: "",
+        VarNombreSeleccionado1: "",
+        varProcesandoAA1: false,
+        varmostrarpaloma1: false,
+        photos: {}
+    };
 
     /* =========================================
        2. DEFINICIÓN DE PANTALLAS
        ========================================= */
     const SCREENS = {
-        
-        // --- MENÚ PRINCIPAL ---
         'INICIO': `
             <div class="screen active">
                 <h2 class="title">PANEL DE CONTROL</h2>
                 <p class="subtitle">SELECCIONE MÓDULO</p>
                 <div class="grid-menu">
-                    <div class="menu-card" onclick="navigate('A1')">
-                        <i class="fas fa-users card-icon"></i><span class="card-text">VISITAS</span>
-                    </div>
-                    <div class="menu-card" onclick="navigate('B1')">
-                        <i class="fas fa-box-open card-icon"></i><span class="card-text">PAQUETERÍA</span>
-                    </div>
-                    <div class="menu-card" onclick="navigate('D1')">
-                        <i class="fas fa-tools card-icon"></i><span class="card-text">PROVEEDORES</span>
-                    </div>
-                    <div class="menu-card" onclick="navigate('E1')">
-                        <i class="fas fa-qrcode card-icon"></i><span class="card-text">ACCESO QR</span>
-                    </div>
-                    <div class="menu-card full" onclick="navigate('F1')">
-                        <i class="fas fa-user-shield card-icon"></i><span class="card-text">PERSONAL INTERNO</span>
-                    </div>
+                    <div class="menu-card" onclick="navigate('A1')"><i class="fas fa-users card-icon"></i><span class="card-text">VISITAS</span></div>
+                    <div class="menu-card" onclick="navigate('B1')"><i class="fas fa-box-open card-icon"></i><span class="card-text">PAQUETERÍA</span></div>
+                    <div class="menu-card" onclick="navigate('D1')"><i class="fas fa-tools card-icon"></i><span class="card-text">PROVEEDORES</span></div>
+                    <div class="menu-card" onclick="navigate('E1')"><i class="fas fa-qrcode card-icon"></i><span class="card-text">ACCESO QR</span></div>
+                    <div class="menu-card full" onclick="navigate('F1')"><i class="fas fa-user-shield card-icon"></i><span class="card-text">PERSONAL INTERNO</span></div>
                 </div>
             </div>
         `,
-
-        // --- MÓDULO A: VISITAS ---
         'A1': `
             <div class="screen active">
                 <button class="btn-back" onclick="navigate('INICIO')"><i class="fas fa-chevron-left"></i> MENÚ PRINCIPAL</button>
                 <h2 class="title">VISITAS</h2>
                 <div class="action-list">
-                    <div class="btn-action primary" onclick="navigate('AA1')">
-                        <div class="icon-circle"><i class="fas fa-plus"></i></div><span>REGISTRAR VISITA</span>
-                    </div>
-                    <div class="btn-action" onclick="navigate('AA2')">
-                        <div class="icon-circle"><i class="fas fa-list"></i></div><span>VER BITÁCORA</span>
-                    </div>
+                    <div class="btn-action primary" onclick="navigate('AA1')"><span>➕ REGISTRAR VISITA</span></div>
+                    <div class="btn-action" onclick="navigate('AA2')"><span>📋 VER BITÁCORA</span></div>
                 </div>
             </div>
         `,
@@ -256,310 +220,145 @@
                 <button class="btn-back" onclick="navigate('A1')"><i class="fas fa-chevron-left"></i> VOLVER</button>
                 <h2 class="title" style="color:var(--guinda)">NUEVA VISITA</h2>
                 <div class="form-box">
-                    <div class="input-group"><label>VISITANTE</label><input type="text" id="aa1-nom" class="ravens-input"></div>
+                    <div class="input-group"><label>NOMBRE VISITANTE</label><input type="text" id="aa1-nombre" class="ravens-input"></div>
                     <div class="row">
-                        <div class="input-group"><label>TORRE</label><input type="text" id="aa1-tor" class="ravens-input"></div>
-                        <div class="input-group"><label>DEPTO</label><input type="text" id="aa1-dep" class="ravens-input"></div>
+                        <div class="input-group"><label>TORRE</label><input type="text" id="aa1-torre" class="ravens-input" readonly></div>
+                        <div class="input-group"><label>DEPTO</label><input type="text" id="aa1-depto" class="ravens-input" readonly></div>
                     </div>
-                    <div class="input-group"><label>MOTIVO</label><input type="text" id="aa1-mot" class="ravens-input"></div>
-                    <button class="btn-save" onclick="logicAA1()">GUARDAR Y NOTIFICAR</button>
-                </div>
-            </div>
-        `,
-        'AA2': `
-            <div class="screen active">
-                <button class="btn-back" onclick="navigate('A1')"><i class="fas fa-chevron-left"></i> VOLVER</button>
-                <h2 class="title">BITÁCORA VISITAS</h2>
-                <div id="list-aa2" style="margin-top:20px"></div>
-            </div>
-        `,
-
-        // --- MÓDULO B: PAQUETERÍA ---
-        'B1': `
-            <div class="screen active">
-                <button class="btn-back" onclick="navigate('INICIO')"><i class="fas fa-chevron-left"></i> MENÚ PRINCIPAL</button>
-                <h2 class="title">PAQUETERÍA</h2>
-                <div class="action-list">
-                    <div class="btn-action primary" onclick="navigate('BA1')">
-                        <div class="icon-circle"><i class="fas fa-arrow-down"></i></div><span>RECIBIR PAQUETE</span>
-                    </div>
-                    <div class="btn-action blue" onclick="navigate('BB1')">
-                        <div class="icon-circle"><i class="fas fa-arrow-up"></i></div><span>ENTREGAR PAQUETE</span>
-                    </div>
-                </div>
-            </div>
-        `,
-        'BA1': `
-            <div class="screen active">
-                <button class="btn-back" onclick="navigate('B1')"><i class="fas fa-chevron-left"></i> VOLVER</button>
-                <h2 class="title" style="color:var(--guinda)">RECEPCIÓN</h2>
-                <div class="form-box">
-                    <div class="input-group"><label>DESTINATARIO</label><input type="text" id="ba1-nom" class="ravens-input"></div>
-                    <div class="input-group"><label>EMPRESA</label><input type="text" id="ba1-emp" class="ravens-input"></div>
-                    <div class="input-group"><label>ESTATUS</label>
-                        <select id="ba1-est" class="ravens-input"><option>Aceptado</option><option>Dañado</option></select>
-                    </div>
-                    <div class="input-group"><label>FOTO EVIDENCIA</label>
-                        <div class="photo-area" onclick="document.getElementById('cam-ba1').click()">
-                            <input type="file" id="cam-ba1" hidden accept="image/*" capture="environment" onchange="previewImg(this, 'ba1')">
-                            <div id="prev-ba1" class="photo-preview hidden"></div>
-                            <i class="fas fa-camera fa-2x"></i><span>TOCAR PARA FOTO</span>
+                    <button class="btn-save" style="background:var(--azul); margin-bottom:15px;" onclick="openResidenteModal()">
+                        <i class="fas fa-search"></i> SELECCIONAR RESIDENTE
+                    </button>
+                    <div class="input-group">
+                        <label>RESIDENTE ASIGNADO</label>
+                        <div style="display:flex; align-items:center; gap:10px;">
+                            <input type="text" id="aa1-residente" class="ravens-input" style="background:#080808; color:#888;" readonly>
+                            <span id="check-paloma" style="display:none; color:var(--verde); font-size:1.5rem;">✅</span>
                         </div>
                     </div>
-                    <button class="btn-save" onclick="logicBA1()">REGISTRAR</button>
+                    <div class="input-group"><label>PLACA</label><input type="text" id="aa1-placa" class="ravens-input"></div>
+                    <div class="input-group"><label>MOTIVO</label><input type="text" id="aa1-motivo" class="ravens-input"></div>
+                    <button class="btn-save" id="btn-aa1-save" onclick="logicAA1()">GUARDAR Y NOTIFICAR</button>
                 </div>
             </div>
         `,
-        'BB1': `
-            <div class="screen active">
-                <button class="btn-back" onclick="navigate('B1')"><i class="fas fa-chevron-left"></i> VOLVER</button>
-                <h2 class="title" style="color:var(--azul)">ENTREGA</h2>
-                <div class="form-box">
-                    <div class="input-group"><label>RECIBE</label><input type="text" id="bb1-nom" class="ravens-input"></div>
-                    <div class="input-group"><label>FIRMA DIGITAL</label>
-                        <div class="signature-wrapper"><canvas id="sig-canvas"></canvas></div>
-                        <div style="text-align:right; margin-top:5px; color:var(--rojo); font-weight:800; font-size:0.7rem;" onclick="cleanSig()">BORRAR FIRMA</div>
-                    </div>
-                    <button class="btn-save" style="background:var(--azul)" onclick="logicBB1()">CONFIRMAR ENTREGA</button>
-                </div>
-            </div>
-        `,
-
-        // --- MÓDULO D: PROVEEDORES (COMPLETO) ---
-        'D1': `
-            <div class="screen active">
-                <button class="btn-back" onclick="navigate('INICIO')"><i class="fas fa-chevron-left"></i> MENÚ PRINCIPAL</button>
-                <h2 class="title" style="color:var(--guinda)">PROVEEDORES</h2>
-                <div class="form-box">
-                    <div class="input-group"><label>EMPRESA / ARL</label><input type="text" id="d1-emp" class="ravens-input"></div>
-                    <div class="input-group"><label>NOMBRE TRABAJADOR</label><input type="text" id="d1-nom" class="ravens-input"></div>
-                    <div class="input-group"><label>DNI / CÉDULA</label><input type="text" id="d1-dni" class="ravens-input"></div>
-                    <button class="btn-save" onclick="logicD1()">REGISTRAR ACCESO</button>
-                </div>
-                <div class="action-list" style="margin-top:20px">
-                    <div class="btn-action" onclick="navigate('D2')">
-                        <div class="icon-circle"><i class="fas fa-list"></i></div><span>VER HISTORIAL</span>
-                    </div>
-                </div>
-            </div>
-        `,
-        'D2': `
-            <div class="screen active">
-                <button class="btn-back" onclick="navigate('D1')"><i class="fas fa-chevron-left"></i> VOLVER</button>
-                <h2 class="title">HISTORIAL PROVEEDOR</h2>
-                <div id="list-d2" style="margin-top:20px"></div>
-            </div>
-        `,
-
-        // --- MÓDULO F: PERSONAL (COMPLETO) ---
-        'F1': `
-            <div class="screen active">
-                <button class="btn-back" onclick="navigate('INICIO')"><i class="fas fa-chevron-left"></i> MENÚ PRINCIPAL</button>
-                <h2 class="title">PERSONAL</h2>
-                <div class="qr-frame" style="height:200px; margin-bottom:20px"><div id="qr-reader-f1" style="width:100%;height:100%"></div></div>
-                <div class="form-box">
-                    <div class="input-group"><label>ID / CÓDIGO</label><input type="text" id="f1-id" class="ravens-input" placeholder="Escanear o escribir"></div>
-                    <button class="btn-action primary w-100" style="justify-content:center; margin-top:10px" onclick="initQR('F1')">ACTIVAR CÁMARA</button>
-                    <div class="row" style="margin-top:20px">
-                        <button class="btn-save" onclick="logicF1('Entrada')">ENTRADA</button>
-                        <button class="btn-save" style="background:var(--azul)" onclick="logicF1('Salida')">SALIDA</button>
-                    </div>
-                </div>
-                <div class="action-list" style="margin-top:20px">
-                    <div class="btn-action" onclick="navigate('F2')">
-                        <div class="icon-circle"><i class="fas fa-list"></i></div><span>VER HISTORIAL</span>
-                    </div>
-                </div>
-            </div>
-        `,
-        'F2': `
-            <div class="screen active">
-                <button class="btn-back" onclick="navigate('F1')"><i class="fas fa-chevron-left"></i> VOLVER</button>
-                <h2 class="title">HISTORIAL PERSONAL</h2>
-                <div id="list-f2" style="margin-top:20px"></div>
-            </div>
-        `,
-        'FV': `
-            <div class="screen active feedback-screen">
-                <i class="fas fa-user-check feedback-icon success-text"></i>
-                <h2 class="feedback-title success-text">PERSONAL REGISTRADO</h2>
-                <p class="subtitle">ACCESO GUARDADO</p>
-            </div>
-        `,
-
-        // --- PANTALLAS FEEDBACK ---
-        'EAV': `
-            <div class="screen active feedback-screen">
-                <i class="fas fa-check-circle feedback-icon success-text"></i>
-                <h2 class="feedback-title success-text">REGISTRO CORRECTO</h2>
-                <p class="subtitle">DATOS GUARDADOS</p>
-            </div>
-        `,
-        'QF': `
-            <div class="screen active feedback-screen">
-                <i class="fas fa-times-circle feedback-icon error-text"></i>
-                <h2 class="feedback-title error-text">ERROR</h2>
-                <p class="subtitle">INTENTE NUEVAMENTE</p>
-            </div>
-        `,
-        'LOADING': `
-            <div class="screen active feedback-screen">
-                <i class="fas fa-spinner fa-spin feedback-icon" style="color:var(--azul)"></i>
-                <h2 class="feedback-title" style="color:var(--azul)">PROCESANDO...</h2>
-            </div>
-        `,
-        
-        // --- QR (E1) ---
-        'E1': `
-            <div class="screen active">
-                 <button class="btn-back" onclick="navigate('INICIO')"><i class="fas fa-chevron-left"></i> VOLVER</button>
-                 <h2 class="title">ESCÁNER QR</h2>
-                 <div class="qr-frame"><div id="qr-reader" style="width:100%;height:100%"></div></div>
-                 <div class="row" style="margin-top:20px">
-                    <button class="btn-action primary" style="flex:1;justify-content:center" onclick="initQR('EA1')">RESIDENTE</button>
-                    <button class="btn-action" style="flex:1;justify-content:center" onclick="initQR('EC1')">VALIDAR</button>
-                 </div>
-            </div>
-        `
+        'AA2': `<div class="screen active"><button class="btn-back" onclick="navigate('A1')">VOLVER</button><h2 class="title">BITÁCORA</h2><div id="list-aa2"></div></div>`,
+        'EAV': `<div class="feedback-screen"><i class="fas fa-check-circle feedback-icon" style="color:var(--verde)"></i><h2 class="title" style="color:var(--verde)">AVISO ENVIADO</h2><p>Registro correcto</p></div>`,
+        'QF': `<div class="feedback-screen"><i class="fas fa-times-circle feedback-icon" style="color:var(--rojo)"></i><h2 class="title" style="color:var(--rojo)">ERROR</h2><p>Llene los campos obligatorios</p></div>`,
+        'B1': `<div class="screen active"><button class="btn-back" onclick="navigate('INICIO')">VOLVER</button><h2 class="title">PAQUETERÍA</h2><div class="action-list"><div class="btn-action primary" onclick="navigate('BA1')">RECIBIR</div><div class="btn-action blue" onclick="navigate('BB1')">ENTREGAR</div></div></div>`,
+        'BA1': `<div class="screen active"><button class="btn-back" onclick="navigate('B1')">VOLVER</button><h2 class="title">RECIBIR</h2><div class="form-box"><div class="input-group"><label>PAQUETE PARA</label><input type="text" id="ba1-nom" class="ravens-input"></div><button class="btn-save" onclick="navigate('EAV')">GUARDAR</button></div></div>`,
+        'BB1': `<div class="screen active"><button class="btn-back" onclick="navigate('B1')">VOLVER</button><h2 class="title">ENTREGA</h2><div class="form-box"><div class="signature-wrapper"><canvas id="sig-canvas"></canvas></div><button class="btn-save" style="background:var(--azul)" onclick="navigate('EAV')">FIRMAR</button></div></div>`,
+        'D1': `<div class="screen active"><button class="btn-back" onclick="navigate('INICIO')">VOLVER</button><h2 class="title">PROVEEDORES</h2><div class="form-box"><input type="text" placeholder="Empresa" class="ravens-input"><button class="btn-save" onclick="navigate('EAV')">REGISTRAR</button></div></div>`,
+        'F1': `<div class="screen active"><button class="btn-back" onclick="navigate('INICIO')">VOLVER</button><h2 class="title">PERSONAL</h2><div class="form-box"><input type="text" placeholder="ID" class="ravens-input"><button class="btn-save" onclick="navigate('EAV')">REGISTRAR</button></div></div>`,
+        'E1': `<div class="screen active"><button class="btn-back" onclick="navigate('INICIO')">VOLVER</button><h2 class="title">ESCÁNER QR</h2><div class="qr-frame"><div id="qr-reader"></div></div></div>`
     };
 
     /* =========================================
-       3. MOTOR LÓGICO
+       3. LÓGICA DE NEGOCIO (POWER APPS ENGINE)
        ========================================= */
-    let signaturePad;
-    let qrScanner;
-
-    function navigate(screenName) {
-        if(qrScanner) { qrScanner.stop().catch(()=>{}); }
-        
-        const viewport = document.getElementById('viewport');
-        viewport.innerHTML = SCREENS[screenName] || SCREENS['INICIO'];
+    function navigate(screen) {
+        document.getElementById('viewport').innerHTML = SCREENS[screen] || SCREENS['INICIO'];
+        if(screen === 'AA1') {
+            document.getElementById('aa1-residente').value = STATE.VarNombreSeleccionado1;
+            document.getElementById('check-paloma').style.display = STATE.varmostrarpaloma1 ? 'block' : 'none';
+        }
+        if(screen === 'AA2') renderVisitas();
+        if(screen === 'EAV' || screen === 'QF') setTimeout(() => navigate('INICIO'), 3000);
         window.scrollTo(0,0);
-
-        if(screenName === 'AA2') renderList('colVisita', 'list-aa2');
-        if(screenName === 'D2') renderList('colProveedores', 'list-d2');
-        if(screenName === 'F2') renderList('colPersonal', 'list-f2');
-        if(screenName === 'BB1') initSignature();
-        if(['EAV', 'QF', 'FV'].includes(screenName)) startTimer(screenName);
     }
 
-    function initSignature() {
-        const canvas = document.getElementById('sig-canvas');
-        if(canvas) {
-            function resize() {
-                const r = Math.max(window.devicePixelRatio || 1, 1);
-                canvas.width = canvas.offsetWidth * r; canvas.height = canvas.offsetHeight * r;
-                canvas.getContext("2d").scale(r, r);
-            }
-            resize();
-            signaturePad = new SignaturePad(canvas, { backgroundColor: 'rgb(255, 255, 255)' });
-        }
-    }
-    function cleanSig() { if(signaturePad) signaturePad.clear(); }
-
-    function previewImg(input, id) {
-        if (input.files && input.files[0]) {
-            const reader = new FileReader();
-            reader.onload = function(e) {
-                STATE.photos[id] = e.target.result;
-                const div = document.getElementById('prev-'+id);
-                div.style.backgroundImage = `url(${e.target.result})`;
-                div.classList.remove('hidden'); div.style.display = 'block';
-            }
-            reader.readAsDataURL(input.files[0]);
-        }
+    // SELECTOR DE RESIDENTES (AA1 LOGIC)
+    function openResidenteModal() {
+        const torres = [...new Set(STATE.colBaserFiltrada.map(i => i.Torre))].sort();
+        const selTorre = document.getElementById('sel-torre');
+        selTorre.innerHTML = torres.map(t => `<option value="${t}">${t}</option>`).join('');
+        updateDeptos();
+        document.getElementById('modal-selector').classList.add('active');
     }
 
-    function renderList(colName, elementId) {
-        const container = document.getElementById(elementId);
-        let html = "";
-        STATE[colName].forEach(item => {
-            html += `
-            <div class="log-item ok">
-                <div class="log-header"><span>${item.Nombre}</span><span>${item.Hora}</span></div>
-                <div class="log-sub">${item.Empresa || item.Torre || item.Accion || ""}</div>
-            </div>`;
-        });
-        container.innerHTML = html;
+    function updateDeptos() {
+        const torre = document.getElementById('sel-torre').value;
+        const deptos = STATE.colBaserFiltrada.filter(i => i.Torre === torre).map(i => i.Departamento);
+        document.getElementById('sel-depto').innerHTML = deptos.map(d => `<option value="${d}">${d}</option>`).join('');
+        updateResidentes();
     }
 
-    function startTimer(screen) {
-        setTimeout(() => {
-            if(screen === 'FV') navigate('F2');
-            else navigate('INICIO');
-        }, 3000);
+    function updateResidentes() {
+        const torre = document.getElementById('sel-torre').value;
+        const depto = document.getElementById('sel-depto').value;
+        const residents = STATE.colBaserFiltrada.filter(i => i.Torre === torre && i.Departamento === depto).map(i => i.Nombre);
+        document.getElementById('sel-nombre').innerHTML = residents.map(n => `<option value="${n}">${n}</option>`).join('');
     }
 
-    /* --- LÓGICA DE NEGOCIO --- */
-    
+    function confirmResidente() {
+        const torre = document.getElementById('sel-torre').value;
+        const depto = document.getElementById('sel-depto').value;
+        const nombre = document.getElementById('sel-nombre').value;
+        const item = STATE.colBaserFiltrada.find(i => i.Nombre === nombre);
+
+        STATE.VarNombreSeleccionado1 = nombre;
+        STATE.varNumeroSeleccionado1 = item.Número;
+        STATE.varmostrarpaloma1 = true;
+
+        document.getElementById('aa1-torre').value = torre;
+        document.getElementById('aa1-depto').value = depto;
+        document.getElementById('aa1-residente').value = nombre;
+        document.getElementById('check-paloma').style.display = 'block';
+        closeResidenteModal();
+    }
+
+    function closeResidenteModal() { document.getElementById('modal-selector').classList.remove('active'); }
+
+    // GUARDAR VISITA (AA1 OnSuccess REPLICATED)
     async function logicAA1() {
-        const nom = document.getElementById('aa1-nom').value;
-        if(!nom) return navigate('QF');
-        navigate('LOADING');
-        const url = `${API.VISITA}&Nombre=${encodeURIComponent(nom)}&Hora=${new Date().toLocaleTimeString()}`;
-        try { await fetch(url, { method: 'POST' }); } catch(e){}
-        STATE.colVisita.unshift({ Nombre: nom, Torre: document.getElementById('aa1-tor').value, Hora: new Date().toLocaleTimeString() });
-        navigate('EAV');
-    }
+        const nombreVis = document.getElementById('aa1-nombre').value;
+        const motivo = document.getElementById('aa1-motivo').value;
 
-    async function logicBA1() {
-        const nom = document.getElementById('ba1-nom').value;
-        if(!STATE.photos['ba1']) return alert("Falta Foto");
-        navigate('LOADING');
-        const url = `${API.RECIBIR}&Nombre=${encodeURIComponent(nom)}`;
-        try { await fetch(url, { method: 'POST', body: JSON.stringify({foto: STATE.photos['ba1']}) }); } catch(e){}
-        STATE.photos['ba1'] = null;
-        navigate('EAV');
-    }
+        if(!nombreVis || !motivo || !STATE.VarNombreSeleccionado1) {
+            return navigate('QF');
+        }
 
-    async function logicBB1() {
-        if(signaturePad.isEmpty()) return alert("Falta Firma");
-        navigate('LOADING');
-        const url = `${API.ENTREGAR}&Nombre=${encodeURIComponent(document.getElementById('bb1-nom').value)}`;
-        try { await fetch(url, { method: 'POST', body: JSON.stringify({sig: signaturePad.toDataURL()}) }); } catch(e){}
-        navigate('EAV');
-    }
-
-    // Lógica para D1 (Proveedores)
-    async function logicD1() {
-        const emp = document.getElementById('d1-emp').value;
-        const nom = document.getElementById('d1-nom').value;
-        if(!emp || !nom) return navigate('QF');
+        document.getElementById('btn-aa1-save').disabled = true;
         
-        navigate('LOADING');
-        // Simulamos API Call
-        setTimeout(() => {
-            STATE.colProveedores.unshift({ Empresa: emp, Nombre: nom, Hora: new Date().toLocaleTimeString() });
+        // Simulación de LastSubmit
+        const newID = Date.now();
+        const registro = {
+            ID: newID,
+            Nombre: nombreVis,
+            Número: STATE.varNumeroSeleccionado1,
+            Torre: document.getElementById('aa1-torre').value,
+            Departamento: document.getElementById('aa1-depto').value,
+            Motivo: motivo,
+            Condominio: "RAVENS_MAIN",
+            Hora: new Date().toLocaleTimeString('es-MX', {hour: '2-digit', minute:'2-digit'})
+        };
+
+        STATE.colvisitaOrdenada.unshift(registro);
+
+        // DISPARO DE URL FANTASMA (Exactamente como en YAML)
+        const url = `${API.VISITA}&Nombre=${encodeURIComponent(registro.Nombre)}&Telefono=${encodeURIComponent(registro.Número)}&Torre=${encodeURIComponent(registro.Torre)}&Depto=${encodeURIComponent(registro.Departamento)}&Motivo=${encodeURIComponent(registro.Motivo)}&Condominio=${encodeURIComponent(registro.Condominio)}&Hora=${encodeURIComponent(registro.Hora)}&Ignorar=${Date.now()}&ID_Item=${registro.ID}&Tipo_Lista=VISITA`;
+
+        try {
+            await fetch(url, { method: 'POST' });
+            STATE.varmostrarpaloma1 = false;
+            STATE.VarNombreSeleccionado1 = "";
             navigate('EAV');
-        }, 1000);
+        } catch(e) {
+            navigate('QF');
+        }
     }
 
-    // Lógica para F1 (Personal)
-    async function logicF1(accion) {
-        const id = document.getElementById('f1-id').value;
-        if(!id) return alert("Escanee o escriba ID");
-        
-        navigate('LOADING');
-        setTimeout(() => {
-            STATE.colPersonal.unshift({ Nombre: "ID: " + id, Accion: accion, Hora: new Date().toLocaleTimeString() });
-            navigate('FV');
-        }, 1000);
+    function renderVisitas() {
+        const container = document.getElementById('list-aa2');
+        container.innerHTML = STATE.colvisitaOrdenada.map(v => `
+            <div class="log-item ok">
+                <div class="log-header"><span>${v.Nombre}</span><span>${v.Hora}</span></div>
+                <div class="log-sub">Visita a: ${v.Torre}-${v.Departamento}</div>
+            </div>
+        `).join('');
     }
 
-    function initQR(target) {
-        const divId = target === 'F1' ? "qr-reader-f1" : "qr-reader";
-        qrScanner = new Html5Qrcode(divId);
-        qrScanner.start({ facingMode: "environment" }, { fps: 10, qrbox: 250 }, (text) => {
-            qrScanner.stop();
-            if(target === 'F1') document.getElementById('f1-id').value = text;
-            else { navigate('LOADING'); setTimeout(() => navigate('EAV'), 1000); }
-        }).catch(err => alert("Error Cámara"));
-    }
-
-    // INICIO
-    window.onload = function() { navigate('INICIO'); };
+    window.onload = () => navigate('INICIO');
 
 </script>
-
 </body>
 </html>
