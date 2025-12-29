@@ -2,21 +2,18 @@
    1. ESTADO GLOBAL & COLECCIONES
    ========================================= */
 const STATE = {
-    // Base simulada
     colBaserFiltrada: [
         { Torre: "A", Departamento: "101", Nombre: "Juan Perez", Número: "5512345678" },
         { Torre: "B", Departamento: "205", Nombre: "Ana Gomez", Número: "5587654321" },
         { Torre: "C", Departamento: "PH1", Nombre: "Luis Miguel", Número: "5500000000" }
     ],
-    // Colecciones de la App
+    // Colecciones
     colvisitaOrdenada: [],           
     colpersonalaviso: [],            
     colrecibirunpaqueteOrdenada: [], 
     colEntregasLocales: [],          
     colproveedorOrdenada: [],        
     colPersonalServicio: [], 
-    
-    // Módulos QR
     colQRResidenteEA1: [],
     colQRResidenteEB1: [], 
     colResetNip: [],
@@ -29,282 +26,276 @@ const STATE = {
 };
 
 /* =========================================
-   2. MOTOR DE PANTALLAS (HTML TEMPLATES)
+   2. MOTOR DE PANTALLAS (TEMPLATES HTML ACTUALIZADOS)
    ========================================= */
 const SCREENS = {
+    // --- MENÚ PRINCIPAL ---
     'INICIO': `
-        <div class="screen active">
-            <h2 class="title">PANEL DE CONTROL</h2>
-            <div class="grid-menu">
-                <div class="menu-card" onclick="navigate('A1')"><i class="fas fa-users"></i><span class="card-text">VISITAS</span></div>
-                <div class="menu-card" onclick="navigate('B1')"><i class="fas fa-box-open"></i><span class="card-text">PAQUETERÍA</span></div>
-                <div class="menu-card" onclick="navigate('D1')"><i class="fas fa-tools"></i><span class="card-text">PROVEEDORES</span></div>
-                <div class="menu-card" onclick="navigate('E1')"><i class="fas fa-qrcode"></i><span class="card-text">MÓDULOS QR</span></div>
-                <div class="menu-card full" onclick="navigate('F1')"><i class="fas fa-user-shield"></i><span class="card-text">PERSONAL INTERNO</span></div>
-            </div>
+        <div class="screen">
+            <header class="header-app">
+                <div class="header-logo">
+                    <div class="header-logo-icon">R</div>
+                    <span class="header-logo-text">RAVENS ACCESS</span>
+                </div>
+            </header>
+            <main class="main-menu-grid">
+                <div class="menu-item" onclick="navigate('A1')"><div class="menu-item-icon"><i class="fas fa-users"></i></div><div>Visitas</div></div>
+                <div class="menu-item" onclick="navigate('B1')"><div class="menu-item-icon"><i class="fas fa-box-open"></i></div><div>Paquetería</div></div>
+                <div class="menu-item" onclick="navigate('D1')"><div class="menu-item-icon"><i class="fas fa-tools"></i></div><div>Proveedor</div></div>
+                <div class="menu-item" onclick="navigate('E1')"><div class="menu-item-icon"><i class="fas fa-qrcode"></i></div><div>Módulos QR</div></div>
+                <div class="menu-item full" onclick="navigate('F1')"><div class="menu-item-icon"><i class="fas fa-user-shield"></i></div><div>Personal Interno</div></div>
+            </main>
         </div>
     `,
-    
+
     // --- MÓDULO A: VISITAS ---
     'A1': `
-        <div class="screen active">
-            <div class="btn-back" onclick="navigate('INICIO')">⬅ MENÚ</div>
-            <h2 class="title">VISITAS</h2>
-            <h3 class="subtitle">¿Qué deseas hacer?</h3>
-            <div class="grid-menu">
-                <div class="menu-card big" onclick="navigate('AA1')">
-                    <i class="fas fa-user-plus"></i><span class="card-text">REGISTRAR VISITA</span>
-                </div>
-                <div class="menu-card big" style="background:#4a0012" onclick="navigate('AC1')">
-                    <i class="fas fa-hard-hat"></i><span class="card-text">PERSONAL SERVICIO</span>
-                </div>
-            </div>
+        <div class="screen">
+            <header class="header-app">
+                <div class="header-logo"><span class="header-logo-text">VISITAS</span></div>
+                <div class="cursor-pointer" onclick="navigate('INICIO')"><i class="fas fa-home fa-lg"></i></div>
+            </header>
+            <main class="main-menu-grid">
+                <div class="menu-item" onclick="navigate('AA1')"><div class="menu-item-icon"><i class="fas fa-user-plus"></i></div><div>Registrar Visita</div></div>
+                <div class="menu-item" onclick="navigate('AC1')"><div class="menu-item-icon"><i class="fas fa-hard-hat"></i></div><div>Personal Servicio</div></div>
+            </main>
         </div>
     `,
     'AA1': `
-        <div class="screen active">
-            <div class="btn-back" onclick="navigate('A1')">⬅ VOLVER</div>
-            <h2 class="title" style="color:var(--guinda)">NUEVA VISITA</h2>
-            <div class="form-box">
-                <div class="input-group"><label>NOMBRE VISITANTE *</label><input type="text" id="aa1-nombre" class="ravens-input"></div>
-                <div class="row">
-                    <div class="input-group"><label>TORRE</label><input type="text" id="aa1-torre" class="ravens-input" readonly></div>
-                    <div class="input-group"><label>DEPTO</label><input type="text" id="aa1-depto" class="ravens-input" readonly></div>
+        <div class="screen form-page">
+            <div class="form-title-section"><h2 class="form-title">Nueva Visita</h2><div class="cursor-pointer" onclick="navigate('A1')"><i class="fas fa-arrow-left fa-lg"></i></div></div>
+            <div class="form-container">
+                <div class="input-group"><label>Nombre Visitante *</label><input type="text" id="aa1-nombre" class="form-input"></div>
+                <div class="input-group"><label>Torre</label><input type="text" id="aa1-torre" class="form-input" readonly></div>
+                <div class="input-group"><label>Departamento</label><input type="text" id="aa1-depto" class="form-input" readonly></div>
+                <div class="input-group"><label>Residente</label><input type="text" id="aa1-res-name" class="form-input" readonly></div>
+                <button class="btn-primary" onclick="openResidenteModal('aa1')"><i class="fas fa-search"></i> Seleccionar Residente</button>
+                <div class="input-group" style="margin-top:15px"><label>Placa</label><input type="text" id="aa1-placa" class="form-input"></div>
+                <div class="input-group"><label>Motivo</label><input type="text" id="aa1-motivo" class="form-input"></div>
+                <div style="margin-top: 20px;">
+                    <button class="btn-save" onclick="submitAviso('aa1')">Guardar</button>
+                    <button class="btn-reset" onclick="resetForm('aa1')">Limpiar</button>
+                    <button class="btn-secondary" onclick="navigate('AA2')">Ver Libreta Visitas</button>
                 </div>
-                <div class="input-group"><label>RESIDENTE</label><input type="text" id="aa1-res-name" class="ravens-input" readonly></div>
-                
-                <button class="btn-save blue" style="margin-bottom:15px;" onclick="openResidenteModal('aa1')">🔍 SELECCIONAR RESIDENTE</button>
-                
-                <div class="input-group"><label>PLACA</label><input type="text" id="aa1-placa" class="ravens-input"></div>
-                <div class="input-group"><label>MOTIVO</label><input type="text" id="aa1-motivo" class="ravens-input"></div>
-                <button class="btn-save" onclick="submitAviso('aa1')">GUARDAR</button>
             </div>
-            <div class="btn-action" style="margin-top:20px; background:#111" onclick="navigate('AA2')"><span>📋 LIBRETA VISITAS</span></div>
         </div>
     `,
-    'AA2': `<div class="screen active"><div class="btn-back" onclick="navigate('AA1')">⬅ VOLVER</div><h2 class="title">LIBRETA VISITAS</h2><div class="gallery-container" id="gal-aa2"></div><div class="view-form" id="detail-aa2"></div></div>`,
+    'AA2': `<div class="screen form-page"><div class="form-title-section"><h2 class="form-title">Libreta Visitas</h2><div class="cursor-pointer" onclick="navigate('AA1')"><i class="fas fa-arrow-left fa-lg"></i></div></div><div class="form-container"><div id="gal-aa2" class="gallery-container"></div><div id="detail-aa2" class="detail-view"></div></div></div>`,
 
     // --- MÓDULO B: PAQUETERÍA ---
     'B1': `
-        <div class="screen active">
-            <div class="btn-back" onclick="navigate('INICIO')">⬅ MENÚ</div>
-            <h2 class="title">PAQUETERÍA</h2>
-            <h3 class="subtitle">¿Qué deseas hacer?</h3>
-            <div class="grid-menu">
-                <div class="menu-card big" onclick="navigate('BA1')">
-                    <i class="fas fa-box"></i><span class="card-text">RECIBIR PAQUETE</span>
-                </div>
-                <div class="menu-card big blue" onclick="navigate('BB1')">
-                    <i class="fas fa-truck-loading"></i><span class="card-text">ENTREGAR PAQUETE</span>
-                </div>
-            </div>
+        <div class="screen">
+            <header class="header-app"><div class="header-logo"><span class="header-logo-text">PAQUETERÍA</span></div><div class="cursor-pointer" onclick="navigate('INICIO')"><i class="fas fa-home fa-lg"></i></div></header>
+            <main class="main-menu-grid">
+                <div class="menu-item" onclick="navigate('BA1')"><div class="menu-item-icon"><i class="fas fa-box"></i></div><div>Recibir</div></div>
+                <div class="menu-item" onclick="navigate('BB1')"><div class="menu-item-icon"><i class="fas fa-truck-loading"></i></div><div>Entregar</div></div>
+            </main>
         </div>
     `,
     'BA1': `
-        <div class="screen active">
-            <div class="btn-back" onclick="navigate('B1')">⬅ VOLVER</div>
-            <h2 class="title" style="color:var(--guinda)">RECIBIR PAQUETE</h2>
-            <div class="form-box">
-                <div class="row">
-                    <div class="input-group"><label>TORRE</label><input type="text" id="ba1-torre" class="ravens-input" readonly></div>
-                    <div class="input-group"><label>DEPTO</label><input type="text" id="ba1-depto" class="ravens-input" readonly></div>
-                </div>
-                <div class="input-group"><label>RESIDENTE / DESTINATARIO</label><input type="text" id="ba1-res-name" class="ravens-input" readonly></div>
+        <div class="screen form-page">
+            <div class="form-title-section"><h2 class="form-title">Recibir Paquete</h2><div class="cursor-pointer" onclick="navigate('B1')"><i class="fas fa-arrow-left fa-lg"></i></div></div>
+            <div class="form-container">
+                <div class="input-group"><label>Torre</label><input type="text" id="ba1-torre" class="form-input" readonly></div>
+                <div class="input-group"><label>Departamento</label><input type="text" id="ba1-depto" class="form-input" readonly></div>
+                <div class="input-group"><label>Destinatario (Residente)</label><input type="text" id="ba1-res-name" class="form-input" readonly></div>
+                <button class="btn-primary" onclick="openResidenteModal('ba1')"><i class="fas fa-search"></i> Seleccionar Residente</button>
                 
-                <button class="btn-save blue" style="margin-bottom:15px" onclick="openResidenteModal('ba1')">🔍 SELECCIONAR RESIDENTE</button>
+                <div class="input-group" style="margin-top:15px"><label>Paquetería *</label><input type="text" id="ba1-paqueteria" class="form-input"></div>
+                <div class="input-group"><label>Estatus</label><select id="ba1-estatus" class="form-input"><option>Aceptado</option><option>Dañado</option></select></div>
                 
-                <div class="input-group"><label>PAQUETERÍA *</label><input type="text" id="ba1-paqueteria" class="ravens-input"></div>
-                
-                <div class="input-group">
-                    <label>ESTATUS *</label>
-                    <select id="ba1-estatus" class="ravens-input">
-                        <option value="Aceptado">Aceptado</option>
-                        <option value="Dañado">Dañado</option>
-                    </select>
-                </div>
-                <div class="input-group"><label>FOTO *</label>
-                    <div class="photo-area" onclick="document.getElementById('cam-ba1').click()">
-                        <input type="file" id="cam-ba1" hidden accept="image/*" capture="environment" onchange="previewImg(this, 'ba1')">
+                <div class="input-group"><label>Foto</label>
+                    <div class="photo-placeholder" onclick="document.getElementById('cam-ba1').click()">
+                        <input type="file" id="cam-ba1" hidden accept="image/*" onchange="previewImg(this, 'ba1')">
                         <div id="prev-ba1" class="photo-preview hidden"></div>
-                        <span style="color:#aaa"><i class="fas fa-camera"></i> TOCAR PARA FOTO</span>
+                        <span><i class="fas fa-camera"></i> Tocar para foto</span>
                     </div>
                 </div>
-                <button class="btn-save" onclick="submitRecepcionPaquete()">GUARDAR</button>
+                
+                <div style="margin-top: 20px;">
+                    <button class="btn-save" onclick="submitRecepcionPaquete()">Guardar</button>
+                    <button class="btn-reset" onclick="resetForm('ba1')">Limpiar</button>
+                    <button class="btn-secondary" onclick="navigate('BA2')">Ver Libreta</button>
+                </div>
             </div>
-            <div class="btn-action" style="margin-top:20px; background:#111" onclick="navigate('BA2')"><span>📋 VER LIBRETA</span></div>
         </div>
     `,
-    'BA2': `<div class="screen active"><div class="btn-back" onclick="navigate('BA1')">⬅ VOLVER</div><h2 class="title">LIBRETA RECEPCIÓN</h2><div class="gallery-container" id="gal-ba2"></div><div class="view-form" id="detail-ba2"></div></div>`,
-    
-    'BB1': `
-        <div class="screen active">
-            <div class="btn-back" onclick="navigate('B1')">⬅ VOLVER</div>
-            <h2 class="title" style="color:var(--azul-claro)">ENTREGAR PAQUETE</h2>
-            <div class="form-box">
-                <div class="input-group"><label>RECIBE *</label><input type="text" id="bb1-nombre" class="ravens-input"></div>
-                <div class="row">
-                    <div class="input-group"><label>TORRE</label><input type="text" id="bb1-torre" class="ravens-input" readonly></div>
-                    <div class="input-group"><label>DEPTO</label><input type="text" id="bb1-depto" class="ravens-input" readonly></div>
-                </div>
-                <div class="input-group"><label>RESIDENTE (DUEÑO)</label><input type="text" id="bb1-res-name" class="ravens-input" readonly></div>
-                <button class="btn-save blue" style="margin-bottom:15px" onclick="openResidenteModal('bb1')">🔍 SELECCIONAR RESIDENTE</button>
-                <div class="input-group"><label>FOTO *</label>
-                    <div class="photo-area" onclick="document.getElementById('cam-bb1').click()">
-                        <input type="file" id="cam-bb1" hidden accept="image/*" capture="environment" onchange="previewImg(this, 'bb1')">
-                        <div id="prev-bb1" class="photo-preview hidden"></div>
-                        <span style="color:#aaa"><i class="fas fa-camera"></i> TOCAR PARA FOTO</span>
-                    </div>
-                </div>
-                <div class="input-group"><label>FIRMA *</label>
-                    <div class="signature-wrapper">
-                        <canvas id="sig-canvas"></canvas>
-                        <i class="fas fa-times-circle" style="position:absolute; bottom:5px; right:5px; color:red; z-index:10; font-size:20px; cursor:pointer;" onclick="clearSignature()"></i>
-                    </div>
-                </div>
-                <button class="btn-save blue" onclick="submitEntregaPaquete()">GUARDAR</button>
-            </div>
-             <div class="btn-action" style="margin-top:20px; background:#111" onclick="navigate('BB2')"><span>📋 VER LIBRETA</span></div>
-        </div>
-    `,
-    'BB2': `<div class="screen active"><div class="btn-back" onclick="navigate('BB1')">⬅ VOLVER</div><h2 class="title">LIBRETA ENTREGA</h2><div class="gallery-container" id="gal-bb2"></div><div class="view-form" id="detail-bb2"></div></div>`,
+    'BA2': `<div class="screen form-page"><div class="form-title-section"><h2 class="form-title">Libreta Recepción</h2><div class="cursor-pointer" onclick="navigate('BA1')"><i class="fas fa-arrow-left fa-lg"></i></div></div><div class="form-container"><div id="gal-ba2" class="gallery-container"></div><div id="detail-ba2" class="detail-view"></div></div></div>`,
 
-    // --- MÓDULO D: PROVEEDORES ---
-    'D1': `
-        <div class="screen active">
-            <div class="btn-back" onclick="navigate('INICIO')">⬅ MENÚ</div>
-            <h2 class="title">PROVEEDOR</h2>
-            <div class="form-box">
-                <div class="input-group"><label>NOMBRE *</label><input type="text" id="d1-nombre" class="ravens-input"></div>
-                <div class="input-group"><label>EMPRESA *</label><input type="text" id="d1-empresa" class="ravens-input"></div>
-                <div class="input-group"><label>TELÉFONO *</label><input type="tel" id="d1-telefono" class="ravens-input"></div>
-                <div class="input-group"><label>ASUNTO *</label><input type="text" id="d1-asunto" class="ravens-input"></div>
-                <hr style="border:0; border-top:1px solid #333; margin: 15px 0;">
-                <div class="row">
-                    <div class="input-group"><label>TORRE</label><input type="text" id="d1-torre" class="ravens-input" readonly></div>
-                    <div class="input-group"><label>DEPTO</label><input type="text" id="d1-depto" class="ravens-input" readonly></div>
+    'BB1': `
+        <div class="screen form-page">
+            <div class="form-title-section"><h2 class="form-title">Entregar Paquete</h2><div class="cursor-pointer" onclick="navigate('B1')"><i class="fas fa-arrow-left fa-lg"></i></div></div>
+            <div class="form-container">
+                <div class="input-group"><label>Quien Recibe *</label><input type="text" id="bb1-nombre" class="form-input"></div>
+                <div class="input-group"><label>Torre</label><input type="text" id="bb1-torre" class="form-input" readonly></div>
+                <div class="input-group"><label>Depto</label><input type="text" id="bb1-depto" class="form-input" readonly></div>
+                <div class="input-group"><label>Dueño (Residente)</label><input type="text" id="bb1-res-name" class="form-input" readonly></div>
+                <button class="btn-primary" onclick="openResidenteModal('bb1')"><i class="fas fa-search"></i> Seleccionar Dueño</button>
+                
+                <div class="input-group" style="margin-top:15px"><label>Foto Evidencia</label>
+                    <div class="photo-placeholder" onclick="document.getElementById('cam-bb1').click()">
+                        <input type="file" id="cam-bb1" hidden accept="image/*" onchange="previewImg(this, 'bb1')">
+                        <div id="prev-bb1" class="photo-preview hidden"></div>
+                        <span><i class="fas fa-camera"></i> Foto</span>
+                    </div>
                 </div>
-                <div class="input-group"><label>RESIDENTE</label><input type="text" id="d1-res-name" class="ravens-input" readonly></div>
-                <button class="btn-save blue" style="margin-bottom:15px" onclick="openResidenteModal('d1')">🔍 SELECCIONAR RESIDENTE</button>
-                <button class="btn-save" onclick="submitProveedor()">GUARDAR</button>
+                <div class="input-group"><label>Firma</label>
+                    <div class="signature-wrapper"><canvas id="sig-canvas"></canvas><i class="fas fa-times-circle clear-sig" onclick="clearSignature()"></i></div>
+                </div>
+                
+                <div style="margin-top: 20px;">
+                    <button class="btn-save" onclick="submitEntregaPaquete()">Guardar</button>
+                    <button class="btn-reset" onclick="resetForm('bb1')">Limpiar</button>
+                    <button class="btn-secondary" onclick="navigate('BB2')">Ver Libreta</button>
+                </div>
             </div>
-            <div class="btn-action" style="margin-top:20px; background:#111" onclick="navigate('D2')"><span>📓 VER LIBRETA</span></div>
         </div>
     `,
-    'D2': `<div class="screen active"><div class="btn-back" onclick="navigate('D1')">⬅ REGISTRO</div><h2 class="title">LIBRETA PROVEEDOR</h2><div class="gallery-container" id="gal-d2"></div><div class="view-form" id="detail-d2"></div></div>`,
+    'BB2': `<div class="screen form-page"><div class="form-title-section"><h2 class="form-title">Libreta Entregas</h2><div class="cursor-pointer" onclick="navigate('BB1')"><i class="fas fa-arrow-left fa-lg"></i></div></div><div class="form-container"><div id="gal-bb2" class="gallery-container"></div><div id="detail-bb2" class="detail-view"></div></div></div>`,
+
+    // --- MÓDULO D: PROVEEDOR ---
+    'D1': `
+        <div class="screen form-page">
+            <div class="form-title-section"><h2 class="form-title">Proveedor</h2><div class="cursor-pointer" onclick="navigate('INICIO')"><i class="fas fa-home fa-lg"></i></div></div>
+            <div class="form-container">
+                <div class="input-group"><label>Nombre Proveedor *</label><input type="text" id="d1-nombre" class="form-input"></div>
+                <div class="input-group"><label>Empresa *</label><input type="text" id="d1-empresa" class="form-input"></div>
+                <div class="input-group"><label>Asunto *</label><input type="text" id="d1-asunto" class="form-input"></div>
+                <div class="input-group"><label>Torre</label><input type="text" id="d1-torre" class="form-input" readonly></div>
+                <div class="input-group"><label>Depto</label><input type="text" id="d1-depto" class="form-input" readonly></div>
+                <div class="input-group"><label>Residente</label><input type="text" id="d1-res-name" class="form-input" readonly></div>
+                <button class="btn-primary" onclick="openResidenteModal('d1')"><i class="fas fa-search"></i> Seleccionar Residente</button>
+                
+                <div style="margin-top: 20px;">
+                    <button class="btn-save" onclick="submitProveedor()">Guardar</button>
+                    <button class="btn-reset" onclick="resetForm('d1')">Limpiar</button>
+                    <button class="btn-secondary" onclick="navigate('D2')">Ver Libreta</button>
+                </div>
+            </div>
+        </div>
+    `,
+    'D2': `<div class="screen form-page"><div class="form-title-section"><h2 class="form-title">Libreta Proveedor</h2><div class="cursor-pointer" onclick="navigate('D1')"><i class="fas fa-arrow-left fa-lg"></i></div></div><div class="form-container"><div id="gal-d2" class="gallery-container"></div><div id="detail-d2" class="detail-view"></div></div></div>`,
 
     // --- MÓDULO E: QR ---
     'E1': `
-        <div class="screen active">
-            <div class="btn-back" onclick="navigate('INICIO')">⬅ MENÚ</div>
-            <h2 class="title">MÓDULOS QR</h2>
-            <div class="grid-menu">
-                <div class="menu-card" onclick="navigate('EA1')"><i class="fas fa-qrcode"></i><span class="card-text">QR RESIDENTE</span></div>
-                <div class="menu-card" onclick="navigate('EB1')"><i class="fas fa-qrcode"></i><span class="card-text">QR VISITA</span></div>
-                <div class="menu-card" onclick="navigate('EC1')"><i class="fas fa-check-circle"></i><span class="card-text">VALIDAR ACCESO</span></div>
-                <div class="menu-card" onclick="navigate('ED1')"><i class="fas fa-key"></i><span class="card-text">RESET NIP</span></div>
-            </div>
+        <div class="screen">
+            <header class="header-app"><div class="header-logo"><span class="header-logo-text">MÓDULOS QR</span></div><div class="cursor-pointer" onclick="navigate('INICIO')"><i class="fas fa-home fa-lg"></i></div></header>
+            <main class="main-menu-grid">
+                <div class="menu-item" onclick="navigate('EA1')"><div class="menu-item-icon"><i class="fas fa-qrcode"></i></div><div>QR Residente</div></div>
+                <div class="menu-item" onclick="navigate('EB1')"><div class="menu-item-icon"><i class="fas fa-qrcode"></i></div><div>QR Visita</div></div>
+                <div class="menu-item" onclick="navigate('EC1')"><div class="menu-item-icon"><i class="fas fa-check-circle"></i></div><div>Validar Acceso</div></div>
+                <div class="menu-item" onclick="navigate('ED1')"><div class="menu-item-icon"><i class="fas fa-key"></i></div><div>Reset NIP</div></div>
+            </main>
         </div>
     `,
     'EA1': `
-        <div class="screen active">
-            <div class="btn-back" onclick="navigate('E1')">⬅ VOLVER</div>
-            <h2 class="title" style="color:var(--guinda)">QR RESIDENTE</h2>
-            <div class="form-box">
-                <div class="input-group"><label>DNI / CÓDIGO *</label><input type="text" id="ea1-dni" class="ravens-input" placeholder="Escanea o escribe"></div>
-                <button class="btn-save blue" style="margin-bottom:15px" onclick="startScan('ea1-dni')"><i class="fas fa-camera"></i> ESCANEAR CÓDIGO</button>
-                <button class="btn-save" onclick="submitQRResidente()">ASIGNAR</button>
+        <div class="screen form-page">
+            <div class="form-title-section"><h2 class="form-title">QR Residente</h2><div class="cursor-pointer" onclick="navigate('E1')"><i class="fas fa-arrow-left fa-lg"></i></div></div>
+            <div class="form-container">
+                <div class="input-group"><label>DNI / Código *</label><input type="text" id="ea1-dni" class="form-input"></div>
+                <button class="btn-primary" onclick="startScan('ea1-dni')"><i class="fas fa-camera"></i> Escanear Código</button>
+                <div style="margin-top: 20px;">
+                    <button class="btn-save" onclick="submitQRResidente()">Asignar</button>
+                    <button class="btn-reset" onclick="resetForm('ea1')">Limpiar</button>
+                    <button class="btn-secondary" onclick="navigate('EA2')">Historial</button>
+                </div>
             </div>
-            <div class="btn-action" style="margin-top:20px; background:#111" onclick="navigate('EA2')"><span>📋 HISTORIAL RESIDENTES</span></div>
         </div>
     `,
-    'EA2': `<div class="screen active"><div class="btn-back" onclick="navigate('EA1')">⬅ VOLVER</div><h2 class="title">Historial Residentes</h2><div class="gallery-container" id="gal-ea2"></div><div class="view-form" id="detail-ea2"></div></div>`,
+    'EA2': `<div class="screen form-page"><div class="form-title-section"><h2 class="form-title">Historial QR</h2><div class="cursor-pointer" onclick="navigate('EA1')"><i class="fas fa-arrow-left fa-lg"></i></div></div><div class="form-container"><div id="gal-ea2" class="gallery-container"></div><div id="detail-ea2" class="detail-view"></div></div></div>`,
     
     'EB1': `
-        <div class="screen active">
-            <div class="btn-back" onclick="navigate('E1')">⬅ VOLVER</div>
-            <h2 class="title" style="color:var(--guinda)">QR VISITA</h2>
-            <div class="form-box">
-                <div class="input-group"><label>CÓDIGO VFS *</label><input type="text" id="eb1-code" class="ravens-input" placeholder="Escanea o escribe"></div>
-                <button class="btn-save blue" style="margin-bottom:15px" onclick="startScan('eb1-code')"><i class="fas fa-camera"></i> ESCANEAR CÓDIGO</button>
-                <button class="btn-save" onclick="submitQRVisita()">ASIGNAR</button>
+        <div class="screen form-page">
+            <div class="form-title-section"><h2 class="form-title">QR Visita</h2><div class="cursor-pointer" onclick="navigate('E1')"><i class="fas fa-arrow-left fa-lg"></i></div></div>
+            <div class="form-container">
+                <div class="input-group"><label>Código VFS *</label><input type="text" id="eb1-code" class="form-input"></div>
+                <button class="btn-primary" onclick="startScan('eb1-code')"><i class="fas fa-camera"></i> Escanear Código</button>
+                <div style="margin-top: 20px;">
+                    <button class="btn-save" onclick="submitQRVisita()">Asignar</button>
+                    <button class="btn-reset" onclick="resetForm('eb1')">Limpiar</button>
+                    <button class="btn-secondary" onclick="navigate('EB2')">Historial</button>
+                </div>
             </div>
-            <div class="btn-action" style="margin-top:20px; background:#111" onclick="navigate('EB2')"><span>📋 HISTORIAL VFS</span></div>
         </div>
     `,
-    'EB2': `<div class="screen active"><div class="btn-back" onclick="navigate('EB1')">⬅ VOLVER</div><h2 class="title">Historial Visitas</h2><div class="gallery-container" id="gal-eb2"></div><div class="view-form" id="detail-eb2"></div></div>`,
+    'EB2': `<div class="screen form-page"><div class="form-title-section"><h2 class="form-title">Historial VFS</h2><div class="cursor-pointer" onclick="navigate('EB1')"><i class="fas fa-arrow-left fa-lg"></i></div></div><div class="form-container"><div id="gal-eb2" class="gallery-container"></div><div id="detail-eb2" class="detail-view"></div></div></div>`,
 
     'EC1': `
-        <div class="screen active">
-            <div class="btn-back" onclick="navigate('E1')">⬅ VOLVER</div>
-            <h2 class="title">VALIDAR ACCESO</h2>
-            <div class="form-box" style="text-align:center;">
-                 <p style="color:#aaa; margin-bottom:20px;">Escanea el QR para validar el acceso inmediatamente.</p>
-                 <button class="btn-save" onclick="startValidationScan()"><i class="fas fa-qrcode"></i> INICIAR ESCÁNER</button>
+        <div class="screen form-page">
+            <div class="form-title-section"><h2 class="form-title">Validar Acceso</h2><div class="cursor-pointer" onclick="navigate('E1')"><i class="fas fa-arrow-left fa-lg"></i></div></div>
+            <div class="form-container" style="text-align: center; padding-top: 50px;">
+                <p style="color:#6b7280; margin-bottom:20px;">Escanea el QR para validar el acceso.</p>
+                <button class="btn-primary" style="padding: 20px;" onclick="startValidationScan()"><i class="fas fa-qrcode fa-2x"></i><br>INICIAR ESCÁNER</button>
             </div>
         </div>
     `,
     
-    // --- ED1: CAMBIO SOLICITADO (SOLO MANUAL) ---
+    // --- ED1: RESET NIP (Solo Manual) ---
     'ED1': `
-        <div class="screen active">
-            <div class="btn-back" onclick="navigate('E1')">⬅ VOLVER</div>
-            <h2 class="title" style="color:var(--guinda)">RESET NIP</h2>
-            <div class="form-box">
-                <div class="input-group"><label>USUARIO / DNI *</label><input type="text" id="ed1-user" class="ravens-input"></div>
+        <div class="screen form-page">
+            <div class="form-title-section"><h2 class="form-title">Reset NIP</h2><div class="cursor-pointer" onclick="navigate('E1')"><i class="fas fa-arrow-left fa-lg"></i></div></div>
+            <div class="form-container">
+                <div class="input-group"><label>Usuario / DNI *</label><input type="text" id="ed1-user" class="form-input"></div>
                 
-                <button class="btn-save" onclick="submitResetNip()">RESETEAR</button>
+                <div style="margin-top: 20px;">
+                    <button class="btn-save" onclick="submitResetNip()">Resetear</button>
+                    <button class="btn-reset" onclick="resetForm('ed1')">Limpiar</button>
+                    <button class="btn-secondary" onclick="navigate('ED2')">Historial</button>
+                </div>
             </div>
-            <div class="btn-action" style="margin-top:20px; background:#111" onclick="navigate('ED2')"><span>📋 HISTORIAL RESET</span></div>
         </div>
     `,
-    'ED2': `<div class="screen active"><div class="btn-back" onclick="navigate('ED1')">⬅ VOLVER</div><h2 class="title">Historial NIP</h2><div class="gallery-container" id="gal-ed2"></div><div class="view-form" id="detail-ed2"></div></div>`,
+    'ED2': `<div class="screen form-page"><div class="form-title-section"><h2 class="form-title">Historial NIP</h2><div class="cursor-pointer" onclick="navigate('ED1')"><i class="fas fa-arrow-left fa-lg"></i></div></div><div class="form-container"><div id="gal-ed2" class="gallery-container"></div><div id="detail-ed2" class="detail-view"></div></div></div>`,
 
-    // --- MÓDULO F: PERSONAL INTERNO ---
+    // --- PERSONAL INTERNO (F1) ---
     'F1': `
-        <div class="screen active">
-            <div class="btn-back" onclick="navigate('INICIO')">⬅ MENÚ</div>
-            <h2 class="title">PERSONAL INTERNO</h2>
-            <div class="form-box">
-                <div class="input-group"><label>ID PERSONAL *</label><input type="text" id="f1-id" class="ravens-input" placeholder="Escanea el gafete"></div>
-                <button class="btn-save" style="background:#333; margin-bottom:20px;" onclick="startScan('f1-id')"><i class="fas fa-camera"></i> ESCANEAR GAFETE</button>
-                <div class="row">
-                    <button class="btn-save" onclick="submitPersonalInterno('Entrada')">ENTRADA</button>
-                    <button class="btn-save blue" onclick="submitPersonalInterno('Salida')">SALIDA</button>
+        <div class="screen form-page">
+            <div class="form-title-section"><h2 class="form-title">Personal Interno</h2><div class="cursor-pointer" onclick="navigate('INICIO')"><i class="fas fa-home fa-lg"></i></div></div>
+            <div class="form-container">
+                <div class="input-group"><label>ID Personal *</label><input type="text" id="f1-id" class="form-input" placeholder="Escanea gafete"></div>
+                <button class="btn-primary" style="background:#333" onclick="startScan('f1-id')"><i class="fas fa-camera"></i> Escanear Gafete</button>
+                
+                <div style="display:flex; gap:10px; margin-top:20px;">
+                    <button class="btn-save" onclick="submitPersonalInterno('Entrada')">Entrada</button>
+                    <button class="btn-secondary" style="background:#3860B2" onclick="submitPersonalInterno('Salida')">Salida</button>
                 </div>
+                <button class="btn-secondary" onclick="navigate('F2')">Bitácora Personal</button>
+                <button class="btn-reset" onclick="resetForm('f1')">Limpiar</button>
             </div>
-            <div class="btn-action" style="margin-top:20px; background:#111" onclick="navigate('F2')"><span>📋 BITÁCORA PERSONAL</span></div>
         </div>
     `,
-    'F2': `<div class="screen active"><div class="btn-back" onclick="navigate('F1')">⬅ VOLVER</div><h2 class="title">Bitácora Interna</h2><div class="gallery-container" id="gal-f2"></div><div class="view-form" id="detail-f2"></div></div>`,
+    'F2': `<div class="screen form-page"><div class="form-title-section"><h2 class="form-title">Bitácora Interna</h2><div class="cursor-pointer" onclick="navigate('F1')"><i class="fas fa-arrow-left fa-lg"></i></div></div><div class="form-container"><div id="gal-f2" class="gallery-container"></div><div id="detail-f2" class="detail-view"></div></div></div>`,
 
-    // --- MÓDULO AC: PERSONAL DE SERVICIO ---
+    // --- AC: PERSONAL SERVICIO ---
     'AC1': `
-        <div class="screen active">
-            <div class="btn-back" onclick="navigate('A1')">⬅ VOLVER</div>
-            <h2 class="title" style="color:var(--guinda)">PERSONAL SERVICIO</h2>
-            <div class="form-box">
-                <div class="input-group"><label>NOMBRE *</label><input type="text" id="ac1-nombre" class="ravens-input"></div>
-                <div class="row">
-                    <div class="input-group"><label>TORRE</label><input type="text" id="ac1-torre" class="ravens-input" readonly></div>
-                    <div class="input-group"><label>DEPTO</label><input type="text" id="ac1-depto" class="ravens-input" readonly></div>
+        <div class="screen form-page">
+            <div class="form-title-section"><h2 class="form-title">Personal Servicio</h2><div class="cursor-pointer" onclick="navigate('A1')"><i class="fas fa-arrow-left fa-lg"></i></div></div>
+            <div class="form-container">
+                <div class="input-group"><label>Nombre *</label><input type="text" id="ac1-nombre" class="form-input"></div>
+                <div class="input-group"><label>Torre</label><input type="text" id="ac1-torre" class="form-input" readonly></div>
+                <div class="input-group"><label>Depto</label><input type="text" id="ac1-depto" class="form-input" readonly></div>
+                <div class="input-group"><label>Residente</label><input type="text" id="ac1-res-name" class="form-input" readonly></div>
+                <button class="btn-primary" onclick="openResidenteModal('ac1')"><i class="fas fa-search"></i> Seleccionar Residente</button>
+                
+                <div class="input-group" style="margin-top:15px"><label>Cargo</label><input type="text" id="ac1-cargo" class="form-input"></div>
+                
+                <div style="margin-top: 20px;">
+                    <button class="btn-save" onclick="submitAviso('ac1')">Guardar</button>
+                    <button class="btn-reset" onclick="resetForm('ac1')">Limpiar</button>
+                    <button class="btn-secondary" onclick="navigate('AC2')">Libreta Personal</button>
                 </div>
-                <div class="input-group"><label>RESIDENTE</label><input type="text" id="ac1-res-name" class="ravens-input" readonly></div>
-                <button class="btn-save blue" style="margin-bottom:15px;" onclick="openResidenteModal('ac1')">🔍 BUSCAR RESIDENTE</button>
-                <div class="input-group"><label>CARGO</label><input type="text" id="ac1-cargo" class="ravens-input"></div>
-                <button class="btn-save" onclick="submitAviso('ac1')">GUARDAR</button>
             </div>
-            <div class="btn-action" style="margin-top:20px; background:#111" onclick="navigate('AC2')"><span>📋 LIBRETA PERSONAL</span></div>
         </div>
     `,
-    'AC2': `<div class="screen active"><div class="btn-back" onclick="navigate('AC1')">⬅ VOLVER</div><h2 class="title">Libreta Personal</h2><div class="gallery-container" id="gal-ac2"></div><div class="view-form" id="detail-ac2"></div></div>`,
+    'AC2': `<div class="screen form-page"><div class="form-title-section"><h2 class="form-title">Libreta Personal</h2><div class="cursor-pointer" onclick="navigate('AC1')"><i class="fas fa-arrow-left fa-lg"></i></div></div><div class="form-container"><div id="gal-ac2" class="gallery-container"></div><div id="detail-ac2" class="detail-view"></div></div></div>`,
 
-    // --- FEEDBACK ---
-    'SUCCESS': `<div class="screen active" style="text-align:center; padding-top:100px;"><i class="fas fa-check-circle fa-5x" style="color:var(--verde)"></i><h2>ÉXITO</h2></div>`,
-    'FAILURE': `<div class="screen active" style="text-align:center; padding-top:100px;"><i class="fas fa-times-circle fa-5x" style="color:var(--rojo-error)"></i><h2>DENEGADO</h2></div>`
+    // --- FEEDBACK SCREENS ---
+    'SUCCESS': `<div class="screen" style="display:flex; justify-content:center; align-items:center; height:100vh; flex-direction:column"><i class="fas fa-check-circle fa-5x status-success"></i><h2 class="form-title" style="margin-top:20px">ÉXITO</h2></div>`,
+    'FAILURE': `<div class="screen" style="display:flex; justify-content:center; align-items:center; height:100vh; flex-direction:column"><i class="fas fa-times-circle fa-5x status-error"></i><h2 class="form-title" style="margin-top:20px">DENEGADO</h2></div>`
 };
 
 /* =========================================
-   3. MOTOR LÓGICO & NAVEGACIÓN
+   3. MOTOR LÓGICO
    ========================================= */
 let signaturePad;
 let html5QrCode;
@@ -329,7 +320,26 @@ function navigate(screen) {
     if(screen === 'F2') renderGallery('colPersonalServicio', 'gal-f2');
     
     if(screen === 'SUCCESS' || screen === 'FAILURE') setTimeout(() => navigate('INICIO'), 2000);
-    window.scrollTo(0,0);
+}
+
+// RESET FORM LOGIC
+function resetForm(prefix) {
+    // Limpia inputs
+    const inputs = document.querySelectorAll(`[id^="${prefix}-"]`);
+    inputs.forEach(input => {
+        if(input.tagName === 'SELECT' && input.options.length > 0) input.selectedIndex = 0;
+        else input.value = '';
+    });
+    
+    // Limpia estado interno
+    STATE[prefix] = {};
+    
+    // Limpia fotos y firmas
+    if(STATE.photos[prefix]) STATE.photos[prefix] = null;
+    const prev = document.getElementById(`prev-${prefix}`);
+    if(prev) { prev.style.backgroundImage = 'none'; prev.classList.add('hidden'); }
+    
+    if(prefix === 'bb1' && signaturePad) signaturePad.clear();
 }
 
 // --- MODAL RESIDENTE ---
@@ -361,6 +371,7 @@ function confirmResidente() {
     const item = STATE.colBaserFiltrada.find(i => i.Nombre === document.getElementById('sel-nombre').value);
     
     STATE[p] = { residente: item.Nombre, numero: item.Número, torre: item.Torre, depto: item.Departamento };
+    
     if(document.getElementById(`${p}-torre`)) document.getElementById(`${p}-torre`).value = item.Torre;
     if(document.getElementById(`${p}-depto`)) document.getElementById(`${p}-depto`).value = item.Departamento;
     if(document.getElementById(`${p}-res-name`)) document.getElementById(`${p}-res-name`).value = item.Nombre;
@@ -453,6 +464,8 @@ async function submitAviso(p) {
         Estatus: "Nuevo", Fecha: new Date().toLocaleString() 
     };
     STATE[p === 'aa1' ? 'colvisitaOrdenada' : 'colpersonalaviso'].unshift(record);
+    
+    resetForm(p); // AUTO-RESET
     navigate('SUCCESS');
 }
 
@@ -465,16 +478,15 @@ async function submitProveedor() {
         Estatus: "Nuevo", 'Fecha y hora': new Date().toLocaleString()
     };
     STATE.colproveedorOrdenada.unshift(record);
+    resetForm('d1');
     navigate('SUCCESS');
 }
 
-// LOGICA PAQUETERÍA CORREGIDA
 async function submitRecepcionPaquete() {
-    // Ya no hay input "Nombre Destinatario". El destinatario es STATE['ba1'].residente
     if(!STATE['ba1']?.residente) return alert("Debes seleccionar un residente");
     
     STATE.colrecibirunpaqueteOrdenada.unshift({
-        Nombre: STATE['ba1'].residente, // El residente seleccionado
+        Nombre: STATE['ba1'].residente, 
         Torre: STATE['ba1'].torre, 
         Departamento: STATE['ba1'].depto,
         Paqueteria: document.getElementById('ba1-paqueteria').value,
@@ -482,6 +494,7 @@ async function submitRecepcionPaquete() {
         Foto: STATE.photos['ba1'], 
         Fechayhora: new Date().toLocaleString()
     });
+    resetForm('ba1');
     navigate('SUCCESS');
 }
 
@@ -494,6 +507,7 @@ async function submitEntregaPaquete() {
         FotoBase64: STATE.photos['bb1'], FirmaBase64: signaturePad.toDataURL(),
         Fechayhora: new Date().toLocaleString()
     });
+    resetForm('bb1');
     navigate('SUCCESS');
 }
 
@@ -501,6 +515,7 @@ function submitQRResidente() {
     const val = document.getElementById('ea1-dni').value;
     if(!val) return alert("Escanea o escribe un código");
     STATE.colQRResidenteEA1.unshift({ Nombre: "Residente", DNI: val, Fecha: new Date().toLocaleString() });
+    resetForm('ea1');
     navigate('SUCCESS');
 }
 
@@ -508,6 +523,7 @@ function submitQRVisita() {
     const val = document.getElementById('eb1-code').value;
     if(!val) return alert("Escanea o escribe un código");
     STATE.colQRResidenteEB1.unshift({ Nombre: "Visita", Codigo: val, Fecha: new Date().toLocaleString() });
+    resetForm('eb1');
     navigate('SUCCESS');
 }
 
@@ -515,6 +531,7 @@ function submitResetNip() {
     const val = document.getElementById('ed1-user').value;
     if(!val) return alert("Escribe el usuario/DNI");
     STATE.colResetNip.unshift({ Usuario: val, Estatus: "Reseteado", Fecha: new Date().toLocaleString() });
+    resetForm('ed1');
     navigate('SUCCESS');
 }
 
@@ -526,6 +543,7 @@ function submitPersonalInterno(tipo) {
         Accion: tipo,
         Fecha: new Date().toLocaleString()
     });
+    resetForm('f1');
     navigate('SUCCESS');
 }
 
@@ -553,24 +571,21 @@ function showDetail(colName, idx, targetId) {
     const target = document.getElementById(targetId);
     let html = "";
     
-    // Personal Interno F2
     if(colName === 'colPersonalServicio') {
-        html = `<div class="data-field"><label>ID / NOMBRE</label><span>${item.Nombre}</span></div>
-                <div class="data-field"><label>MOVIMIENTO</label><span class="${item.Accion==='Entrada'?'status-aceptado':'status-rechazado'}">${item.Accion}</span></div>
-                <div class="data-field"><label>FECHA</label><span>${item.Fecha}</span></div>`;
+        html = `<div class="data-row"><span class="data-label">ID / NOMBRE</span><span class="data-value">${item.Nombre}</span></div>
+                <div class="data-row"><span class="data-label">MOVIMIENTO</span><span class="data-value ${item.Accion==='Entrada'?'status-success':'status-error'}">${item.Accion}</span></div>
+                <div class="data-row"><span class="data-label">FECHA</span><span class="data-value">${item.Fecha}</span></div>`;
     }
-    // Paquetería
     else if(colName === 'colrecibirunpaqueteOrdenada') {
-        html = `<div class="data-field"><label>DESTINATARIO</label><span>${item.Nombre}</span></div>
-                <div class="data-field"><label>PAQUETERIA</label><span>${item.Paqueteria}</span></div>
-                <div class="data-field"><label>ESTATUS</label><span class="${item.Estatus==='Aceptado'?'status-aceptado':'status-rechazado'}">${item.Estatus}</span></div>
-                <div class="data-field"><label>FOTO</label><img src="${item.Foto}" /></div>`;
+        html = `<div class="data-row"><span class="data-label">DESTINATARIO</span><span class="data-value">${item.Nombre}</span></div>
+                <div class="data-row"><span class="data-label">PAQUETERIA</span><span class="data-value">${item.Paqueteria}</span></div>
+                <div class="data-row"><span class="data-label">ESTATUS</span><span class="data-value ${item.Estatus==='Aceptado'?'status-success':'status-error'}">${item.Estatus}</span></div>
+                <div class="data-row"><span class="data-label">FOTO</span><img src="${item.Foto}" /></div>`;
     }
-    // Genérico
     else {
-        html = `<div class="data-field"><label>INFO</label><span>${item.Nombre || item.Usuario}</span></div>
-                <div class="data-field"><label>DETALLE</label><span>${item.Torre || item.Empresa || item.DNI || item.Codigo || ''}</span></div>
-                <div class="data-field"><label>FECHA</label><span>${item.Fecha || item['Fecha y hora'] || item.Fechayhora}</span></div>`;
+        html = `<div class="data-row"><span class="data-label">INFO</span><span class="data-value">${item.Nombre || item.Usuario}</span></div>
+                <div class="data-row"><span class="data-label">DETALLE</span><span class="data-value">${item.Torre || item.Empresa || item.DNI || item.Codigo || ''}</span></div>
+                <div class="data-row"><span class="data-label">FECHA</span><span class="data-value">${item.Fecha || item['Fecha y hora'] || item.Fechayhora}</span></div>`;
     }
     target.innerHTML = html;
 }
