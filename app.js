@@ -2,7 +2,7 @@
    1. ESTADO GLOBAL & COLECCIONES
    ========================================= */
 const STATE = {
-    // Simulación de base de datos de usuarios
+    // Base de datos simulada
     colBaserFiltrada: [
         { Torre: "A", Departamento: "101", Nombre: "Juan Perez", Número: "525511223344" },
         { Torre: "B", Departamento: "205", Nombre: "Ana Gomez", Número: "525599887766" },
@@ -14,15 +14,20 @@ const STATE = {
     colrecibirunpaqueteOrdenada: [], 
     colEntregasLocales: [],          
     colproveedorOrdenada: [],        
-    colPersonalServicio: [],         
+    colPersonalServicio: [],
+    // Colecciones del Módulo E
+    colQRResidenteEA1: [],
+    colQRResidenteEB1: [], // VFS
+    colResetNip: [],
     
     // Variables temporales y multimedia
     photos: {}, 
     signature: null,
-    currentContext: "" // Para saber quién abrió el modal
+    currentContext: "",
+    scannedText: ""
 };
 
-/* URLs de Logic Apps */
+/* URLs de Logic Apps (Webhooks) */
 const API = {
     GENERAL_WEBHOOK: "https://prod-13.mexicocentral.logic.azure.com:443/workflows/b9c72600a3b64e03b0e34f8ee930ca61/triggers/Recibir_Aviso_GET/paths/invoke?api-version=2016-10-01&sp=%2Ftriggers%2FRecibir_Aviso_GET%2Frun&sv=1.0&sig=JsqhAlXVbSjZ5QY-cXMGaAoX5ANtjjAoVM38gGYAG64",
     PAQUETE_RECIBIR: "https://prod-12.mexicocentral.logic.azure.com:443/workflows/974146d8a5cc450aa5687f5710d95e8a/triggers/Recibir_Paquete_HTTP/paths/invoke?api-version=2016-10-01&sp=%2Ftriggers%2FRecibir_Paquete_HTTP%2Frun&sv=1.0&sig=fF8pX4HPrHO1wCUY4097ARXMLgQ1gTaQ0zhC28wAtko",
@@ -46,7 +51,7 @@ const SCREENS = {
         </div>
     `,
     
-    // --- MÓDULO A: VISITAS (Igualado a estilo B1) ---
+    // --- MÓDULO A: VISITAS (Estilo Grid corregido) ---
     'A1': `
         <div class="screen active">
             <div class="btn-back" onclick="navigate('INICIO')">⬅ MENÚ</div>
@@ -69,7 +74,7 @@ const SCREENS = {
             <div class="btn-back" onclick="navigate('A1')">⬅ VOLVER</div>
             <h2 class="title" style="color:var(--guinda)">NUEVA VISITA</h2>
             <div class="form-box">
-                <div class="input-group"><label>NOMBRE VISITANTE</label><input type="text" id="aa1-nombre" class="ravens-input"></div>
+                <div class="input-group"><label>NOMBRE VISITANTE *</label><input type="text" id="aa1-nombre" class="ravens-input"></div>
                 <div class="row">
                     <div class="input-group"><label>TORRE</label><input type="text" id="aa1-torre" class="ravens-input" readonly></div>
                     <div class="input-group"><label>DEPTO</label><input type="text" id="aa1-depto" class="ravens-input" readonly></div>
@@ -106,7 +111,6 @@ const SCREENS = {
             </div>
         </div>
     `,
-
     'BA1': `
         <div class="screen active">
             <div class="btn-back" onclick="navigate('B1')">⬅ VOLVER</div>
@@ -145,17 +149,7 @@ const SCREENS = {
             <div class="btn-action" style="margin-top:20px; background:#111" onclick="navigate('BA2')"><span>📋 VER LIBRETA RECEPCIÓN</span></div>
         </div>
     `,
-
-    'BA2': `
-        <div class="screen active">
-            <div class="btn-back" onclick="navigate('BA1')">⬅ VOLVER</div>
-            <h2 class="title">LIBRETA RECEPCIÓN</h2>
-            <div class="gallery-container" id="gal-ba2"></div>
-            <div class="view-form" id="detail-ba2">
-                <p style="text-align:center; color:#888;">Selecciona un registro</p>
-            </div>
-        </div>
-    `,
+    'BA2': `<div class="screen active"><div class="btn-back" onclick="navigate('BA1')">⬅ VOLVER</div><h2 class="title">LIBRETA RECEPCIÓN</h2><div class="gallery-container" id="gal-ba2"></div><div class="view-form" id="detail-ba2"></div></div>`,
 
     'BB1': `
         <div class="screen active">
@@ -192,17 +186,7 @@ const SCREENS = {
              <div class="btn-action" style="margin-top:20px; background:#111" onclick="navigate('BB2')"><span>📋 VER LIBRETA ENTREGA</span></div>
         </div>
     `,
-
-    'BB2': `
-        <div class="screen active">
-            <div class="btn-back" onclick="navigate('BB1')">⬅ VOLVER</div>
-            <h2 class="title">LIBRETA ENTREGA</h2>
-            <div class="gallery-container" id="gal-bb2"></div>
-            <div class="view-form" id="detail-bb2">
-                 <p style="text-align:center; color:#888;">Selecciona un registro</p>
-            </div>
-        </div>
-    `,
+    'BB2': `<div class="screen active"><div class="btn-back" onclick="navigate('BB1')">⬅ VOLVER</div><h2 class="title">LIBRETA ENTREGA</h2><div class="gallery-container" id="gal-bb2"></div><div class="view-form" id="detail-bb2"></div></div>`,
 
     // --- MÓDULO D: PROVEEDORES ---
     'D1': `
@@ -233,15 +217,70 @@ const SCREENS = {
             </div>
         </div>
     `,
-    'D2': `
+    'D2': `<div class="screen active"><div class="btn-back" onclick="navigate('D1')">⬅ REGISTRO</div><h2 class="title">PROVEEDOR</h2><h3 class="subtitle">LIBRETA</h3><div class="gallery-container" id="gal-d2"></div><div class="view-form" id="detail-d2"><p style="text-align:center; color:#888;">Selecciona un registro.</p></div></div>`,
+
+    // --- MÓDULO E: MÓDULOS QR (NUEVO INTEGRADO) ---
+    'E1': `
         <div class="screen active">
-            <div class="btn-back" onclick="navigate('D1')">⬅ REGISTRO</div>
-            <h2 class="title">PROVEEDOR</h2>
-            <h3 class="subtitle">LIBRETA</h3>
-            <div class="gallery-container" id="gal-d2"></div>
-            <div class="view-form" id="detail-d2"><p style="text-align:center; color:#888;">Selecciona un registro.</p></div>
+            <div class="btn-back" onclick="navigate('INICIO')">⬅ MENÚ</div>
+            <h2 class="title">MÓDULOS QR</h2>
+            <div class="grid-menu">
+                <div class="menu-card" onclick="navigate('EA1')"><i class="fas fa-qrcode card-icon"></i><span class="card-text">QR RESIDENTE</span></div>
+                <div class="menu-card" onclick="navigate('EB1')"><i class="fas fa-qrcode card-icon"></i><span class="card-text">QR VISITA</span></div>
+                <div class="menu-card" onclick="navigate('EC1')"><i class="fas fa-check-circle card-icon"></i><span class="card-text">VALIDAR ACCESO</span></div>
+                <div class="menu-card" onclick="navigate('ED1')"><i class="fas fa-key card-icon"></i><span class="card-text">RESET NIP</span></div>
+            </div>
         </div>
     `,
+    'EA1': `
+        <div class="screen active">
+            <div class="btn-back" onclick="navigate('E1')">⬅ VOLVER</div>
+            <h2 class="title" style="color:var(--guinda)">QR RESIDENTE</h2>
+            <div class="form-box">
+                <div class="input-group"><label>DNI / CÓDIGO *</label><input type="text" id="ea1-dni" class="ravens-input"></div>
+                <button class="btn-save blue" style="margin-bottom:15px" onclick="openQRScanner('ea1-dni')">📸 ESCANEAR CÓDIGO</button>
+                <button class="btn-save" onclick="submitQRResidente()">ASIGNAR</button>
+            </div>
+            <div class="btn-action" style="margin-top:20px; background:#111" onclick="navigate('EA2')"><span>📋 VER LIBRETA RESIDENTES</span></div>
+        </div>
+    `,
+    'EA2': `<div class="screen active"><div class="btn-back" onclick="navigate('EA1')">⬅ VOLVER</div><h2 class="title">QR Residentes</h2><div class="gallery-container" id="gal-ea2"></div><div class="view-form" id="detail-ea2"></div></div>`,
+    
+    'EB1': `
+        <div class="screen active">
+            <div class="btn-back" onclick="navigate('E1')">⬅ VOLVER</div>
+            <h2 class="title" style="color:var(--guinda)">QR VISITA</h2>
+            <div class="form-box">
+                <div class="input-group"><label>CÓDIGO VFS *</label><input type="text" id="eb1-code" class="ravens-input"></div>
+                <button class="btn-save blue" style="margin-bottom:15px" onclick="openQRScanner('eb1-code')">📸 ESCANEAR CÓDIGO</button>
+                <button class="btn-save" onclick="submitQRVisita()">ASIGNAR</button>
+            </div>
+            <div class="btn-action" style="margin-top:20px; background:#111" onclick="navigate('EB2')"><span>📋 VER LIBRETA VFS</span></div>
+        </div>
+    `,
+    'EB2': `<div class="screen active"><div class="btn-back" onclick="navigate('EB1')">⬅ VOLVER</div><h2 class="title">QR Visitas</h2><div class="gallery-container" id="gal-eb2"></div><div class="view-form" id="detail-eb2"></div></div>`,
+
+    'EC1': `
+        <div class="screen active">
+            <div class="btn-back" onclick="navigate('E1')">⬅ VOLVER</div>
+            <h2 class="title">VALIDAR ACCESO</h2>
+            <div id="qr-reader" style="margin-bottom:20px;"></div>
+            <button class="btn-save" onclick="startValidationScanner()">INICIAR ESCÁNER</button>
+        </div>
+    `,
+
+    'ED1': `
+        <div class="screen active">
+            <div class="btn-back" onclick="navigate('E1')">⬅ VOLVER</div>
+            <h2 class="title" style="color:var(--guinda)">RESET NIP</h2>
+            <div class="form-box">
+                <div class="input-group"><label>DNI / USUARIO *</label><input type="text" id="ed1-user" class="ravens-input"></div>
+                <button class="btn-save" onclick="submitResetNip()">RESETEAR</button>
+            </div>
+            <div class="btn-action" style="margin-top:20px; background:#111" onclick="navigate('ED2')"><span>📋 HISTORIAL RESET</span></div>
+        </div>
+    `,
+    'ED2': `<div class="screen active"><div class="btn-back" onclick="navigate('ED1')">⬅ VOLVER</div><h2 class="title">Historial NIP</h2><div class="gallery-container" id="gal-ed2"></div><div class="view-form" id="detail-ed2"></div></div>`,
 
     // --- MÓDULO AC: PERSONAL DE SERVICIO ---
     'AC1': `
@@ -249,7 +288,7 @@ const SCREENS = {
             <div class="btn-back" onclick="navigate('A1')">⬅ VOLVER</div>
             <h2 class="title" style="color:var(--guinda)">PERSONAL SERVICIO</h2>
             <div class="form-box">
-                <div class="input-group"><label>NOMBRE</label><input type="text" id="ac1-nombre" class="ravens-input"></div>
+                <div class="input-group"><label>NOMBRE *</label><input type="text" id="ac1-nombre" class="ravens-input"></div>
                 <div class="row">
                     <div class="input-group"><label>TORRE</label><input type="text" id="ac1-torre" class="ravens-input" readonly></div>
                     <div class="input-group"><label>DEPTO</label><input type="text" id="ac1-depto" class="ravens-input" readonly></div>
@@ -266,9 +305,9 @@ const SCREENS = {
     'AC2': `<div class="screen active"><div class="btn-back" onclick="navigate('AC1')">⬅ VOLVER</div><h2 class="title">Libreta Personal</h2><div class="gallery-container" id="gal-ac2"></div><div class="view-form" id="detail-ac2"></div></div>`,
 
     // --- OTROS MÓDULOS ---
-    'E1': `<div class="screen active"><div class="btn-back" onclick="navigate('INICIO')">⬅ MENÚ</div><h2 class="title">QR ACCESO</h2><div id="qr-reader"></div><div class="row" style="margin-top:20px"><button class="btn-save" onclick="startQR()">ACTIVAR</button></div></div>`,
     'F1': `<div class="screen active"><div class="btn-back" onclick="navigate('INICIO')">⬅ MENÚ</div><h2 class="title">PERSONAL</h2><div class="form-box"><input type="text" placeholder="ID PERSONAL" class="ravens-input"><div class="row"><button class="btn-save">ENTRADA</button><button class="btn-save" style="background:var(--azul)">SALIDA</button></div></div></div>`,
-    'SUCCESS': `<div class="screen active" style="text-align:center; padding-top:100px;"><i class="fas fa-check-circle fa-5x" style="color:var(--verde)"></i><h2>ÉXITO</h2></div>`
+    'SUCCESS': `<div class="screen active" style="text-align:center; padding-top:100px;"><i class="fas fa-check-circle fa-5x" style="color:var(--verde)"></i><h2>ÉXITO</h2></div>`,
+    'FAILURE': `<div class="screen active" style="text-align:center; padding-top:100px;"><i class="fas fa-times-circle fa-5x" style="color:var(--rojo)"></i><h2>DENEGADO</h2></div>`
 };
 
 /* =========================================
@@ -276,6 +315,7 @@ const SCREENS = {
    ========================================= */
 let signaturePad;
 let html5QrCode;
+let activeScannerId = null; // Para saber qué input llenar con el QR modal
 
 function navigate(screen) {
     if(html5QrCode) html5QrCode.stop().catch(()=>{});
@@ -288,8 +328,11 @@ function navigate(screen) {
     if(screen === 'D2') renderGallery('colproveedorOrdenada', 'gal-d2');
     if(screen === 'BA2') renderGallery('colrecibirunpaqueteOrdenada', 'gal-ba2');
     if(screen === 'BB2') renderGallery('colEntregasLocales', 'gal-bb2');
+    if(screen === 'EA2') renderGallery('colQRResidenteEA1', 'gal-ea2');
+    if(screen === 'EB2') renderGallery('colQRResidenteEB1', 'gal-eb2');
+    if(screen === 'ED2') renderGallery('colResetNip', 'gal-ed2');
     
-    if(screen === 'SUCCESS') setTimeout(() => navigate('INICIO'), 2000);
+    if(screen === 'SUCCESS' || screen === 'FAILURE') setTimeout(() => navigate('INICIO'), 2000);
     
     window.scrollTo(0,0);
 }
@@ -330,19 +373,17 @@ function confirmResidente() {
         depto: item.Departamento 
     };
 
-    // Llenar inputs visuales si existen en la pantalla actual
+    // Llenar inputs visuales si existen
     if(document.getElementById(`${p}-torre`)) document.getElementById(`${p}-torre`).value = item.Torre;
     if(document.getElementById(`${p}-depto`)) document.getElementById(`${p}-depto`).value = item.Departamento;
     if(document.getElementById(`${p}-res-name`)) document.getElementById(`${p}-res-name`).value = item.Nombre;
-    
-    // Nota: El input de número ha sido eliminado visualmente, pero los datos están en STATE[p].numero
     
     closeResidenteModal();
 }
 
 function closeResidenteModal() { document.getElementById('modal-selector').classList.remove('active'); }
 
-// FIRMA & FOTO
+// FIRMA & FOTO & QR
 function initSignature() {
     setTimeout(() => {
         const canvas = document.getElementById('sig-canvas');
@@ -351,7 +392,7 @@ function initSignature() {
             canvas.height = canvas.parentElement.offsetHeight;
             signaturePad = new SignaturePad(canvas, { backgroundColor: 'rgb(255, 255, 255)' });
         }
-    }, 300); // Delay para asegurar que el DOM está renderizado
+    }, 300);
 }
 
 function clearSignature() {
@@ -371,6 +412,48 @@ function previewImg(input, id) {
     }
 }
 
+// FUNCIONES ESCÁNER QR
+function openQRScanner(inputId) {
+    activeScannerId = inputId;
+    document.getElementById('qr-modal').classList.add('active');
+    
+    html5QrCode = new Html5Qrcode("qr-reader-modal");
+    html5QrCode.start(
+        { facingMode: "environment" },
+        { fps: 10, qrbox: 250 },
+        (decodedText) => {
+            document.getElementById(activeScannerId).value = decodedText;
+            stopQR();
+        },
+        (errorMessage) => { /* Ignorar errores de frame */ }
+    ).catch(err => alert("Error cámara: " + err));
+}
+
+function startValidationScanner() {
+    html5QrCode = new Html5Qrcode("qr-reader");
+    html5QrCode.start(
+        { facingMode: "environment" },
+        { fps: 10, qrbox: 250 },
+        (decodedText) => {
+            html5QrCode.stop();
+            // Lógica simulada de validación (EC1)
+            if(decodedText.includes("ACCESO_VALIDO")) {
+                navigate('SUCCESS');
+            } else {
+                navigate('FAILURE');
+            }
+        }
+    );
+}
+
+function stopQR() {
+    if(html5QrCode) html5QrCode.stop().then(() => {
+        html5QrCode.clear();
+        document.getElementById('qr-modal').classList.remove('active');
+    }).catch(err => document.getElementById('qr-modal').classList.remove('active'));
+}
+
+
 // --- LÓGICA DE ENVÍO DE DATOS ---
 
 // 1. VISITAS (AA1) Y PERSONAL (AC1)
@@ -378,7 +461,6 @@ async function submitAviso(p) {
     const nom = document.getElementById(p+'-nombre').value;
     if(!nom || !STATE[p] || !STATE[p].residente) return alert("Faltan datos obligatorios o residente");
     
-    // Si es AA1, obtenemos placa
     let placa = "";
     if(p === 'aa1' && document.getElementById('aa1-placa')) {
         placa = document.getElementById('aa1-placa').value;
@@ -388,15 +470,13 @@ async function submitAviso(p) {
         Nombre: nom, 
         Torre: STATE[p].torre, 
         Depto: STATE[p].depto, 
-        Placa: placa, // Nuevo campo
+        Placa: placa,
         Estatus: "Nuevo",
         Fecha: new Date().toLocaleString() 
     };
     
     const col = p === 'aa1' ? 'colvisitaOrdenada' : 'colpersonalaviso';
     STATE[col].unshift(record);
-    
-    // Aquí iría el fetch a API.GENERAL_WEBHOOK usando record y STATE[p].numero
     navigate('SUCCESS');
 }
 
@@ -409,7 +489,6 @@ async function submitProveedor() {
     
     if(!nombre || !empresa || !telefono || !asunto) return alert("Faltan datos obligatorios");
 
-    // Datos del residente tomados del STATE (sin input visual de número)
     const residenteInfo = STATE['d1'] || {};
 
     const record = {
@@ -419,13 +498,6 @@ async function submitProveedor() {
     };
 
     STATE.colproveedorOrdenada.unshift(record);
-    
-    const urlParams = new URLSearchParams({
-        Nombre: nombre, Telefono: telefono, Torre: record.Torre, Depto: record.Departamento,
-        Empresa: empresa, Asunto: asunto, Tipo_Lista: "PROVEEDOR",
-        // Si la API pide el teléfono del residente para buscarlo, usamos residenteInfo.numero
-    });
-    
     navigate('SUCCESS');
 }
 
@@ -474,6 +546,30 @@ async function submitEntregaPaquete() {
     navigate('SUCCESS');
 }
 
+// 5. MÓDULO E: QR LOGIC
+function submitQRResidente() {
+    const dni = document.getElementById('ea1-dni').value;
+    if(!dni) return alert("Falta el código o DNI");
+    
+    STATE.colQRResidenteEA1.unshift({ Nombre: "Residente", DNI: dni, Fecha: new Date().toLocaleString() });
+    navigate('SUCCESS');
+}
+
+function submitQRVisita() {
+    const code = document.getElementById('eb1-code').value;
+    if(!code) return alert("Falta el código");
+
+    STATE.colQRResidenteEB1.unshift({ Nombre: "Visita VFS", Codigo: code, Fecha: new Date().toLocaleString() });
+    navigate('SUCCESS');
+}
+
+function submitResetNip() {
+    const user = document.getElementById('ed1-user').value;
+    if(!user) return alert("Falta usuario");
+    
+    STATE.colResetNip.unshift({ Usuario: user, Fecha: new Date().toLocaleString(), Estatus: "Reseteado" });
+    navigate('SUCCESS');
+}
 
 // --- RENDERIZADO DE GALERÍAS GENÉRICO ---
 function renderGallery(colName, elementId) {
@@ -488,8 +584,8 @@ function renderGallery(colName, elementId) {
     container.innerHTML = collection.map((item, idx) => `
         <div class="gallery-item" onclick="showDetail('${colName}', ${idx}, '${elementId.replace('gal','detail')}')">
             <div class="gallery-text">
-                <h4>${item.Nombre}</h4>
-                <p>${item.Torre || '?'} - ${item.Departamento || '?'} • ${item['Fecha y hora'] || item.Fechayhora || item.Fecha}</p>
+                <h4>${item.Nombre || item.Usuario || 'Registro'}</h4>
+                <p>${item.Torre || item.Codigo || item.DNI || ''} ${item.Departamento ? '- ' + item.Departamento : ''} • ${item['Fecha y hora'] || item.Fechayhora || item.Fecha}</p>
             </div>
             <i class="fas fa-chevron-right" style="color:#555"></i>
         </div>
@@ -501,7 +597,7 @@ function showDetail(colName, idx, targetId) {
     const target = document.getElementById(targetId);
     let htmlContent = "";
 
-    // PAQUETERÍA (BA2)
+    // Lógica de visualización por tipo de colección
     if(colName === 'colrecibirunpaqueteOrdenada') {
         htmlContent = `
             <div class="data-field"><label>NOMBRE</label><span>${item.Nombre}</span></div>
@@ -511,17 +607,15 @@ function showDetail(colName, idx, targetId) {
             <div class="data-field"><label>FOTO</label><img src="${item.Foto}" /></div>
         `;
     }
-    // ENTREGAS (BB2)
     else if(colName === 'colEntregasLocales') {
         htmlContent = `
             <div class="data-field"><label>RECIBIÓ</label><span>${item.Nombre}</span></div>
             <div class="data-field"><label>DEL RESIDENTE</label><span>${item.Residente}</span></div>
             <div class="data-field"><label>UBICACIÓN</label><span>${item.Torre} - ${item.Departamento}</span></div>
-            <div class="data-field"><label>FOTO EVIDENCIA</label><img src="${item.FotoBase64}" /></div>
+            <div class="data-field"><label>FOTO</label><img src="${item.FotoBase64}" /></div>
             <div class="data-field"><label>FIRMA</label><img src="${item.FirmaBase64}" style="background:white; padding:10px" /></div>
         `;
     }
-    // PROVEEDORES (D2)
     else if(colName === 'colproveedorOrdenada') {
         htmlContent = `
             <div class="data-field"><label>ESTATUS</label><span class="status-nuevo">${item.Estatus}</span></div>
@@ -530,11 +624,11 @@ function showDetail(colName, idx, targetId) {
             <div class="data-field"><label>UBICACIÓN</label><span>${item.Torre} - ${item.Departamento}</span></div>
         `;
     }
-    // GENÉRICO (Visitas/Personal)
     else {
+        // Genérico (Visita, Personal, QR)
         htmlContent = `
-            <div class="data-field"><label>NOMBRE</label><span>${item.Nombre}</span></div>
-            <div class="data-field"><label>UBICACIÓN</label><span>${item.Torre} - ${item.Depto || item.Departamento}</span></div>
+            <div class="data-field"><label>INFO</label><span>${item.Nombre || item.Usuario}</span></div>
+            <div class="data-field"><label>DETALLE</label><span>${item.DNI || item.Codigo || item.Torre + ' ' + (item.Depto||'')}</span></div>
             ${item.Placa ? `<div class="data-field"><label>PLACA</label><span>${item.Placa}</span></div>` : ''}
             <div class="data-field"><label>FECHA</label><span>${item.Fecha || item['Fecha y hora']}</span></div>
         `;
@@ -543,5 +637,4 @@ function showDetail(colName, idx, targetId) {
     target.innerHTML = htmlContent;
 }
 
-// Inicialización
 window.onload = () => navigate('INICIO');
