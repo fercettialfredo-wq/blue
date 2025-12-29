@@ -26,7 +26,7 @@ const STATE = {
 };
 
 /* =========================================
-   2. MOTOR DE PANTALLAS (TEMPLATES HTML ACTUALIZADOS)
+   2. MOTOR DE PANTALLAS
    ========================================= */
 const SCREENS = {
     // --- MENÚ PRINCIPAL ---
@@ -63,7 +63,13 @@ const SCREENS = {
     `,
     'AA1': `
         <div class="screen form-page">
-            <div class="form-title-section"><h2 class="form-title">Nueva Visita</h2><div class="cursor-pointer" onclick="navigate('A1')"><i class="fas fa-arrow-left fa-lg"></i></div></div>
+            <div class="form-title-section">
+                <h2 class="form-title">Nueva Visita</h2>
+                <div class="header-icons">
+                    <i class="fas fa-clipboard-list fa-lg cursor-pointer" onclick="navigate('AA2')"></i>
+                    <i class="fas fa-arrow-left fa-lg cursor-pointer" onclick="navigate('A1')"></i>
+                </div>
+            </div>
             <div class="form-container">
                 <div class="input-group"><label>Nombre Visitante *</label><input type="text" id="aa1-nombre" class="form-input"></div>
                 <div class="input-group"><label>Torre</label><input type="text" id="aa1-torre" class="form-input" readonly></div>
@@ -72,10 +78,10 @@ const SCREENS = {
                 <button class="btn-primary" onclick="openResidenteModal('aa1')"><i class="fas fa-search"></i> Seleccionar Residente</button>
                 <div class="input-group" style="margin-top:15px"><label>Placa</label><input type="text" id="aa1-placa" class="form-input"></div>
                 <div class="input-group"><label>Motivo</label><input type="text" id="aa1-motivo" class="form-input"></div>
+                
                 <div style="margin-top: 20px;">
                     <button class="btn-save" onclick="submitAviso('aa1')">Guardar</button>
-                    <button class="btn-reset" onclick="resetForm('aa1')">Limpiar</button>
-                    <button class="btn-secondary" onclick="navigate('AA2')">Ver Libreta Visitas</button>
+                    <button class="btn-clean" onclick="resetForm('aa1')"><i class="fas fa-eraser"></i> Limpiar</button>
                 </div>
             </div>
         </div>
@@ -94,7 +100,13 @@ const SCREENS = {
     `,
     'BA1': `
         <div class="screen form-page">
-            <div class="form-title-section"><h2 class="form-title">Recibir Paquete</h2><div class="cursor-pointer" onclick="navigate('B1')"><i class="fas fa-arrow-left fa-lg"></i></div></div>
+            <div class="form-title-section">
+                <h2 class="form-title">Recibir Paquete</h2>
+                <div class="header-icons">
+                    <i class="fas fa-clipboard-list fa-lg cursor-pointer" onclick="navigate('BA2')"></i>
+                    <i class="fas fa-arrow-left fa-lg cursor-pointer" onclick="navigate('B1')"></i>
+                </div>
+            </div>
             <div class="form-container">
                 <div class="input-group"><label>Torre</label><input type="text" id="ba1-torre" class="form-input" readonly></div>
                 <div class="input-group"><label>Departamento</label><input type="text" id="ba1-depto" class="form-input" readonly></div>
@@ -114,8 +126,7 @@ const SCREENS = {
                 
                 <div style="margin-top: 20px;">
                     <button class="btn-save" onclick="submitRecepcionPaquete()">Guardar</button>
-                    <button class="btn-reset" onclick="resetForm('ba1')">Limpiar</button>
-                    <button class="btn-secondary" onclick="navigate('BA2')">Ver Libreta</button>
+                    <button class="btn-clean" onclick="resetForm('ba1')"><i class="fas fa-eraser"></i> Limpiar</button>
                 </div>
             </div>
         </div>
@@ -124,7 +135,13 @@ const SCREENS = {
 
     'BB1': `
         <div class="screen form-page">
-            <div class="form-title-section"><h2 class="form-title">Entregar Paquete</h2><div class="cursor-pointer" onclick="navigate('B1')"><i class="fas fa-arrow-left fa-lg"></i></div></div>
+            <div class="form-title-section">
+                <h2 class="form-title">Entregar Paquete</h2>
+                <div class="header-icons">
+                    <i class="fas fa-clipboard-list fa-lg cursor-pointer" onclick="navigate('BB2')"></i>
+                    <i class="fas fa-arrow-left fa-lg cursor-pointer" onclick="navigate('B1')"></i>
+                </div>
+            </div>
             <div class="form-container">
                 <div class="input-group"><label>Quien Recibe *</label><input type="text" id="bb1-nombre" class="form-input"></div>
                 <div class="input-group"><label>Torre</label><input type="text" id="bb1-torre" class="form-input" readonly></div>
@@ -145,8 +162,7 @@ const SCREENS = {
                 
                 <div style="margin-top: 20px;">
                     <button class="btn-save" onclick="submitEntregaPaquete()">Guardar</button>
-                    <button class="btn-reset" onclick="resetForm('bb1')">Limpiar</button>
-                    <button class="btn-secondary" onclick="navigate('BB2')">Ver Libreta</button>
+                    <button class="btn-clean" onclick="resetForm('bb1')"><i class="fas fa-eraser"></i> Limpiar</button>
                 </div>
             </div>
         </div>
@@ -156,7 +172,13 @@ const SCREENS = {
     // --- MÓDULO D: PROVEEDOR ---
     'D1': `
         <div class="screen form-page">
-            <div class="form-title-section"><h2 class="form-title">Proveedor</h2><div class="cursor-pointer" onclick="navigate('INICIO')"><i class="fas fa-home fa-lg"></i></div></div>
+            <div class="form-title-section">
+                <h2 class="form-title">Proveedor</h2>
+                <div class="header-icons">
+                    <i class="fas fa-clipboard-list fa-lg cursor-pointer" onclick="navigate('D2')"></i>
+                    <i class="fas fa-arrow-left fa-lg cursor-pointer" onclick="navigate('INICIO')"></i>
+                </div>
+            </div>
             <div class="form-container">
                 <div class="input-group"><label>Nombre Proveedor *</label><input type="text" id="d1-nombre" class="form-input"></div>
                 <div class="input-group"><label>Empresa *</label><input type="text" id="d1-empresa" class="form-input"></div>
@@ -168,8 +190,7 @@ const SCREENS = {
                 
                 <div style="margin-top: 20px;">
                     <button class="btn-save" onclick="submitProveedor()">Guardar</button>
-                    <button class="btn-reset" onclick="resetForm('d1')">Limpiar</button>
-                    <button class="btn-secondary" onclick="navigate('D2')">Ver Libreta</button>
+                    <button class="btn-clean" onclick="resetForm('d1')"><i class="fas fa-eraser"></i> Limpiar</button>
                 </div>
             </div>
         </div>
@@ -183,21 +204,26 @@ const SCREENS = {
             <main class="main-menu-grid">
                 <div class="menu-item" onclick="navigate('EA1')"><div class="menu-item-icon"><i class="fas fa-qrcode"></i></div><div>QR Residente</div></div>
                 <div class="menu-item" onclick="navigate('EB1')"><div class="menu-item-icon"><i class="fas fa-qrcode"></i></div><div>QR Visita</div></div>
-                <div class="menu-item" onclick="navigate('EC1')"><div class="menu-item-icon"><i class="fas fa-check-circle"></i></div><div>Validar Acceso</div></div>
+                <div class="menu-item" onclick="navigate('EC1')"><div class="menu-item-icon"><i class="fas fa-calendar-check"></i></div><div>Eventos</div></div>
                 <div class="menu-item" onclick="navigate('ED1')"><div class="menu-item-icon"><i class="fas fa-key"></i></div><div>Reset NIP</div></div>
             </main>
         </div>
     `,
     'EA1': `
         <div class="screen form-page">
-            <div class="form-title-section"><h2 class="form-title">QR Residente</h2><div class="cursor-pointer" onclick="navigate('E1')"><i class="fas fa-arrow-left fa-lg"></i></div></div>
+            <div class="form-title-section">
+                <h2 class="form-title">QR Residente</h2>
+                <div class="header-icons">
+                    <i class="fas fa-clipboard-list fa-lg cursor-pointer" onclick="navigate('EA2')"></i>
+                    <i class="fas fa-arrow-left fa-lg cursor-pointer" onclick="navigate('E1')"></i>
+                </div>
+            </div>
             <div class="form-container">
                 <div class="input-group"><label>DNI / Código *</label><input type="text" id="ea1-dni" class="form-input"></div>
                 <button class="btn-primary" onclick="startScan('ea1-dni')"><i class="fas fa-camera"></i> Escanear Código</button>
                 <div style="margin-top: 20px;">
                     <button class="btn-save" onclick="submitQRResidente()">Asignar</button>
-                    <button class="btn-reset" onclick="resetForm('ea1')">Limpiar</button>
-                    <button class="btn-secondary" onclick="navigate('EA2')">Historial</button>
+                    <button class="btn-clean" onclick="resetForm('ea1')"><i class="fas fa-eraser"></i> Limpiar</button>
                 </div>
             </div>
         </div>
@@ -206,41 +232,52 @@ const SCREENS = {
     
     'EB1': `
         <div class="screen form-page">
-            <div class="form-title-section"><h2 class="form-title">QR Visita</h2><div class="cursor-pointer" onclick="navigate('E1')"><i class="fas fa-arrow-left fa-lg"></i></div></div>
+            <div class="form-title-section">
+                <h2 class="form-title">QR Visita</h2>
+                <div class="header-icons">
+                    <i class="fas fa-clipboard-list fa-lg cursor-pointer" onclick="navigate('EB2')"></i>
+                    <i class="fas fa-arrow-left fa-lg cursor-pointer" onclick="navigate('E1')"></i>
+                </div>
+            </div>
             <div class="form-container">
                 <div class="input-group"><label>Código VFS *</label><input type="text" id="eb1-code" class="form-input"></div>
                 <button class="btn-primary" onclick="startScan('eb1-code')"><i class="fas fa-camera"></i> Escanear Código</button>
                 <div style="margin-top: 20px;">
                     <button class="btn-save" onclick="submitQRVisita()">Asignar</button>
-                    <button class="btn-reset" onclick="resetForm('eb1')">Limpiar</button>
-                    <button class="btn-secondary" onclick="navigate('EB2')">Historial</button>
+                    <button class="btn-clean" onclick="resetForm('eb1')"><i class="fas fa-eraser"></i> Limpiar</button>
                 </div>
             </div>
         </div>
     `,
     'EB2': `<div class="screen form-page"><div class="form-title-section"><h2 class="form-title">Historial VFS</h2><div class="cursor-pointer" onclick="navigate('EB1')"><i class="fas fa-arrow-left fa-lg"></i></div></div><div class="form-container"><div id="gal-eb2" class="gallery-container"></div><div id="detail-eb2" class="detail-view"></div></div></div>`,
 
+    // --- EC1: EVENTOS (CAMBIADO DE VALIDAR ACCESO) ---
     'EC1': `
         <div class="screen form-page">
-            <div class="form-title-section"><h2 class="form-title">Validar Acceso</h2><div class="cursor-pointer" onclick="navigate('E1')"><i class="fas fa-arrow-left fa-lg"></i></div></div>
+            <div class="form-title-section"><h2 class="form-title">Registro Evento</h2><div class="cursor-pointer" onclick="navigate('E1')"><i class="fas fa-arrow-left fa-lg"></i></div></div>
             <div class="form-container" style="text-align: center; padding-top: 50px;">
-                <p style="color:#6b7280; margin-bottom:20px;">Escanea el QR para validar el acceso.</p>
-                <button class="btn-primary" style="padding: 20px;" onclick="startValidationScan()"><i class="fas fa-qrcode fa-2x"></i><br>INICIAR ESCÁNER</button>
+                <p style="color:#6b7280; margin-bottom:20px;">Escanea el QR del evento para validar.</p>
+                <button class="btn-primary" style="padding: 20px;" onclick="startValidationScan()"><i class="fas fa-qrcode fa-2x"></i><br>ESCANEAR EVENTO</button>
             </div>
         </div>
     `,
     
-    // --- ED1: RESET NIP (Solo Manual) ---
+    // --- ED1: RESET NIP ---
     'ED1': `
         <div class="screen form-page">
-            <div class="form-title-section"><h2 class="form-title">Reset NIP</h2><div class="cursor-pointer" onclick="navigate('E1')"><i class="fas fa-arrow-left fa-lg"></i></div></div>
+            <div class="form-title-section">
+                <h2 class="form-title">Reset NIP</h2>
+                <div class="header-icons">
+                    <i class="fas fa-clipboard-list fa-lg cursor-pointer" onclick="navigate('ED2')"></i>
+                    <i class="fas fa-arrow-left fa-lg cursor-pointer" onclick="navigate('E1')"></i>
+                </div>
+            </div>
             <div class="form-container">
                 <div class="input-group"><label>Usuario / DNI *</label><input type="text" id="ed1-user" class="form-input"></div>
                 
                 <div style="margin-top: 20px;">
                     <button class="btn-save" onclick="submitResetNip()">Resetear</button>
-                    <button class="btn-reset" onclick="resetForm('ed1')">Limpiar</button>
-                    <button class="btn-secondary" onclick="navigate('ED2')">Historial</button>
+                    <button class="btn-clean" onclick="resetForm('ed1')"><i class="fas fa-eraser"></i> Limpiar</button>
                 </div>
             </div>
         </div>
@@ -250,7 +287,13 @@ const SCREENS = {
     // --- PERSONAL INTERNO (F1) ---
     'F1': `
         <div class="screen form-page">
-            <div class="form-title-section"><h2 class="form-title">Personal Interno</h2><div class="cursor-pointer" onclick="navigate('INICIO')"><i class="fas fa-home fa-lg"></i></div></div>
+            <div class="form-title-section">
+                <h2 class="form-title">Personal Interno</h2>
+                <div class="header-icons">
+                    <i class="fas fa-clipboard-list fa-lg cursor-pointer" onclick="navigate('F2')"></i>
+                    <i class="fas fa-arrow-left fa-lg cursor-pointer" onclick="navigate('INICIO')"></i>
+                </div>
+            </div>
             <div class="form-container">
                 <div class="input-group"><label>ID Personal *</label><input type="text" id="f1-id" class="form-input" placeholder="Escanea gafete"></div>
                 <button class="btn-primary" style="background:#333" onclick="startScan('f1-id')"><i class="fas fa-camera"></i> Escanear Gafete</button>
@@ -259,8 +302,7 @@ const SCREENS = {
                     <button class="btn-save" onclick="submitPersonalInterno('Entrada')">Entrada</button>
                     <button class="btn-secondary" style="background:#3860B2" onclick="submitPersonalInterno('Salida')">Salida</button>
                 </div>
-                <button class="btn-secondary" onclick="navigate('F2')">Bitácora Personal</button>
-                <button class="btn-reset" onclick="resetForm('f1')">Limpiar</button>
+                <button class="btn-clean" onclick="resetForm('f1')"><i class="fas fa-eraser"></i> Limpiar</button>
             </div>
         </div>
     `,
@@ -269,7 +311,13 @@ const SCREENS = {
     // --- AC: PERSONAL SERVICIO ---
     'AC1': `
         <div class="screen form-page">
-            <div class="form-title-section"><h2 class="form-title">Personal Servicio</h2><div class="cursor-pointer" onclick="navigate('A1')"><i class="fas fa-arrow-left fa-lg"></i></div></div>
+            <div class="form-title-section">
+                <h2 class="form-title">Personal Servicio</h2>
+                <div class="header-icons">
+                    <i class="fas fa-clipboard-list fa-lg cursor-pointer" onclick="navigate('AC2')"></i>
+                    <i class="fas fa-arrow-left fa-lg cursor-pointer" onclick="navigate('A1')"></i>
+                </div>
+            </div>
             <div class="form-container">
                 <div class="input-group"><label>Nombre *</label><input type="text" id="ac1-nombre" class="form-input"></div>
                 <div class="input-group"><label>Torre</label><input type="text" id="ac1-torre" class="form-input" readonly></div>
@@ -281,8 +329,7 @@ const SCREENS = {
                 
                 <div style="margin-top: 20px;">
                     <button class="btn-save" onclick="submitAviso('ac1')">Guardar</button>
-                    <button class="btn-reset" onclick="resetForm('ac1')">Limpiar</button>
-                    <button class="btn-secondary" onclick="navigate('AC2')">Libreta Personal</button>
+                    <button class="btn-clean" onclick="resetForm('ac1')"><i class="fas fa-eraser"></i> Limpiar</button>
                 </div>
             </div>
         </div>
@@ -324,18 +371,15 @@ function navigate(screen) {
 
 // RESET FORM LOGIC
 function resetForm(prefix) {
-    // Limpia inputs
     const inputs = document.querySelectorAll(`[id^="${prefix}-"]`);
     inputs.forEach(input => {
         if(input.tagName === 'SELECT' && input.options.length > 0) input.selectedIndex = 0;
         else input.value = '';
     });
     
-    // Limpia estado interno
     STATE[prefix] = {};
-    
-    // Limpia fotos y firmas
     if(STATE.photos[prefix]) STATE.photos[prefix] = null;
+    
     const prev = document.getElementById(`prev-${prefix}`);
     if(prev) { prev.style.backgroundImage = 'none'; prev.classList.add('hidden'); }
     
@@ -465,7 +509,7 @@ async function submitAviso(p) {
     };
     STATE[p === 'aa1' ? 'colvisitaOrdenada' : 'colpersonalaviso'].unshift(record);
     
-    resetForm(p); // AUTO-RESET
+    resetForm(p); 
     navigate('SUCCESS');
 }
 
