@@ -2,55 +2,56 @@
 <html lang="es">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
-    <title>GROUP RAVENS - ACCESS CONTROL</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>Ravens Access</title>
     
     <script src="https://cdn.jsdelivr.net/npm/signature_pad@4.0.0/dist/signature_pad.umd.min.js"></script>
     <script src="https://unpkg.com/html5-qrcode" type="text/javascript"></script>
-    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" rel="stylesheet">
-    <link href="https://fonts.googleapis.com/css2?family=Lato:wght@300;400;700;900&display=swap" rel="stylesheet">
-    <link rel="stylesheet" href="style.css">
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.2/css/all.min.css" rel="stylesheet">
+    <link href="style.css" rel="stylesheet">
 </head>
 <body>
 
-<div id="app-frame">
-    <header>
-        <div class="brand" onclick="navigate('INICIO')">
-            <div class="logo-box">R</div>
-            <div class="brand-text">
-                <h1>RAVENS</h1>
-                <p>ACCESS SYSTEM</p>
+    <div id="app-container">
+        <div id="viewport" class="h-full"></div>
+    </div>
+
+    <div id="modal-selector" class="modal-overlay">
+        <div class="modal-box">
+            <div class="modal-header">
+                <h3>Seleccionar Residente</h3>
+                <i class="fas fa-times cursor-pointer" onclick="closeResidenteModal()"></i>
+            </div>
+            <div class="modal-body">
+                <div class="input-group">
+                    <label>Torre</label>
+                    <select id="sel-torre" class="form-input" onchange="updateDeptos()"></select>
+                </div>
+                <div class="input-group">
+                    <label>Departamento</label>
+                    <select id="sel-depto" class="form-input" onchange="updateResidentes()"></select>
+                </div>
+                <div class="input-group">
+                    <label>Residente</label>
+                    <select id="sel-nombre" class="form-input"></select>
+                </div>
+                <button class="btn-save" onclick="confirmResidente()">Confirmar</button>
             </div>
         </div>
-        <div class="status-led"></div>
-    </header>
+    </div>
 
-    <main id="viewport">
-        </main>
-</div>
-
-<div id="modal-selector" class="modal-residente">
-    <div class="selector-box">
-        <h3>SELECCIONAR RESIDENTE</h3>
-        <div class="input-group">
-            <label>TORRE</label>
-            <select id="sel-torre" class="ravens-input" onchange="updateDeptos()"></select>
-        </div>
-        <div class="input-group">
-            <label>DEPARTAMENTO</label>
-            <select id="sel-depto" class="ravens-input" onchange="updateResidentes()"></select>
-        </div>
-        <div class="input-group">
-            <label>RESIDENTE</label>
-            <select id="sel-nombre" class="ravens-input"></select>
-        </div>
-        <div class="modal-buttons">
-            <button class="btn-save btn-cancel" onclick="closeResidenteModal()">CANCELAR</button>
-            <button class="btn-save" onclick="confirmResidente()">ACEPTAR</button>
+    <div id="qr-modal" class="modal-overlay">
+        <div class="modal-box">
+            <div class="modal-header">
+                <h3>Escanear Código</h3>
+            </div>
+            <div class="modal-body" style="text-align: center;">
+                <div id="qr-reader-view" style="width: 100%; border-radius: 8px; overflow: hidden;"></div>
+                <button class="btn-secondary" style="margin-top: 15px;" onclick="closeQRScanner()">Cancelar</button>
+            </div>
         </div>
     </div>
-</div>
 
-<script src="app.js"></script>
+    <script src="app.js"></script>
 </body>
 </html>
