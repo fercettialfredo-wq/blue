@@ -21,12 +21,15 @@ main { flex: 1; overflow-y: auto; padding: 20px; -webkit-overflow-scrolling: tou
 .grid-menu { display: grid; grid-template-columns: 1fr 1fr; gap: 15px; }
 .menu-card { background: var(--gris-claro); border: 1px solid var(--borde); border-radius: 18px; height: 130px; display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 10px; cursor: pointer; }
 .menu-card:active { border-color: var(--dorado); }
-/* Estilo especial para el menú de paquetería B1 */
+.menu-card.full { grid-column: span 2; }
+
+/* Menú Paquetería Grande (B1) */
 .menu-card.big { height: 200px; background: var(--guinda); border: none; }
+.menu-card.big.blue { background: var(--azul); }
 .menu-card.big i { font-size: 3rem; }
 
 /* TEXTOS */
-.title { margin: 0 0 20px 0; font-weight: 900; letter-spacing: 1px; }
+.title { margin: 0 0 20px 0; font-weight: 900; letter-spacing: 1px; text-transform: uppercase; }
 .subtitle { color: #888; font-weight: 300; margin-top: -15px; margin-bottom: 20px; font-size: 0.9rem; text-transform: uppercase; }
 
 /* BOTONES */
@@ -57,9 +60,9 @@ select.ravens-input { appearance: none; }
 .data-field { margin-bottom: 12px; border-bottom: 1px solid #eee; padding-bottom: 5px; }
 .data-field label { display: block; font-size: 0.6rem; font-weight: 900; color: #aaa; text-transform: uppercase; }
 .data-field span { font-size: 1.1rem; font-weight: 400; color: #222; display: block; }
-.data-field img { max-width: 100%; border-radius: 10px; border: 1px solid #ccc; margin-top: 5px; }
+.data-field img { max-width: 100%; border-radius: 10px; border: 1px solid #ccc; margin-top: 5px; display: block; }
 
-/* ESTADOS */
+/* ESTADOS (Basado en YAMLs) */
 .status-nuevo { color: blue !important; font-weight: bold; }
 .status-aceptado { color: green !important; font-weight: bold; }
 .status-rechazado { color: red !important; font-weight: bold; }
@@ -77,6 +80,7 @@ select.ravens-input { appearance: none; }
 .selector-box { background: #1a1a1a; padding: 25px; border-radius: 25px; border: 1px solid var(--guinda); width: 100%; max-width: 400px; }
 .modal-buttons { display: flex; justify-content: space-between; margin-top: 15px; }
 
+/* ANIMACIONES */
 .screen { animation: slideUp 0.3s ease; }
 .row { display: flex; gap: 10px; }
 .hidden { display: none !important; }
