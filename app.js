@@ -16,6 +16,7 @@ const STATE = {
     colPersonalServicio: [], 
     colQRResidenteEA1: [],
     colQRResidenteEB1: [], 
+    colEventos: [], // Nueva colección para EC1
     colResetNip: [],
     
     // Auxiliares
@@ -66,8 +67,8 @@ const SCREENS = {
             <div class="form-title-section">
                 <h2 class="form-title">Nueva Visita</h2>
                 <div class="header-icons">
-                    <i class="fas fa-clipboard-list fa-lg cursor-pointer" onclick="navigate('AA2')"></i>
                     <i class="fas fa-arrow-left fa-lg cursor-pointer" onclick="navigate('A1')"></i>
+                    <i class="fas fa-clipboard-list fa-lg cursor-pointer" onclick="navigate('AA2')"></i>
                 </div>
             </div>
             <div class="form-container">
@@ -103,8 +104,8 @@ const SCREENS = {
             <div class="form-title-section">
                 <h2 class="form-title">Recibir Paquete</h2>
                 <div class="header-icons">
-                    <i class="fas fa-clipboard-list fa-lg cursor-pointer" onclick="navigate('BA2')"></i>
                     <i class="fas fa-arrow-left fa-lg cursor-pointer" onclick="navigate('B1')"></i>
+                    <i class="fas fa-clipboard-list fa-lg cursor-pointer" onclick="navigate('BA2')"></i>
                 </div>
             </div>
             <div class="form-container">
@@ -138,8 +139,8 @@ const SCREENS = {
             <div class="form-title-section">
                 <h2 class="form-title">Entregar Paquete</h2>
                 <div class="header-icons">
-                    <i class="fas fa-clipboard-list fa-lg cursor-pointer" onclick="navigate('BB2')"></i>
                     <i class="fas fa-arrow-left fa-lg cursor-pointer" onclick="navigate('B1')"></i>
+                    <i class="fas fa-clipboard-list fa-lg cursor-pointer" onclick="navigate('BB2')"></i>
                 </div>
             </div>
             <div class="form-container">
@@ -175,8 +176,8 @@ const SCREENS = {
             <div class="form-title-section">
                 <h2 class="form-title">Proveedor</h2>
                 <div class="header-icons">
-                    <i class="fas fa-clipboard-list fa-lg cursor-pointer" onclick="navigate('D2')"></i>
                     <i class="fas fa-arrow-left fa-lg cursor-pointer" onclick="navigate('INICIO')"></i>
+                    <i class="fas fa-clipboard-list fa-lg cursor-pointer" onclick="navigate('D2')"></i>
                 </div>
             </div>
             <div class="form-container">
@@ -205,7 +206,7 @@ const SCREENS = {
                 <div class="menu-item" onclick="navigate('EA1')"><div class="menu-item-icon"><i class="fas fa-qrcode"></i></div><div>QR Residente</div></div>
                 <div class="menu-item" onclick="navigate('EB1')"><div class="menu-item-icon"><i class="fas fa-qrcode"></i></div><div>QR Visita</div></div>
                 <div class="menu-item" onclick="navigate('EC1')"><div class="menu-item-icon"><i class="fas fa-calendar-check"></i></div><div>Eventos</div></div>
-                <div class="menu-item" onclick="navigate('ED1')"><div class="menu-item-icon"><i class="fas fa-key"></i></div><div>Reset NIP</div></div>
+                <div class="menu-item" onclick="navigate('ED1')"><div class="menu-item-icon"><i class="fas fa-id-card"></i></div><div>Proveedor NIP</div></div>
             </main>
         </div>
     `,
@@ -214,8 +215,8 @@ const SCREENS = {
             <div class="form-title-section">
                 <h2 class="form-title">QR Residente</h2>
                 <div class="header-icons">
-                    <i class="fas fa-clipboard-list fa-lg cursor-pointer" onclick="navigate('EA2')"></i>
                     <i class="fas fa-arrow-left fa-lg cursor-pointer" onclick="navigate('E1')"></i>
+                    <i class="fas fa-clipboard-list fa-lg cursor-pointer" onclick="navigate('EA2')"></i>
                 </div>
             </div>
             <div class="form-container">
@@ -235,8 +236,8 @@ const SCREENS = {
             <div class="form-title-section">
                 <h2 class="form-title">QR Visita</h2>
                 <div class="header-icons">
-                    <i class="fas fa-clipboard-list fa-lg cursor-pointer" onclick="navigate('EB2')"></i>
                     <i class="fas fa-arrow-left fa-lg cursor-pointer" onclick="navigate('E1')"></i>
+                    <i class="fas fa-clipboard-list fa-lg cursor-pointer" onclick="navigate('EB2')"></i>
                 </div>
             </div>
             <div class="form-container">
@@ -251,32 +252,42 @@ const SCREENS = {
     `,
     'EB2': `<div class="screen form-page"><div class="form-title-section"><h2 class="form-title">Historial VFS</h2><div class="cursor-pointer" onclick="navigate('EB1')"><i class="fas fa-arrow-left fa-lg"></i></div></div><div class="form-container"><div id="gal-eb2" class="gallery-container"></div><div id="detail-eb2" class="detail-view"></div></div></div>`,
 
-    // --- EC1: EVENTOS (CAMBIADO DE VALIDAR ACCESO) ---
+    // --- EC1: EVENTOS (ESTANDARIZADO) ---
     'EC1': `
         <div class="screen form-page">
-            <div class="form-title-section"><h2 class="form-title">Registro Evento</h2><div class="cursor-pointer" onclick="navigate('E1')"><i class="fas fa-arrow-left fa-lg"></i></div></div>
-            <div class="form-container" style="text-align: center; padding-top: 50px;">
-                <p style="color:#6b7280; margin-bottom:20px;">Escanea el QR del evento para validar.</p>
-                <button class="btn-primary" style="padding: 20px;" onclick="startValidationScan()"><i class="fas fa-qrcode fa-2x"></i><br>ESCANEAR EVENTO</button>
-            </div>
-        </div>
-    `,
-    
-    // --- ED1: RESET NIP ---
-    'ED1': `
-        <div class="screen form-page">
             <div class="form-title-section">
-                <h2 class="form-title">Reset NIP</h2>
+                <h2 class="form-title">Validar Evento</h2>
                 <div class="header-icons">
-                    <i class="fas fa-clipboard-list fa-lg cursor-pointer" onclick="navigate('ED2')"></i>
                     <i class="fas fa-arrow-left fa-lg cursor-pointer" onclick="navigate('E1')"></i>
                 </div>
             </div>
             <div class="form-container">
-                <div class="input-group"><label>Usuario / DNI *</label><input type="text" id="ed1-user" class="form-input"></div>
+                <div class="input-group"><label>Código Evento *</label><input type="text" id="ec1-code" class="form-input"></div>
+                <button class="btn-primary" onclick="startScan('ec1-code')"><i class="fas fa-camera"></i> Escanear QR</button>
                 
                 <div style="margin-top: 20px;">
-                    <button class="btn-save" onclick="submitResetNip()">Resetear</button>
+                    <button class="btn-save" onclick="submitEvento()">Validar Acceso</button>
+                    <button class="btn-clean" onclick="resetForm('ec1')"><i class="fas fa-eraser"></i> Limpiar</button>
+                </div>
+            </div>
+        </div>
+    `,
+    
+    // --- ED1: PROVEEDOR NIP (VALIDAR) ---
+    'ED1': `
+        <div class="screen form-page">
+            <div class="form-title-section">
+                <h2 class="form-title">Proveedor NIP</h2>
+                <div class="header-icons">
+                    <i class="fas fa-arrow-left fa-lg cursor-pointer" onclick="navigate('E1')"></i>
+                    <i class="fas fa-clipboard-list fa-lg cursor-pointer" onclick="navigate('ED2')"></i>
+                </div>
+            </div>
+            <div class="form-container">
+                <div class="input-group"><label>NIP / DNI *</label><input type="text" id="ed1-nip" class="form-input"></div>
+                
+                <div style="margin-top: 20px;">
+                    <button class="btn-save" onclick="submitProveedorNIP()">Validar</button>
                     <button class="btn-clean" onclick="resetForm('ed1')"><i class="fas fa-eraser"></i> Limpiar</button>
                 </div>
             </div>
@@ -290,8 +301,8 @@ const SCREENS = {
             <div class="form-title-section">
                 <h2 class="form-title">Personal Interno</h2>
                 <div class="header-icons">
-                    <i class="fas fa-clipboard-list fa-lg cursor-pointer" onclick="navigate('F2')"></i>
                     <i class="fas fa-arrow-left fa-lg cursor-pointer" onclick="navigate('INICIO')"></i>
+                    <i class="fas fa-clipboard-list fa-lg cursor-pointer" onclick="navigate('F2')"></i>
                 </div>
             </div>
             <div class="form-container">
@@ -314,8 +325,8 @@ const SCREENS = {
             <div class="form-title-section">
                 <h2 class="form-title">Personal Servicio</h2>
                 <div class="header-icons">
-                    <i class="fas fa-clipboard-list fa-lg cursor-pointer" onclick="navigate('AC2')"></i>
                     <i class="fas fa-arrow-left fa-lg cursor-pointer" onclick="navigate('A1')"></i>
+                    <i class="fas fa-clipboard-list fa-lg cursor-pointer" onclick="navigate('AC2')"></i>
                 </div>
             </div>
             <div class="form-container">
@@ -475,22 +486,6 @@ function startScan(targetInputId) {
     });
 }
 
-function startValidationScan() {
-    document.getElementById('qr-modal').classList.add('active');
-    html5QrCode = new Html5Qrcode("qr-reader-view");
-    html5QrCode.start(
-        { facingMode: "environment" },
-        { fps: 10, qrbox: 250 },
-        (decodedText) => {
-            html5QrCode.stop().then(() => html5QrCode.clear());
-            document.getElementById('qr-modal').classList.remove('active');
-            if(decodedText.length > 5) navigate('SUCCESS');
-            else navigate('FAILURE');
-        },
-        () => {}
-    );
-}
-
 function closeQRScanner() {
     if(html5QrCode) html5QrCode.stop().then(() => html5QrCode.clear()).catch(()=>{});
     document.getElementById('qr-modal').classList.remove('active');
@@ -571,12 +566,18 @@ function submitQRVisita() {
     navigate('SUCCESS');
 }
 
-function submitResetNip() {
-    const val = document.getElementById('ed1-user').value;
-    if(!val) return alert("Escribe el usuario/DNI");
-    STATE.colResetNip.unshift({ Usuario: val, Estatus: "Reseteado", Fecha: new Date().toLocaleString() });
-    resetForm('ed1');
-    navigate('SUCCESS');
+function submitEvento() {
+    const val = document.getElementById('ec1-code').value;
+    if(!val) return alert("Escanea o escribe un código");
+    navigate('SUCCESS'); // Simulación de validación OK
+}
+
+function submitProveedorNIP() {
+    const val = document.getElementById('ed1-nip').value;
+    if(!val) return alert("Escribe el NIP/DNI");
+    // Lógica de validación simulada
+    if(val.length > 3) navigate('SUCCESS');
+    else navigate('FAILURE');
 }
 
 function submitPersonalInterno(tipo) {
