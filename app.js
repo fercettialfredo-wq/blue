@@ -2,29 +2,31 @@
    1. ESTADO GLOBAL & COLECCIONES
    ========================================= */
 const STATE = {
-    // Simulación de base de datos de residentes (PROVEEDOR en Power Apps usa esto para filtrar)
+    // Simulación de base de datos de residentes (PROVEEDOR en Power Apps)
     colBaserFiltrada: [
         { Torre: "A", Departamento: "101", Nombre: "Juan Perez", Número: "525511223344" },
         { Torre: "B", Departamento: "205", Nombre: "Ana Gomez", Número: "525599887766" },
         { Torre: "C", Departamento: "PH1", Nombre: "Luis Miguel", Número: "525500000000" }
     ],
-    colvisitaOrdenada: [],      // AA2
-    colpersonalaviso: [],       // AC2
-    colrecibirunpaquete: [],    // BA2
-    colEntregasLocales: [],     // BB2
-    colproveedorOrdenada: [],   // D2 (Integrado)
+    // Colecciones de datos
+    colvisitaOrdenada: [],      // AA2 (Visitas)
+    colpersonalaviso: [],       // AC2 (Personal)
+    colrecibirunpaqueteOrdenada: [], // BA2 (Recepción Paquetes)
+    colEntregasLocales: [],     // BB2 (Entrega Paquetes)
+    colproveedorOrdenada: [],   // D2 (Proveedores)
     colPersonalServicio: [],    // F2
+    
+    // Multimedia
     photos: {}, 
     signature: null,
-    currentContext: "" // Para saber quién abrió el modal (aa1, ac1, d1)
+    currentContext: "" // Para saber quién abrió el modal (aa1, ac1, d1, ba1, bb1)
 };
 
-/* URLs de Logic Apps */
+/* URLs de Logic Apps (Webhooks) */
 const API = {
     VISITA: "https://prod-13.mexicocentral.logic.azure.com:443/workflows/b9c72600a3b64e03b0e34f8ee930ca61/triggers/Recibir_Aviso_GET/paths/invoke?api-version=2016-10-01&sp=%2Ftriggers%2FRecibir_Aviso_GET%2Frun&sv=1.0&sig=JsqhAlXVbSjZ5QY-cXMGaAoX5ANtjjAoVM38gGYAG64",
-    PAQUETE: "https://prod-12.mexicocentral.logic.azure.com:443/workflows/974146d8a5cc450aa5687f5710d95e8a/triggers/Recibir_Paquete_HTTP/paths/invoke?api-version=2016-10-01&sp=%2Ftriggers%2FRecibir_Paquete_HTTP%2Frun&sv=1.0&sig=fF8pX4HPrHO1wCUY4097ARXMLgQ1gTaQ0zhC28wAtko",
-    ENTREGA: "https://prod-30.mexicocentral.logic.azure.com:443/workflows/58581c1247984f83b83d030640287167/triggers/Entregar_Paquete_HTTP/paths/invoke?api-version=2016-10-01&sp=%2Ftriggers%2FEntregar_Paquete_HTTP%2Frun&sv=1.0&sig=Nce4hIr59n137JvNnSheVZN_UX_VGrR-uX-fbISjg9k",
-    // Nota: El YAML D1 usa la misma URL base que Visita pero con Tipo_Lista=PROVEEDOR, se manejará en submitProveedor
+    PAQUETE_RECIBIR: "https://prod-12.mexicocentral.logic.azure.com:443/workflows/974146d8a5cc450aa5687f5710d95e8a/triggers/Recibir_Paquete_HTTP/paths/invoke?api-version=2016-10-01&sp=%2Ftriggers%2FRecibir_Paquete_HTTP%2Frun&sv=1.0&sig=fF8pX4HPrHO1wCUY4097ARXMLgQ1gTaQ0zhC28wAtko",
+    PAQUETE_ENTREGAR: "https://prod-30.mexicocentral.logic.azure.com:443/workflows/58581c1247984f83b83d030640287167/triggers/Entregar_Paquete_HTTP/paths/invoke?api-version=2016-10-01&sp=%2Ftriggers%2FEntregar_Paquete_HTTP%2Frun&sv=1.0&sig=Nce4hIr59n137JvNnSheVZN_UX_VGrR-uX-fbISjg9k",
     PROVEEDOR: "https://prod-13.mexicocentral.logic.azure.com:443/workflows/b9c72600a3b64e03b0e34f8ee930ca61/triggers/Recibir_Aviso_GET/paths/invoke?api-version=2016-10-01&sp=%2Ftriggers%2FRecibir_Aviso_GET%2Frun&sv=1.0&sig=JsqhAlXVbSjZ5QY-cXMGaAoX5ANtjjAoVM38gGYAG64"
 };
 
@@ -44,6 +46,7 @@ const SCREENS = {
             </div>
         </div>
     `,
+    
     // --- MÓDULO A: VISITAS ---
     'A1': `
         <div class="screen active">
@@ -75,43 +78,120 @@ const SCREENS = {
     `,
     'AA2': `<div class="screen active"><div class="btn-back" onclick="navigate('AA1')">⬅ VOLVER</div><h2 class="title">Libreta Visitas</h2><div class="gallery-container" id="gal-aa2"></div><div class="view-form" id="detail-aa2"></div></div>`,
 
-    // --- MÓDULO B: PAQUETERÍA ---
+    // --- MÓDULO B: PAQUETERÍA (INTEGRADO DE B1, BA1, BB1, BA2, BB2) ---
     'B1': `
         <div class="screen active">
             <div class="btn-back" onclick="navigate('INICIO')">⬅ MENÚ</div>
             <h2 class="title">PAQUETERÍA</h2>
-            <div class="action-list">
-                <div class="btn-action primary" onclick="navigate('BA1')"><span>⬇ RECIBIR PAQUETE</span><i class="fas fa-chevron-right"></i></div>
-                <div class="btn-action blue" onclick="navigate('BB1')"><span>⬆ ENTREGAR</span><i class="fas fa-chevron-right"></i></div>
+            <h3 class="subtitle">¿Qué deseas hacer?</h3>
+            <div class="grid-menu">
+                <div class="menu-card big" onclick="navigate('BA1')">
+                    <i class="fas fa-box card-icon" style="color:white"></i>
+                    <span class="card-text" style="color:white">RECIBIR UN PAQUETE</span>
+                </div>
+                <div class="menu-card big" onclick="navigate('BB1')">
+                    <i class="fas fa-truck-loading card-icon" style="color:white"></i>
+                    <span class="card-text" style="color:white">ENTREGAR UN PAQUETE</span>
+                </div>
             </div>
         </div>
     `,
+
     'BA1': `
         <div class="screen active">
             <div class="btn-back" onclick="navigate('B1')">⬅ VOLVER</div>
-            <h2 class="title" style="color:var(--guinda)">RECEPCIÓN</h2>
+            <h2 class="title" style="color:var(--guinda)">RECIBIR PAQUETE</h2>
             <div class="form-box">
-                <div class="input-group"><label>PARA RESIDENTE</label><input type="text" id="ba1-nombre" class="ravens-input"></div>
-                <div class="input-group"><label>EMPRESA</label><input type="text" id="ba1-empresa" class="ravens-input"></div>
-                <div class="input-group"><label>FOTO</label>
+                <div class="input-group"><label>NOMBRE DESTINATARIO *</label><input type="text" id="ba1-nombre" class="ravens-input"></div>
+                
+                <div class="row">
+                    <div class="input-group"><label>TORRE</label><input type="text" id="ba1-torre" class="ravens-input" readonly></div>
+                    <div class="input-group"><label>DEPTO</label><input type="text" id="ba1-depto" class="ravens-input" readonly></div>
+                </div>
+                <div class="input-group"><label>RESIDENTE</label><input type="text" id="ba1-res-name" class="ravens-input" readonly></div>
+                <div class="input-group"><label>NÚMERO *</label><input type="text" id="ba1-numero" class="ravens-input" readonly></div>
+                
+                <button class="btn-save blue" style="margin-bottom:15px" onclick="openResidenteModal('ba1')">🔍 SELECCIONAR RESIDENTE</button>
+                
+                <div class="input-group"><label>PAQUETERÍA *</label><input type="text" id="ba1-paqueteria" class="ravens-input"></div>
+                
+                <div class="input-group">
+                    <label>ESTATUS *</label>
+                    <select id="ba1-estatus" class="ravens-input">
+                        <option value="Aceptado">Aceptado</option>
+                        <option value="Dañado/Devuelto">Dañado/Devuelto</option>
+                    </select>
+                </div>
+
+                <div class="input-group"><label>FOTO *</label>
                     <div class="photo-area" onclick="document.getElementById('cam-ba1').click()">
                         <input type="file" id="cam-ba1" hidden accept="image/*" capture="environment" onchange="previewImg(this, 'ba1')">
                         <div id="prev-ba1" class="photo-preview hidden"></div>
                         <span>📷 TOMAR FOTO</span>
                     </div>
                 </div>
-                <button class="btn-save" onclick="submitPaquete('ba1')">GUARDAR</button>
+                
+                <button class="btn-save" onclick="submitRecepcionPaquete()">GUARDAR</button>
+            </div>
+            <div class="btn-action" style="margin-top:20px; background:#111" onclick="navigate('BA2')"><span>📋 VER LIBRETA RECEPCIÓN</span></div>
+        </div>
+    `,
+
+    'BA2': `
+        <div class="screen active">
+            <div class="btn-back" onclick="navigate('BA1')">⬅ VOLVER</div>
+            <h2 class="title">LIBRETA RECEPCIÓN</h2>
+            <div class="gallery-container" id="gal-ba2"></div>
+            <div class="view-form" id="detail-ba2">
+                <p style="text-align:center; color:#888;">Selecciona un registro</p>
             </div>
         </div>
     `,
+
     'BB1': `
         <div class="screen active">
             <div class="btn-back" onclick="navigate('B1')">⬅ VOLVER</div>
-            <h2 class="title" style="color:var(--azul)">ENTREGA</h2>
+            <h2 class="title" style="color:var(--azul)">ENTREGAR PAQUETE</h2>
             <div class="form-box">
-                <div class="input-group"><label>QUIEN RECIBE</label><input type="text" id="bb1-nombre" class="ravens-input"></div>
-                <div class="input-group"><label>FIRMA</label><div class="signature-wrapper"><canvas id="sig-canvas"></canvas></div></div>
-                <button class="btn-save" style="background:var(--azul)" onclick="submitEntrega('bb1')">CONFIRMAR</button>
+                <div class="input-group"><label>NOMBRE QUIEN RECIBE *</label><input type="text" id="bb1-nombre" class="ravens-input"></div>
+
+                <div class="row">
+                    <div class="input-group"><label>TORRE</label><input type="text" id="bb1-torre" class="ravens-input" readonly></div>
+                    <div class="input-group"><label>DEPTO</label><input type="text" id="bb1-depto" class="ravens-input" readonly></div>
+                </div>
+                <div class="input-group"><label>RESIDENTE</label><input type="text" id="bb1-res-name" class="ravens-input" readonly></div>
+                <div class="input-group"><label>NÚMERO</label><input type="text" id="bb1-numero" class="ravens-input" readonly></div>
+
+                <button class="btn-save blue" style="margin-bottom:15px" onclick="openResidenteModal('bb1')">🔍 SELECCIONAR RESIDENTE</button>
+
+                <div class="input-group"><label>FOTO *</label>
+                    <div class="photo-area" onclick="document.getElementById('cam-bb1').click()">
+                        <input type="file" id="cam-bb1" hidden accept="image/*" capture="environment" onchange="previewImg(this, 'bb1')">
+                        <div id="prev-bb1" class="photo-preview hidden"></div>
+                        <span>📷 TOMAR FOTO</span>
+                    </div>
+                </div>
+
+                <div class="input-group"><label>FIRMA *</label>
+                    <div class="signature-wrapper">
+                        <canvas id="sig-canvas"></canvas>
+                        <i class="fas fa-times-circle" style="position:absolute; bottom:5px; right:5px; color:red; z-index:10; font-size:20px;" onclick="clearSignature()"></i>
+                    </div>
+                </div>
+                
+                <button class="btn-save" onclick="submitEntregaPaquete()">GUARDAR</button>
+            </div>
+             <div class="btn-action" style="margin-top:20px; background:#111" onclick="navigate('BB2')"><span>📋 VER LIBRETA ENTREGA</span></div>
+        </div>
+    `,
+
+    'BB2': `
+        <div class="screen active">
+            <div class="btn-back" onclick="navigate('BB1')">⬅ VOLVER</div>
+            <h2 class="title">LIBRETA ENTREGA</h2>
+            <div class="gallery-container" id="gal-bb2"></div>
+            <div class="view-form" id="detail-bb2">
+                 <p style="text-align:center; color:#888;">Selecciona un registro</p>
             </div>
         </div>
     `,
@@ -128,35 +208,27 @@ const SCREENS = {
                 <div class="input-group"><label>EMPRESA *</label><input type="text" id="d1-empresa" class="ravens-input"></div>
                 <div class="input-group"><label>NÚMERO TEL *</label><input type="tel" id="d1-telefono" class="ravens-input"></div>
                 <div class="input-group"><label>ASUNTO *</label><input type="text" id="d1-asunto" class="ravens-input"></div>
-
                 <hr style="border:0; border-top:1px solid #333; margin: 15px 0;">
-
                 <div class="row">
                     <div class="input-group"><label>TORRE</label><input type="text" id="d1-torre" class="ravens-input" readonly></div>
                     <div class="input-group"><label>DEPTO</label><input type="text" id="d1-depto" class="ravens-input" readonly></div>
                 </div>
                 <div class="input-group"><label>RESIDENTE</label><input type="text" id="d1-res-name" class="ravens-input" readonly></div>
-                
                 <button class="btn-save blue" style="margin-bottom:15px" onclick="openResidenteModal('d1')">🔍 SELECCIONAR RESIDENTE</button>
                 <button class="btn-save" onclick="submitProveedor()">GUARDAR</button>
             </div>
-
             <div class="btn-action" style="margin-top:20px; background:#111" onclick="navigate('D2')">
                 <span>📓 VER LIBRETA</span><i class="fas fa-chevron-right"></i>
             </div>
         </div>
     `,
-
     'D2': `
         <div class="screen active">
             <div class="btn-back" onclick="navigate('D1')">⬅ REGISTRO</div>
             <h2 class="title">PROVEEDOR</h2>
             <h3 class="subtitle">LIBRETA</h3>
-            <div class="gallery-container" id="gal-d2">
-                </div>
-            <div class="view-form" id="detail-d2">
-                <p style="text-align:center; color:#888;">Selecciona un registro para ver detalles.</p>
-            </div>
+            <div class="gallery-container" id="gal-d2"></div>
+            <div class="view-form" id="detail-d2"><p style="text-align:center; color:#888;">Selecciona un registro.</p></div>
         </div>
     `,
 
@@ -203,14 +275,16 @@ function navigate(screen) {
     if(screen === 'BB1') initSignature();
     if(screen === 'AA2') renderGallery('colvisitaOrdenada', 'gal-aa2');
     if(screen === 'AC2') renderGallery('colpersonalaviso', 'gal-ac2');
-    if(screen === 'D2') renderGallery('colproveedorOrdenada', 'gal-d2'); // Inicializa libreta proveedores
+    if(screen === 'D2') renderGallery('colproveedorOrdenada', 'gal-d2');
+    if(screen === 'BA2') renderGallery('colrecibirunpaqueteOrdenada', 'gal-ba2');
+    if(screen === 'BB2') renderGallery('colEntregasLocales', 'gal-bb2');
     
     if(screen === 'SUCCESS') setTimeout(() => navigate('INICIO'), 2000);
     
     window.scrollTo(0,0);
 }
 
-// SELECTOR RESIDENTE (Lógica común para Visita, Personal y Proveedor)
+// SELECTOR RESIDENTE
 function openResidenteModal(ctx) {
     STATE.currentContext = ctx;
     const torres = [...new Set(STATE.colBaserFiltrada.map(i => i.Torre))];
@@ -222,7 +296,6 @@ function openResidenteModal(ctx) {
 function updateDeptos() {
     const t = document.getElementById('sel-torre').value;
     const deptos = STATE.colBaserFiltrada.filter(i => i.Torre === t).map(i => i.Departamento);
-    // Truco del YAML: Ordenar numéricamente si es posible, aquí simple sort
     deptos.sort(); 
     document.getElementById('sel-depto').innerHTML = deptos.map(d => `<option value="${d}">${d}</option>`).join('');
     updateResidentes();
@@ -236,10 +309,10 @@ function updateResidentes() {
 }
 
 function confirmResidente() {
-    const p = STATE.currentContext; // 'aa1', 'ac1' o 'd1'
+    const p = STATE.currentContext; // 'aa1', 'ac1', 'd1', 'ba1', 'bb1'
     const item = STATE.colBaserFiltrada.find(i => i.Nombre === document.getElementById('sel-nombre').value);
     
-    // Guardamos datos temporales en el estado del contexto
+    // Guardamos datos
     STATE[p] = { 
         residente: item.Nombre, 
         numero: item.Número, 
@@ -247,10 +320,11 @@ function confirmResidente() {
         depto: item.Departamento 
     };
 
-    // Llenamos inputs visuales (asegura que existan en el HTML de la pantalla actual)
+    // Llenamos inputs visuales
     if(document.getElementById(`${p}-torre`)) document.getElementById(`${p}-torre`).value = item.Torre;
     if(document.getElementById(`${p}-depto`)) document.getElementById(`${p}-depto`).value = item.Departamento;
     if(document.getElementById(`${p}-res-name`)) document.getElementById(`${p}-res-name`).value = item.Nombre;
+    if(document.getElementById(`${p}-numero`)) document.getElementById(`${p}-numero`).value = item.Número;
     
     closeResidenteModal();
 }
@@ -259,8 +333,18 @@ function closeResidenteModal() { document.getElementById('modal-selector').class
 
 // FIRMA & FOTO
 function initSignature() {
-    const canvas = document.getElementById('sig-canvas');
-    signaturePad = new SignaturePad(canvas, { backgroundColor: 'rgb(255, 255, 255)' });
+    setTimeout(() => {
+        const canvas = document.getElementById('sig-canvas');
+        if(canvas) {
+            canvas.width = canvas.parentElement.offsetWidth;
+            canvas.height = canvas.parentElement.offsetHeight;
+            signaturePad = new SignaturePad(canvas, { backgroundColor: 'rgb(255, 255, 255)' });
+        }
+    }, 300); // Pequeño delay para asegurar renderizado
+}
+
+function clearSignature() {
+    if(signaturePad) signaturePad.clear();
 }
 
 function previewImg(input, id) {
@@ -276,7 +360,9 @@ function previewImg(input, id) {
     }
 }
 
-// --- LOGICA DE ENVÍO DE VISITAS Y PERSONAL (A1, AC1) ---
+// --- LOGICA DE ENVÍOS ---
+
+// 1. VISITAS y PERSONAL (A1, AC1)
 async function submitAviso(p) {
     const nom = document.getElementById(p+'-nombre').value;
     if(!nom || !STATE[p] || !STATE[p].residente) return alert("Faltan datos obligatorios o residente");
@@ -285,97 +371,109 @@ async function submitAviso(p) {
         Nombre: nom, 
         Torre: STATE[p].torre, 
         Depto: STATE[p].depto, 
-        Estatus: "Nuevo", // Valor por defecto
+        Estatus: "Nuevo",
         Fecha: new Date().toLocaleString() 
     };
     
     const col = p === 'aa1' ? 'colvisitaOrdenada' : 'colpersonalaviso';
     STATE[col].unshift(record);
-    
-    // Llamada simulada a la API (fetch real comentado para evitar errores de CORS en demo local)
-    // await fetch(API.VISITA, { method: 'POST' ... });
-    
     navigate('SUCCESS');
 }
 
-// --- LOGICA DE ENVÍO DE PROVEEDOR (D1) ---
+// 2. PROVEEDOR (D1)
 async function submitProveedor() {
-    // 1. Obtener datos del DOM
     const nombre = document.getElementById('d1-nombre').value;
     const empresa = document.getElementById('d1-empresa').value;
     const telefono = document.getElementById('d1-telefono').value;
     const asunto = document.getElementById('d1-asunto').value;
     
-    // 2. Validación
-    if(!nombre || !empresa || !telefono || !asunto) {
-        alert("❌ Error. Revisa los datos obligatorios.");
-        return;
-    }
+    if(!nombre || !empresa || !telefono || !asunto) return alert("Faltan datos obligatorios");
 
-    // Datos del residente (pueden ser opcionales según YAML, pero aquí los tomamos si existen)
-    const torre = STATE['d1']?.torre || "";
-    const depto = STATE['d1']?.depto || "";
-    const condominio = "TorreCentral"; // Simulado varPermiso.Condominio
-
-    // 3. Guardar en memoria (Colección colproveedorOrdenada)
-    const newRecord = {
-        Nombre: nombre,
-        Empresa: empresa,
-        Número: telefono,
-        Asunto: asunto,
-        Torre: torre,
-        Departamento: depto,
-        'Fecha y hora': new Date().toLocaleString(), // Formato local simple
-        Estatus: "Nuevo"
+    const record = {
+        Nombre: nombre, Empresa: empresa, Número: telefono, Asunto: asunto,
+        Torre: STATE['d1']?.torre || "", Departamento: STATE['d1']?.depto || "",
+        'Fecha y hora': new Date().toLocaleString(), Estatus: "Nuevo"
     };
 
-    STATE.colproveedorOrdenada.unshift(newRecord);
-
-    // 4. Construcción de URL (Lógica del botón Guardar en D1.pa.yaml)
-    // EncodeUrl simulado con encodeURIComponent
-    const urlParams = new URLSearchParams({
-        Nombre: nombre,
-        Telefono: telefono,
-        Torre: torre,
-        Depto: depto,
-        Empresa: empresa,
-        Asunto: asunto,
-        Condominio: condominio,
-        Hora: new Date().toLocaleTimeString([], {hour: '2-digit', minute:'2-digit'}),
-        Ignorar: new Date().toISOString().replace(/[-:T.]/g, ''),
-        Tipo_Lista: "PROVEEDOR"
-    });
-
-    const fullUrl = `${API.PROVEEDOR}&${urlParams.toString()}`;
+    STATE.colproveedorOrdenada.unshift(record);
     
-    console.log("Enviando a Azure Logic App:", fullUrl);
-
-    // 5. Fetch (Disparar flujo)
-    try {
-        await fetch(fullUrl, { method: 'GET' }); // Trigger GET
-        navigate('SUCCESS');
-    } catch (e) {
-        console.error("Error de red", e);
-        // A efectos de demo, navegamos a success aunque falle el fetch (cors)
-        navigate('SUCCESS');
-    }
+    // Construcción URL similar a YAML
+    const urlParams = new URLSearchParams({
+        Nombre: nombre, Telefono: telefono, Torre: record.Torre, Depto: record.Departamento,
+        Empresa: empresa, Asunto: asunto, Tipo_Lista: "PROVEEDOR"
+    });
+    
+    // fetch(API.PROVEEDOR + '&' + urlParams.toString())...
+    navigate('SUCCESS');
 }
 
-// --- RENDERIZADO DE GALERÍAS (D2, AA2, AC2) ---
+// 3. RECIBIR PAQUETE (BA1)
+async function submitRecepcionPaquete() {
+    const nombre = document.getElementById('ba1-nombre').value;
+    const paqueteria = document.getElementById('ba1-paqueteria').value;
+    const estatus = document.getElementById('ba1-estatus').value;
+    const foto = STATE.photos['ba1'];
+
+    if(!nombre || !paqueteria || !estatus || !foto || !STATE['ba1']?.residente) return alert("Faltan datos, residente o foto.");
+
+    const record = {
+        Nombre: nombre,
+        Torre: STATE['ba1'].torre,
+        Departamento: STATE['ba1'].depto,
+        Número: STATE['ba1'].numero,
+        Paqueteria: paqueteria,
+        Estatus: estatus,
+        Foto: foto, // Base64
+        Fechayhora: new Date().toLocaleString()
+    };
+
+    STATE.colrecibirunpaqueteOrdenada.unshift(record);
+    
+    // Trigger Logic App (Simulado)
+    // fetch(API.PAQUETE_RECIBIR...)
+    navigate('SUCCESS');
+}
+
+// 4. ENTREGAR PAQUETE (BB1)
+async function submitEntregaPaquete() {
+    const nombre = document.getElementById('bb1-nombre').value;
+    const foto = STATE.photos['bb1'];
+    
+    if(!nombre || !STATE['bb1']?.residente || !foto || signaturePad.isEmpty()) return alert("Faltan datos, firma o foto.");
+
+    const record = {
+        Nombre: nombre, // Quien recibe
+        Residente: STATE['bb1'].residente, // Dueño del paquete
+        Torre: STATE['bb1'].torre,
+        Departamento: STATE['bb1'].depto,
+        FotoBase64: foto,
+        FirmaBase64: signaturePad.toDataURL(),
+        Fechayhora: new Date().toLocaleString()
+    };
+
+    STATE.colEntregasLocales.unshift(record);
+    
+    // Trigger Logic App
+    // fetch(API.PAQUETE_ENTREGAR...)
+    navigate('SUCCESS');
+}
+
+
+// --- RENDERIZADO DE GALERÍAS GENÉRICO ---
 function renderGallery(colName, elementId) {
     const container = document.getElementById(elementId);
     const collection = STATE[colName];
 
-    if(collection.length === 0) {
+    if(!collection || collection.length === 0) {
         container.innerHTML = `<div style="padding:20px; text-align:center; color:#555">No hay registros recientes.</div>`;
         return;
     }
 
     container.innerHTML = collection.map((item, idx) => `
-        <div class="gallery-item" onclick="showDetail('${colName}', ${idx}, '${elementId === 'gal-d2' ? 'detail-d2' : (elementId === 'gal-aa2' ? 'detail-aa2' : 'detail-ac2')}')">
+        <div class="gallery-item" onclick="showDetail('${colName}', ${idx}, '${elementId.replace('gal','detail')}')">
             <div class="gallery-text">
                 <h4>${item.Nombre}</h4>
-                <p>${item.Torre || '?'} - ${item.Departamento || '?'} • ${item['Fecha y hora'] || item.Fecha}</p>
+                <p>${item.Torre || '?'} - ${item.Departamento || '?'} • ${item['Fecha y hora'] || item.Fechayhora || item.Fecha}</p>
             </div>
             <i class="fas fa-chevron-right" style="color:#555"></i>
         </div>
@@ -385,34 +483,47 @@ function renderGallery(colName, elementId) {
 function showDetail(colName, idx, targetId) {
     const item = STATE[colName][idx];
     const target = document.getElementById(targetId);
+    let htmlContent = "";
 
-    // Determinar color del estatus (Lógica de D2.pa.yaml)
-    let statusClass = "";
-    if (item.Estatus === "Aceptado") statusClass = "status-aceptado";
-    else if (item.Estatus === "Rechazado") statusClass = "status-rechazado";
-    else statusClass = "status-nuevo"; // "Nuevo" o cualquier otro -> Azul/Negro por defecto
-
-    // Template específico para Proveedores (D2)
-    if(colName === 'colproveedorOrdenada') {
-        target.innerHTML = `
-            <div class="view-form">
-                <div class="data-field"><label>ESTATUS</label><span class="${statusClass}">${item.Estatus}</span></div>
-                <div class="data-field"><label>NOMBRE</label><span>${item.Nombre}</span></div>
-                <div class="data-field"><label>EMPRESA</label><span>${item.Empresa}</span></div>
-                <div class="data-field"><label>ASUNTO</label><span>${item.Asunto}</span></div>
-                <div class="data-field"><label>UBICACIÓN</label><span>Torre ${item.Torre} - Depto ${item.Departamento}</span></div>
-                <div class="data-field"><label>FECHA</label><span>${item['Fecha y hora']}</span></div>
-            </div>`;
-    } else {
-        // Template genérico (Visitas/Personal)
-        target.innerHTML = `
-            <div class="view-form">
-                <div class="data-field"><label>Nombre</label><span>${item.Nombre}</span></div>
-                <div class="data-field"><label>Estatus</label><span class="${statusClass}">${item.Estatus}</span></div>
-                <div class="data-field"><label>Ubicación</label><span>Torre ${item.Torre} - Depto ${item.Departamento || item.Depto}</span></div>
-                <div class="data-field"><label>Fecha</label><span>${item.Fecha}</span></div>
-            </div>`;
+    // Template para PAQUETERÍA (BA2)
+    if(colName === 'colrecibirunpaqueteOrdenada') {
+        htmlContent = `
+            <div class="data-field"><label>NOMBRE</label><span>${item.Nombre}</span></div>
+            <div class="data-field"><label>PAQUETERÍA</label><span>${item.Paqueteria}</span></div>
+            <div class="data-field"><label>ESTATUS</label><span class="${item.Estatus === 'Aceptado' ? 'status-aceptado' : 'status-rechazado'}">${item.Estatus}</span></div>
+            <div class="data-field"><label>UBICACIÓN</label><span>${item.Torre} - ${item.Departamento}</span></div>
+            <div class="data-field"><label>FOTO</label><img src="${item.Foto}" /></div>
+        `;
     }
+    // Template para ENTREGAS (BB2)
+    else if(colName === 'colEntregasLocales') {
+        htmlContent = `
+            <div class="data-field"><label>RECIBIÓ</label><span>${item.Nombre}</span></div>
+            <div class="data-field"><label>DEL RESIDENTE</label><span>${item.Residente}</span></div>
+            <div class="data-field"><label>UBICACIÓN</label><span>${item.Torre} - ${item.Departamento}</span></div>
+            <div class="data-field"><label>FOTO EVIDENCIA</label><img src="${item.FotoBase64}" /></div>
+            <div class="data-field"><label>FIRMA</label><img src="${item.FirmaBase64}" style="background:white; padding:10px" /></div>
+        `;
+    }
+    // Template PROVEEDORES (D2)
+    else if(colName === 'colproveedorOrdenada') {
+        htmlContent = `
+            <div class="data-field"><label>ESTATUS</label><span class="status-nuevo">${item.Estatus}</span></div>
+            <div class="data-field"><label>EMPRESA</label><span>${item.Empresa}</span></div>
+            <div class="data-field"><label>NOMBRE</label><span>${item.Nombre}</span></div>
+            <div class="data-field"><label>UBICACIÓN</label><span>${item.Torre} - ${item.Departamento}</span></div>
+        `;
+    }
+    // Template GENÉRICO (Visitas/Personal)
+    else {
+        htmlContent = `
+            <div class="data-field"><label>NOMBRE</label><span>${item.Nombre}</span></div>
+            <div class="data-field"><label>UBICACIÓN</label><span>${item.Torre} - ${item.Depto || item.Departamento}</span></div>
+            <div class="data-field"><label>FECHA</label><span>${item.Fecha}</span></div>
+        `;
+    }
+
+    target.innerHTML = htmlContent;
 }
 
 // Inicialización
