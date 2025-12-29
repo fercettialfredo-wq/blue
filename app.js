@@ -2,33 +2,29 @@
    1. ESTADO GLOBAL & COLECCIONES
    ========================================= */
 const STATE = {
-    // Simulación de base de datos de usuarios (UsuariosApp)
+    // Simulación de base de datos de usuarios
     colBaserFiltrada: [
         { Torre: "A", Departamento: "101", Nombre: "Juan Perez", Número: "525511223344" },
         { Torre: "B", Departamento: "205", Nombre: "Ana Gomez", Número: "525599887766" },
         { Torre: "C", Departamento: "PH1", Nombre: "Luis Miguel", Número: "525500000000" }
     ],
     // Colecciones de la App
-    colvisitaOrdenada: [],           // AA2
-    colpersonalaviso: [],            // AC2
-    colrecibirunpaqueteOrdenada: [], // BA2
-    colEntregasLocales: [],          // BB2
-    colproveedorOrdenada: [],        // D2
-    colPersonalServicio: [],         // F2
-    colQRResidenteEA1: [],
+    colvisitaOrdenada: [],           
+    colpersonalaviso: [],            
+    colrecibirunpaqueteOrdenada: [], 
+    colEntregasLocales: [],          
+    colproveedorOrdenada: [],        
+    colPersonalServicio: [],         
     
     // Variables temporales y multimedia
     photos: {}, 
     signature: null,
-    currentContext: "" // Para saber quién abrió el modal (aa1, ac1, d1, ba1, bb1)
+    currentContext: "" // Para saber quién abrió el modal
 };
 
-/* URLs de Logic Apps (Webhooks extraídos de los YAML) */
+/* URLs de Logic Apps */
 const API = {
-    // Webhook para Visita, Proveedor y Personal (Mismo Endpoint, diferente Tipo_Lista)
     GENERAL_WEBHOOK: "https://prod-13.mexicocentral.logic.azure.com:443/workflows/b9c72600a3b64e03b0e34f8ee930ca61/triggers/Recibir_Aviso_GET/paths/invoke?api-version=2016-10-01&sp=%2Ftriggers%2FRecibir_Aviso_GET%2Frun&sv=1.0&sig=JsqhAlXVbSjZ5QY-cXMGaAoX5ANtjjAoVM38gGYAG64",
-    
-    // Webhooks específicos de Paquetería
     PAQUETE_RECIBIR: "https://prod-12.mexicocentral.logic.azure.com:443/workflows/974146d8a5cc450aa5687f5710d95e8a/triggers/Recibir_Paquete_HTTP/paths/invoke?api-version=2016-10-01&sp=%2Ftriggers%2FRecibir_Paquete_HTTP%2Frun&sv=1.0&sig=fF8pX4HPrHO1wCUY4097ARXMLgQ1gTaQ0zhC28wAtko",
     PAQUETE_ENTREGAR: "https://prod-30.mexicocentral.logic.azure.com:443/workflows/58581c1247984f83b83d030640287167/triggers/Entregar_Paquete_HTTP/paths/invoke?api-version=2016-10-01&sp=%2Ftriggers%2FEntregar_Paquete_HTTP%2Frun&sv=1.0&sig=Nce4hIr59n137JvNnSheVZN_UX_VGrR-uX-fbISjg9k"
 };
@@ -50,14 +46,21 @@ const SCREENS = {
         </div>
     `,
     
-    // --- MÓDULO A: VISITAS ---
+    // --- MÓDULO A: VISITAS (Igualado a estilo B1) ---
     'A1': `
         <div class="screen active">
             <div class="btn-back" onclick="navigate('INICIO')">⬅ MENÚ</div>
             <h2 class="title">VISITAS</h2>
-            <div class="action-list">
-                <div class="btn-action primary" onclick="navigate('AA1')"><span>➕ REGISTRAR VISITA</span><i class="fas fa-chevron-right"></i></div>
-                <div class="btn-action primary" style="background:#4a0012" onclick="navigate('AC1')"><span>👷 PERSONAL DE SERVICIO</span><i class="fas fa-chevron-right"></i></div>
+            <h3 class="subtitle">¿Qué deseas hacer?</h3>
+            <div class="grid-menu">
+                <div class="menu-card big" onclick="navigate('AA1')">
+                    <i class="fas fa-user-plus card-icon" style="color:white"></i>
+                    <span class="card-text" style="color:white; font-weight:900;">REGISTRAR VISITA</span>
+                </div>
+                <div class="menu-card big" style="background:#4a0012" onclick="navigate('AC1')">
+                    <i class="fas fa-hard-hat card-icon" style="color:white"></i>
+                    <span class="card-text" style="color:white; font-weight:900;">PERSONAL DE SERVICIO</span>
+                </div>
             </div>
         </div>
     `,
@@ -72,9 +75,11 @@ const SCREENS = {
                     <div class="input-group"><label>DEPTO</label><input type="text" id="aa1-depto" class="ravens-input" readonly></div>
                 </div>
                 <div class="input-group"><label>RESIDENTE</label><input type="text" id="aa1-res-name" class="ravens-input" readonly></div>
-                <div class="input-group"><label>TELÉFONO</label><input type="text" id="aa1-numero" class="ravens-input" readonly></div>
                 
                 <button class="btn-save blue" style="margin-bottom:15px;" onclick="openResidenteModal('aa1')">🔍 SELECCIONAR RESIDENTE</button>
+                
+                <div class="input-group"><label>PLACA</label><input type="text" id="aa1-placa" class="ravens-input"></div>
+                
                 <div class="input-group"><label>MOTIVO</label><input type="text" id="aa1-motivo" class="ravens-input"></div>
                 <button class="btn-save" onclick="submitAviso('aa1')">GUARDAR</button>
             </div>
@@ -114,7 +119,6 @@ const SCREENS = {
                     <div class="input-group"><label>DEPTO</label><input type="text" id="ba1-depto" class="ravens-input" readonly></div>
                 </div>
                 <div class="input-group"><label>RESIDENTE</label><input type="text" id="ba1-res-name" class="ravens-input" readonly></div>
-                <div class="input-group"><label>NÚMERO *</label><input type="text" id="ba1-numero" class="ravens-input" readonly></div>
                 
                 <button class="btn-save blue" style="margin-bottom:15px" onclick="openResidenteModal('ba1')">🔍 SELECCIONAR RESIDENTE</button>
                 
@@ -165,8 +169,7 @@ const SCREENS = {
                     <div class="input-group"><label>DEPTO</label><input type="text" id="bb1-depto" class="ravens-input" readonly></div>
                 </div>
                 <div class="input-group"><label>RESIDENTE (DUEÑO) *</label><input type="text" id="bb1-res-name" class="ravens-input" readonly></div>
-                <div class="input-group"><label>NÚMERO</label><input type="text" id="bb1-numero" class="ravens-input" readonly></div>
-
+                
                 <button class="btn-save blue" style="margin-bottom:15px" onclick="openResidenteModal('bb1')">🔍 SELECCIONAR RESIDENTE</button>
 
                 <div class="input-group"><label>FOTO *</label>
@@ -211,7 +214,7 @@ const SCREENS = {
             <div class="form-box">
                 <div class="input-group"><label>NOMBRE PROVEEDOR *</label><input type="text" id="d1-nombre" class="ravens-input"></div>
                 <div class="input-group"><label>EMPRESA *</label><input type="text" id="d1-empresa" class="ravens-input"></div>
-                <div class="input-group"><label>NÚMERO TEL *</label><input type="tel" id="d1-telefono" class="ravens-input"></div>
+                <div class="input-group"><label>TELÉFONO PROVEEDOR *</label><input type="tel" id="d1-telefono" class="ravens-input"></div>
                 <div class="input-group"><label>ASUNTO *</label><input type="text" id="d1-asunto" class="ravens-input"></div>
                 
                 <hr style="border:0; border-top:1px solid #333; margin: 15px 0;">
@@ -252,7 +255,6 @@ const SCREENS = {
                     <div class="input-group"><label>DEPTO</label><input type="text" id="ac1-depto" class="ravens-input" readonly></div>
                 </div>
                 <div class="input-group"><label>RESIDENTE</label><input type="text" id="ac1-res-name" class="ravens-input" readonly></div>
-                <div class="input-group"><label>TELÉFONO</label><input type="text" id="ac1-numero" class="ravens-input" readonly></div>
                 
                 <button class="btn-save blue" style="margin-bottom:15px;" onclick="openResidenteModal('ac1')">🔍 BUSCAR RESIDENTE</button>
                 <div class="input-group"><label>CARGO</label><input type="text" id="ac1-cargo" class="ravens-input"></div>
@@ -328,11 +330,12 @@ function confirmResidente() {
         depto: item.Departamento 
     };
 
-    // Llenar inputs visuales si existen
+    // Llenar inputs visuales si existen en la pantalla actual
     if(document.getElementById(`${p}-torre`)) document.getElementById(`${p}-torre`).value = item.Torre;
     if(document.getElementById(`${p}-depto`)) document.getElementById(`${p}-depto`).value = item.Departamento;
     if(document.getElementById(`${p}-res-name`)) document.getElementById(`${p}-res-name`).value = item.Nombre;
-    if(document.getElementById(`${p}-numero`)) document.getElementById(`${p}-numero`).value = item.Número;
+    
+    // Nota: El input de número ha sido eliminado visualmente, pero los datos están en STATE[p].numero
     
     closeResidenteModal();
 }
@@ -375,10 +378,17 @@ async function submitAviso(p) {
     const nom = document.getElementById(p+'-nombre').value;
     if(!nom || !STATE[p] || !STATE[p].residente) return alert("Faltan datos obligatorios o residente");
     
+    // Si es AA1, obtenemos placa
+    let placa = "";
+    if(p === 'aa1' && document.getElementById('aa1-placa')) {
+        placa = document.getElementById('aa1-placa').value;
+    }
+
     const record = { 
         Nombre: nom, 
         Torre: STATE[p].torre, 
         Depto: STATE[p].depto, 
+        Placa: placa, // Nuevo campo
         Estatus: "Nuevo",
         Fecha: new Date().toLocaleString() 
     };
@@ -386,8 +396,7 @@ async function submitAviso(p) {
     const col = p === 'aa1' ? 'colvisitaOrdenada' : 'colpersonalaviso';
     STATE[col].unshift(record);
     
-    // Simulación de Webhook
-    // const url = API.GENERAL_WEBHOOK + ...
+    // Aquí iría el fetch a API.GENERAL_WEBHOOK usando record y STATE[p].numero
     navigate('SUCCESS');
 }
 
@@ -400,21 +409,23 @@ async function submitProveedor() {
     
     if(!nombre || !empresa || !telefono || !asunto) return alert("Faltan datos obligatorios");
 
+    // Datos del residente tomados del STATE (sin input visual de número)
+    const residenteInfo = STATE['d1'] || {};
+
     const record = {
         Nombre: nombre, Empresa: empresa, Número: telefono, Asunto: asunto,
-        Torre: STATE['d1']?.torre || "", Departamento: STATE['d1']?.depto || "",
+        Torre: residenteInfo.torre || "", Departamento: residenteInfo.depto || "",
         'Fecha y hora': new Date().toLocaleString(), Estatus: "Nuevo"
     };
 
     STATE.colproveedorOrdenada.unshift(record);
     
-    // Simulación Webhook Proveedor
     const urlParams = new URLSearchParams({
         Nombre: nombre, Telefono: telefono, Torre: record.Torre, Depto: record.Departamento,
-        Empresa: empresa, Asunto: asunto, Tipo_Lista: "PROVEEDOR"
+        Empresa: empresa, Asunto: asunto, Tipo_Lista: "PROVEEDOR",
+        // Si la API pide el teléfono del residente para buscarlo, usamos residenteInfo.numero
     });
     
-    // fetch(API.GENERAL_WEBHOOK + '&' + urlParams.toString())
     navigate('SUCCESS');
 }
 
@@ -431,7 +442,7 @@ async function submitRecepcionPaquete() {
         Nombre: nombre,
         Torre: STATE['ba1'].torre,
         Departamento: STATE['ba1'].depto,
-        Número: STATE['ba1'].numero,
+        Número: STATE['ba1'].numero, // Dato interno
         Paqueteria: paqueteria,
         Estatus: estatus,
         Foto: foto,
@@ -439,9 +450,6 @@ async function submitRecepcionPaquete() {
     };
 
     STATE.colrecibirunpaqueteOrdenada.unshift(record);
-    
-    // Simulación Webhook Paquete Recibir
-    // fetch(API.PAQUETE_RECIBIR...)
     navigate('SUCCESS');
 }
 
@@ -463,9 +471,6 @@ async function submitEntregaPaquete() {
     };
 
     STATE.colEntregasLocales.unshift(record);
-    
-    // Simulación Webhook Paquete Entregar
-    // fetch(API.PAQUETE_ENTREGAR...)
     navigate('SUCCESS');
 }
 
@@ -530,6 +535,7 @@ function showDetail(colName, idx, targetId) {
         htmlContent = `
             <div class="data-field"><label>NOMBRE</label><span>${item.Nombre}</span></div>
             <div class="data-field"><label>UBICACIÓN</label><span>${item.Torre} - ${item.Depto || item.Departamento}</span></div>
+            ${item.Placa ? `<div class="data-field"><label>PLACA</label><span>${item.Placa}</span></div>` : ''}
             <div class="data-field"><label>FECHA</label><span>${item.Fecha || item['Fecha y hora']}</span></div>
         `;
     }
