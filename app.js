@@ -8,15 +8,15 @@ const STATE = {
         { Torre: "C", Departamento: "PH1", Nombre: "Luis Miguel", Número: "5500000000" }
     ],
     // Colecciones
-    colvisitaOrdenada: [],           
-    colpersonalaviso: [],            
+    colvisitaOrdenada: [],            
+    colpersonalaviso: [],              
     colrecibirunpaqueteOrdenada: [], 
-    colEntregasLocales: [],          
+    colEntregasLocales: [],           
     colproveedorOrdenada: [],        
     colPersonalServicio: [], 
     colQRResidenteEA1: [],
     colQRResidenteEB1: [], 
-    colEventos: [], // Nueva colección para EC1
+    colEventos: [], 
     colResetNip: [],
     
     // Auxiliares
@@ -40,11 +40,26 @@ const SCREENS = {
                 </div>
             </header>
             <main class="main-menu-grid">
-                <div class="menu-item" onclick="navigate('A1')"><div class="menu-item-icon"><i class="fas fa-users"></i></div><div>Visitas</div></div>
-                <div class="menu-item" onclick="navigate('B1')"><div class="menu-item-icon"><i class="fas fa-box-open"></i></div><div>Paquetería</div></div>
-                <div class="menu-item" onclick="navigate('D1')"><div class="menu-item-icon"><i class="fas fa-tools"></i></div><div>Proveedor</div></div>
-                <div class="menu-item" onclick="navigate('E1')"><div class="menu-item-icon"><i class="fas fa-qrcode"></i></div><div>Módulos QR</div></div>
-                <div class="menu-item full" onclick="navigate('F1')"><div class="menu-item-icon"><i class="fas fa-user-shield"></i></div><div>Personal Interno</div></div>
+                <div class="menu-item" onclick="navigate('A1')">
+                    <img src="icons/visitas.png" class="custom-icon" alt="Visitas">
+                    <div>Visitas</div>
+                </div>
+                <div class="menu-item" onclick="navigate('B1')">
+                    <img src="icons/paqueteria.png" class="custom-icon" alt="Paquetería">
+                    <div>Paquetería</div>
+                </div>
+                <div class="menu-item" onclick="navigate('D1')">
+                    <img src="icons/proveedor.png" class="custom-icon" alt="Proveedor">
+                    <div>Proveedor</div>
+                </div>
+                <div class="menu-item" onclick="navigate('E1')">
+                    <img src="icons/qr.png" class="custom-icon" alt="Módulos QR">
+                    <div>Módulos QR</div>
+                </div>
+                <div class="menu-item full" onclick="navigate('F1')">
+                    <img src="icons/security.png" class="custom-icon" alt="Personal Interno">
+                    <div>Personal Interno</div>
+                </div>
             </main>
         </div>
     `,
@@ -54,11 +69,19 @@ const SCREENS = {
         <div class="screen">
             <header class="header-app">
                 <div class="header-logo"><span class="header-logo-text">VISITAS</span></div>
-                <div class="cursor-pointer" onclick="navigate('INICIO')"><i class="fas fa-home fa-lg"></i></div>
+                <div class="cursor-pointer" onclick="navigate('INICIO')">
+                    <img src="icons/home.png" class="header-icon-img" alt="Inicio">
+                </div>
             </header>
             <main class="main-menu-grid">
-                <div class="menu-item" onclick="navigate('AA1')"><div class="menu-item-icon"><i class="fas fa-user-plus"></i></div><div>Registrar Visita</div></div>
-                <div class="menu-item" onclick="navigate('AC1')"><div class="menu-item-icon"><i class="fas fa-hard-hat"></i></div><div>Personal Servicio</div></div>
+                <div class="menu-item" onclick="navigate('AA1')">
+                    <img src="icons/registrar_visita.png" class="custom-icon" onerror="this.src='icons/visitas.png'">
+                    <div>Registrar Visita</div>
+                </div>
+                <div class="menu-item" onclick="navigate('AC1')">
+                    <img src="icons/casco.png" class="custom-icon" onerror="this.src='icons/visitas.png'">
+                    <div>Personal Servicio</div>
+                </div>
             </main>
         </div>
     `,
@@ -92,10 +115,16 @@ const SCREENS = {
     // --- MÓDULO B: PAQUETERÍA ---
     'B1': `
         <div class="screen">
-            <header class="header-app"><div class="header-logo"><span class="header-logo-text">PAQUETERÍA</span></div><div class="cursor-pointer" onclick="navigate('INICIO')"><i class="fas fa-home fa-lg"></i></div></header>
+            <header class="header-app"><div class="header-logo"><span class="header-logo-text">PAQUETERÍA</span></div><div class="cursor-pointer" onclick="navigate('INICIO')"><img src="icons/home.png" class="header-icon-img"></div></header>
             <main class="main-menu-grid">
-                <div class="menu-item" onclick="navigate('BA1')"><div class="menu-item-icon"><i class="fas fa-box"></i></div><div>Recibir</div></div>
-                <div class="menu-item" onclick="navigate('BB1')"><div class="menu-item-icon"><i class="fas fa-truck-loading"></i></div><div>Entregar</div></div>
+                <div class="menu-item" onclick="navigate('BA1')">
+                    <img src="icons/box_in.png" class="custom-icon" onerror="this.src='icons/paqueteria.png'">
+                    <div>Recibir</div>
+                </div>
+                <div class="menu-item" onclick="navigate('BB1')">
+                    <img src="icons/truck.png" class="custom-icon" onerror="this.src='icons/paqueteria.png'">
+                    <div>Entregar</div>
+                </div>
             </main>
         </div>
     `,
@@ -119,9 +148,9 @@ const SCREENS = {
                 
                 <div class="input-group"><label>Foto</label>
                     <div class="photo-placeholder" onclick="document.getElementById('cam-ba1').click()">
-                        <input type="file" id="cam-ba1" hidden accept="image/*" onchange="previewImg(this, 'ba1')">
+                        <input type="file" id="cam-ba1" hidden accept="image/*" capture="environment" onchange="previewImg(this, 'ba1')">
                         <div id="prev-ba1" class="photo-preview hidden"></div>
-                        <span><i class="fas fa-camera"></i> Tocar para foto</span>
+                        <span><i class="fas fa-camera"></i> Tocar para cámara</span>
                     </div>
                 </div>
                 
@@ -152,9 +181,9 @@ const SCREENS = {
                 
                 <div class="input-group" style="margin-top:15px"><label>Foto Evidencia</label>
                     <div class="photo-placeholder" onclick="document.getElementById('cam-bb1').click()">
-                        <input type="file" id="cam-bb1" hidden accept="image/*" onchange="previewImg(this, 'bb1')">
+                        <input type="file" id="cam-bb1" hidden accept="image/*" capture="environment" onchange="previewImg(this, 'bb1')">
                         <div id="prev-bb1" class="photo-preview hidden"></div>
-                        <span><i class="fas fa-camera"></i> Foto</span>
+                        <span><i class="fas fa-camera"></i> Cámara</span>
                     </div>
                 </div>
                 <div class="input-group"><label>Firma</label>
@@ -201,12 +230,24 @@ const SCREENS = {
     // --- MÓDULO E: QR ---
     'E1': `
         <div class="screen">
-            <header class="header-app"><div class="header-logo"><span class="header-logo-text">MÓDULOS QR</span></div><div class="cursor-pointer" onclick="navigate('INICIO')"><i class="fas fa-home fa-lg"></i></div></header>
+            <header class="header-app"><div class="header-logo"><span class="header-logo-text">MÓDULOS QR</span></div><div class="cursor-pointer" onclick="navigate('INICIO')"><img src="icons/home.png" class="header-icon-img"></div></header>
             <main class="main-menu-grid">
-                <div class="menu-item" onclick="navigate('EA1')"><div class="menu-item-icon"><i class="fas fa-qrcode"></i></div><div>QR Residente</div></div>
-                <div class="menu-item" onclick="navigate('EB1')"><div class="menu-item-icon"><i class="fas fa-qrcode"></i></div><div>QR Visita</div></div>
-                <div class="menu-item" onclick="navigate('EC1')"><div class="menu-item-icon"><i class="fas fa-calendar-check"></i></div><div>Eventos</div></div>
-                <div class="menu-item" onclick="navigate('ED1')"><div class="menu-item-icon"><i class="fas fa-id-card"></i></div><div>Proveedor NIP</div></div>
+                <div class="menu-item" onclick="navigate('EA1')">
+                    <img src="icons/qr_residente.png" class="custom-icon" onerror="this.src='icons/qr.png'">
+                    <div>QR Residente</div>
+                </div>
+                <div class="menu-item" onclick="navigate('EB1')">
+                    <img src="icons/qr_visita.png" class="custom-icon" onerror="this.src='icons/qr.png'">
+                    <div>QR Visita</div>
+                </div>
+                <div class="menu-item" onclick="navigate('EC1')">
+                    <img src="icons/calendar.png" class="custom-icon" onerror="this.src='icons/qr.png'">
+                    <div>Eventos</div>
+                </div>
+                <div class="menu-item" onclick="navigate('ED1')">
+                    <img src="icons/id_card.png" class="custom-icon" onerror="this.src='icons/qr.png'">
+                    <div>Proveedor NIP</div>
+                </div>
             </main>
         </div>
     `,
