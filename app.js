@@ -41,23 +41,23 @@ const SCREENS = {
             </header>
             <main class="main-menu-grid">
                 <div class="menu-item" onclick="navigate('A1')">
-                    <img src="icons/visitas.png" class="custom-icon" alt="Visitas">
+                    <img src="icons/visita.svg" class="custom-icon" alt="Visitas">
                     <div>Visitas</div>
                 </div>
                 <div class="menu-item" onclick="navigate('B1')">
-                    <img src="icons/paqueteria.png" class="custom-icon" alt="Paquetería">
+                    <img src="icons/paquete1.svg" class="custom-icon" alt="Paquetería">
                     <div>Paquetería</div>
                 </div>
                 <div class="menu-item" onclick="navigate('D1')">
-                    <img src="icons/proveedor.png" class="custom-icon" alt="Proveedor">
+                    <img src="icons/proveedor.svg" class="custom-icon" alt="Proveedor">
                     <div>Proveedor</div>
                 </div>
                 <div class="menu-item" onclick="navigate('E1')">
-                    <img src="icons/qr.png" class="custom-icon" alt="Módulos QR">
+                    <img src="icons/qr.svg" class="custom-icon" alt="Módulos QR">
                     <div>Módulos QR</div>
                 </div>
                 <div class="menu-item full" onclick="navigate('F1')">
-                    <img src="icons/security.png" class="custom-icon" alt="Personal Interno">
+                    <img src="icons/servicio.svg" class="custom-icon" alt="Personal Interno">
                     <div>Personal Interno</div>
                 </div>
             </main>
@@ -70,16 +70,16 @@ const SCREENS = {
             <header class="header-app">
                 <div class="header-logo"><span class="header-logo-text">VISITAS</span></div>
                 <div class="cursor-pointer" onclick="navigate('INICIO')">
-                    <img src="icons/home.png" class="header-icon-img" alt="Inicio">
+                    <img src="icons/libreta.svg" class="header-icon-img" alt="Inicio">
                 </div>
             </header>
             <main class="main-menu-grid">
                 <div class="menu-item" onclick="navigate('AA1')">
-                    <img src="icons/registrar_visita.png" class="custom-icon" onerror="this.src='icons/visitas.png'">
+                    <img src="icons/visita.svg" class="custom-icon" onerror="this.src='icons/visita.svg'">
                     <div>Registrar Visita</div>
                 </div>
                 <div class="menu-item" onclick="navigate('AC1')">
-                    <img src="icons/casco.png" class="custom-icon" onerror="this.src='icons/visitas.png'">
+                    <img src="icons/servicio2.svg" class="custom-icon" onerror="this.src='icons/visita.svg'">
                     <div>Personal Servicio</div>
                 </div>
             </main>
@@ -115,14 +115,14 @@ const SCREENS = {
     // --- MÓDULO B: PAQUETERÍA ---
     'B1': `
         <div class="screen">
-            <header class="header-app"><div class="header-logo"><span class="header-logo-text">PAQUETERÍA</span></div><div class="cursor-pointer" onclick="navigate('INICIO')"><img src="icons/home.png" class="header-icon-img"></div></header>
+            <header class="header-app"><div class="header-logo"><span class="header-logo-text">PAQUETERÍA</span></div><div class="cursor-pointer" onclick="navigate('INICIO')"><img src="icons/libreta.svg" class="header-icon-img"></div></header>
             <main class="main-menu-grid">
                 <div class="menu-item" onclick="navigate('BA1')">
-                    <img src="icons/box_in.png" class="custom-icon" onerror="this.src='icons/paqueteria.png'">
+                    <img src="icons/paquete2.svg" class="custom-icon" onerror="this.src='icons/paquete1.svg'">
                     <div>Recibir</div>
                 </div>
                 <div class="menu-item" onclick="navigate('BB1')">
-                    <img src="icons/truck.png" class="custom-icon" onerror="this.src='icons/paqueteria.png'">
+                    <img src="icons/paquete3.svg" class="custom-icon" onerror="this.src='icons/paquete1.svg'">
                     <div>Entregar</div>
                 </div>
             </main>
@@ -230,22 +230,22 @@ const SCREENS = {
     // --- MÓDULO E: QR ---
     'E1': `
         <div class="screen">
-            <header class="header-app"><div class="header-logo"><span class="header-logo-text">MÓDULOS QR</span></div><div class="cursor-pointer" onclick="navigate('INICIO')"><img src="icons/home.png" class="header-icon-img"></div></header>
+            <header class="header-app"><div class="header-logo"><span class="header-logo-text">MÓDULOS QR</span></div><div class="cursor-pointer" onclick="navigate('INICIO')"><img src="icons/libreta.svg" class="header-icon-img"></div></header>
             <main class="main-menu-grid">
                 <div class="menu-item" onclick="navigate('EA1')">
-                    <img src="icons/qr_residente.png" class="custom-icon" onerror="this.src='icons/qr.png'">
+                    <img src="icons/residente.svg" class="custom-icon" onerror="this.src='icons/qr.svg'">
                     <div>QR Residente</div>
                 </div>
                 <div class="menu-item" onclick="navigate('EB1')">
-                    <img src="icons/qr_visita.png" class="custom-icon" onerror="this.src='icons/qr.png'">
+                    <img src="icons/visita.svg" class="custom-icon" onerror="this.src='icons/qr.svg'">
                     <div>QR Visita</div>
                 </div>
                 <div class="menu-item" onclick="navigate('EC1')">
-                    <img src="icons/calendar.png" class="custom-icon" onerror="this.src='icons/qr.png'">
+                    <img src="icons/evento.svg" class="custom-icon" onerror="this.src='icons/qr.svg'">
                     <div>Eventos</div>
                 </div>
                 <div class="menu-item" onclick="navigate('ED1')">
-                    <img src="icons/id_card.png" class="custom-icon" onerror="this.src='icons/qr.png'">
+                    <img src="icons/residente.svg" class="custom-icon" onerror="this.src='icons/qr.svg'">
                     <div>Proveedor NIP</div>
                 </div>
             </main>
@@ -293,7 +293,7 @@ const SCREENS = {
     `,
     'EB2': `<div class="screen form-page"><div class="form-title-section"><h2 class="form-title">Historial VFS</h2><div class="cursor-pointer" onclick="navigate('EB1')"><i class="fas fa-arrow-left fa-lg"></i></div></div><div class="form-container"><div id="gal-eb2" class="gallery-container"></div><div id="detail-eb2" class="detail-view"></div></div></div>`,
 
-    // --- EC1: EVENTOS (ESTANDARIZADO) ---
+    // --- EC1: EVENTOS ---
     'EC1': `
         <div class="screen form-page">
             <div class="form-title-section">
@@ -314,7 +314,7 @@ const SCREENS = {
         </div>
     `,
     
-    // --- ED1: PROVEEDOR NIP (VALIDAR) ---
+    // --- ED1: PROVEEDOR NIP ---
     'ED1': `
         <div class="screen form-page">
             <div class="form-title-section">
