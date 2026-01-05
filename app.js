@@ -7,6 +7,7 @@ const STATE = {
         { Torre: "B", Departamento: "205", Nombre: "Ana Gomez", Número: "5587654321" },
         { Torre: "C", Departamento: "PH1", Nombre: "Luis Miguel", Número: "5500000000" }
     ],
+    // Colecciones
     colvisitaOrdenada: [],            
     colpersonalaviso: [],              
     colrecibirunpaqueteOrdenada: [], 
@@ -18,6 +19,7 @@ const STATE = {
     colEventos: [], 
     colResetNip: [],
     
+    // Auxiliares
     photos: {}, 
     signature: null,
     currentContext: "",
@@ -33,29 +35,29 @@ const SCREENS = {
         <div class="screen">
             <header class="header-app">
                 <div class="header-logo">
-                    <img src="icons/logo.svg" class="header-main-logo" alt="Ravens Logo">
+                    <img src="icons/logo.svg" class="header-main-logo" alt="Logo">
                     <span class="header-logo-text">RAVENS ACCESS</span>
                 </div>
             </header>
             <main class="main-menu-grid">
                 <div class="menu-item" onclick="navigate('A1')">
-                    <img src="icons/visita.svg" class="custom-icon">
+                    <img src="icons/visita.svg" class="custom-icon" alt="Visitas">
                     <div>Visitas</div>
                 </div>
                 <div class="menu-item" onclick="navigate('B1')">
-                    <img src="icons/paquete1.svg" class="custom-icon">
+                    <img src="icons/paquete1.svg" class="custom-icon" alt="Paquetería">
                     <div>Paquetería</div>
                 </div>
                 <div class="menu-item" onclick="navigate('D1')">
-                    <img src="icons/proveedor.svg" class="custom-icon">
+                    <img src="icons/proveedor.svg" class="custom-icon" alt="Proveedor">
                     <div>Proveedor</div>
                 </div>
                 <div class="menu-item" onclick="navigate('E1')">
-                    <img src="icons/qr.svg" class="custom-icon">
+                    <img src="icons/qr.svg" class="custom-icon" alt="Módulos QR">
                     <div>Módulos QR</div>
                 </div>
                 <div class="menu-item full" onclick="navigate('F1')">
-                    <img src="icons/servicio.svg" class="custom-icon">
+                    <img src="icons/servicio.svg" class="custom-icon" alt="Personal Interno">
                     <div>Personal Interno</div>
                 </div>
             </main>
@@ -68,7 +70,7 @@ const SCREENS = {
             <header class="header-app">
                 <div class="header-logo"><span class="header-logo-text">VISITAS</span></div>
                 <div class="cursor-pointer" onclick="navigate('INICIO')">
-                    <img src="icons/home.svg" class="header-icon-img">
+                    <img src="icons/home.svg" class="header-icon-img" alt="Inicio">
                 </div>
             </header>
             <main class="main-menu-grid">
@@ -169,6 +171,7 @@ const SCREENS = {
             <div class="form-container">
                 <div class="input-group"><label>Quien Recibe *</label><input type="text" id="bb1-nombre" class="form-input"></div>
                 <div class="input-group"><label>Torre</label><input type="text" id="bb1-torre" class="form-input" readonly></div>
+                <div class="input-group"><label>Depto</label><input type="text" id="bb1-depto" class="form-input" readonly></div>
                 <div class="input-group"><label>Dueño (Residente)</label><input type="text" id="bb1-res-name" class="form-input" readonly></div>
                 <button class="btn-primary" onclick="openResidenteModal('bb1')"><i class="fas fa-search"></i> Seleccionar Dueño</button>
                 <div class="input-group" style="margin-top:15px"><label>Foto Evidencia</label>
@@ -204,6 +207,9 @@ const SCREENS = {
                 <div class="input-group"><label>Nombre Proveedor *</label><input type="text" id="d1-nombre" class="form-input"></div>
                 <div class="input-group"><label>Empresa *</label><input type="text" id="d1-empresa" class="form-input"></div>
                 <div class="input-group"><label>Asunto *</label><input type="text" id="d1-asunto" class="form-input"></div>
+                <div class="input-group"><label>Torre</label><input type="text" id="d1-torre" class="form-input" readonly></div>
+                <div class="input-group"><label>Depto</label><input type="text" id="d1-depto" class="form-input" readonly></div>
+                <div class="input-group"><label>Residente</label><input type="text" id="d1-res-name" class="form-input" readonly></div>
                 <button class="btn-primary" onclick="openResidenteModal('d1')"><i class="fas fa-search"></i> Seleccionar Residente</button>
                 <div style="margin-top: 20px;">
                     <button class="btn-save" onclick="submitProveedor()">Guardar</button>
@@ -280,7 +286,46 @@ const SCREENS = {
     `,
     'EB2': `<div class="screen form-page"><div class="form-title-section"><h2 class="form-title">Historial VFS</h2><div class="cursor-pointer" onclick="navigate('EB1')"><img src="icons/home.svg" class="header-icon-img"></div></div><div class="form-container"><div id="gal-eb2" class="gallery-container"></div><div id="detail-eb2" class="detail-view"></div></div></div>`,
 
-    // --- PERSONAL INTERNO ---
+    // --- MÓDULO EC1: EVENTOS ---
+    'EC1': `
+        <div class="screen form-page">
+            <div class="form-title-section">
+                <h2 class="form-title">Validar Evento</h2>
+                <div class="cursor-pointer" onclick="navigate('E1')"><img src="icons/home.svg" class="header-icon-img"></div>
+            </div>
+            <div class="form-container">
+                <div class="input-group"><label>Código Evento *</label><input type="text" id="ec1-code" class="form-input"></div>
+                <button class="btn-primary" onclick="startScan('ec1-code')"><i class="fas fa-camera"></i> Escanear QR</button>
+                <div style="margin-top: 20px;">
+                    <button class="btn-save" onclick="submitEvento()">Validar Acceso</button>
+                    <button class="btn-clean" onclick="resetForm('ec1')"><i class="fas fa-eraser"></i> Limpiar</button>
+                </div>
+            </div>
+        </div>
+    `,
+
+    // --- MÓDULO ED1: PROVEEDOR NIP ---
+    'ED1': `
+        <div class="screen form-page">
+            <div class="form-title-section">
+                <h2 class="form-title">Proveedor NIP</h2>
+                <div class="header-icons">
+                    <img src="icons/home.svg" class="header-icon-img cursor-pointer" onclick="navigate('E1')">
+                    <img src="icons/libreta.svg" class="header-icon-img cursor-pointer" onclick="navigate('ED2')">
+                </div>
+            </div>
+            <div class="form-container">
+                <div class="input-group"><label>NIP / DNI *</label><input type="text" id="ed1-nip" class="form-input"></div>
+                <div style="margin-top: 20px;">
+                    <button class="btn-save" onclick="submitProveedorNIP()">Validar</button>
+                    <button class="btn-clean" onclick="resetForm('ed1')"><i class="fas fa-eraser"></i> Limpiar</button>
+                </div>
+            </div>
+        </div>
+    `,
+    'ED2': `<div class="screen form-page"><div class="form-title-section"><h2 class="form-title">Historial NIP</h2><div class="cursor-pointer" onclick="navigate('ED1')"><img src="icons/home.svg" class="header-icon-img"></div></div><div class="form-container"><div id="gal-ed2" class="gallery-container"></div><div id="detail-ed2" class="detail-view"></div></div></div>`,
+
+    // --- PERSONAL INTERNO (F1) ---
     'F1': `
         <div class="screen form-page">
             <div class="form-title-section">
@@ -291,7 +336,7 @@ const SCREENS = {
                 </div>
             </div>
             <div class="form-container">
-                <div class="input-group"><label>ID Personal *</label><input type="text" id="f1-id" class="form-input"></div>
+                <div class="input-group"><label>ID Personal *</label><input type="text" id="f1-id" class="form-input" placeholder="Escanea gafete"></div>
                 <button class="btn-primary" style="background:#333" onclick="startScan('f1-id')"><i class="fas fa-camera"></i> Escanear Gafete</button>
                 <div style="display:flex; gap:10px; margin-top:20px;">
                     <button class="btn-save" onclick="submitPersonalInterno('Entrada')">Entrada</button>
@@ -303,12 +348,38 @@ const SCREENS = {
     `,
     'F2': `<div class="screen form-page"><div class="form-title-section"><h2 class="form-title">Bitácora Interna</h2><div class="cursor-pointer" onclick="navigate('F1')"><img src="icons/home.svg" class="header-icon-img"></div></div><div class="form-container"><div id="gal-f2" class="gallery-container"></div><div id="detail-f2" class="detail-view"></div></div></div>`,
 
+    // --- AC: PERSONAL SERVICIO ---
+    'AC1': `
+        <div class="screen form-page">
+            <div class="form-title-section">
+                <h2 class="form-title">Personal Servicio</h2>
+                <div class="header-icons">
+                    <img src="icons/home.svg" class="header-icon-img cursor-pointer" onclick="navigate('A1')">
+                    <img src="icons/libreta.svg" class="header-icon-img cursor-pointer" onclick="navigate('AC2')">
+                </div>
+            </div>
+            <div class="form-container">
+                <div class="input-group"><label>Nombre *</label><input type="text" id="ac1-nombre" class="form-input"></div>
+                <div class="input-group"><label>Torre</label><input type="text" id="ac1-torre" class="form-input" readonly></div>
+                <div class="input-group"><label>Depto</label><input type="text" id="ac1-depto" class="form-input" readonly></div>
+                <div class="input-group"><label>Residente</label><input type="text" id="ac1-res-name" class="form-input" readonly></div>
+                <button class="btn-primary" onclick="openResidenteModal('ac1')"><i class="fas fa-search"></i> Seleccionar Residente</button>
+                <div class="input-group" style="margin-top:15px"><label>Cargo</label><input type="text" id="ac1-cargo" class="form-input"></div>
+                <div style="margin-top: 20px;">
+                    <button class="btn-save" onclick="submitAviso('ac1')">Guardar</button>
+                    <button class="btn-clean" onclick="resetForm('ac1')"><i class="fas fa-eraser"></i> Limpiar</button>
+                </div>
+            </div>
+        </div>
+    `,
+    'AC2': `<div class="screen form-page"><div class="form-title-section"><h2 class="form-title">Libreta Personal</h2><div class="cursor-pointer" onclick="navigate('AC1')"><img src="icons/home.svg" class="header-icon-img"></div></div><div class="form-container"><div id="gal-ac2" class="gallery-container"></div><div id="detail-ac2" class="detail-view"></div></div></div>`,
+
     'SUCCESS': `<div class="screen" style="display:flex; justify-content:center; align-items:center; height:100vh; flex-direction:column"><i class="fas fa-check-circle fa-5x status-success"></i><h2 class="form-title" style="margin-top:20px">ÉXITO</h2></div>`,
     'FAILURE': `<div class="screen" style="display:flex; justify-content:center; align-items:center; height:100vh; flex-direction:column"><i class="fas fa-times-circle fa-5x status-error"></i><h2 class="form-title" style="margin-top:20px">DENEGADO</h2></div>`
 };
 
 /* =========================================
-   3. MOTOR LÓGICO
+   3. MOTOR LÓGICO COMPLETO
    ========================================= */
 let signaturePad;
 let html5QrCode;
@@ -320,13 +391,16 @@ function navigate(screen) {
     
     document.getElementById('viewport').innerHTML = SCREENS[screen] || SCREENS['INICIO'];
     
+    // Inits de lógica por pantalla
     if(screen === 'BB1') initSignature();
     if(screen === 'AA2') renderGallery('colvisitaOrdenada', 'gal-aa2');
+    if(screen === 'AC2') renderGallery('colpersonalaviso', 'gal-ac2');
+    if(screen === 'D2') renderGallery('colproveedorOrdenada', 'gal-d2');
     if(screen === 'BA2') renderGallery('colrecibirunpaqueteOrdenada', 'gal-ba2');
     if(screen === 'BB2') renderGallery('colEntregasLocales', 'gal-bb2');
-    if(screen === 'D2') renderGallery('colproveedorOrdenada', 'gal-d2');
     if(screen === 'EA2') renderGallery('colQRResidenteEA1', 'gal-ea2');
     if(screen === 'EB2') renderGallery('colQRResidenteEB1', 'gal-eb2');
+    if(screen === 'ED2') renderGallery('colResetNip', 'gal-ed2');
     if(screen === 'F2') renderGallery('colPersonalServicio', 'gal-f2');
     
     if(screen === 'SUCCESS' || screen === 'FAILURE') setTimeout(() => navigate('INICIO'), 2000);
@@ -356,7 +430,6 @@ function openResidenteModal(ctx) {
 function updateDeptos() {
     const t = document.getElementById('sel-torre').value;
     const deptos = STATE.colBaserFiltrada.filter(i => i.Torre === t).map(i => i.Departamento);
-    deptos.sort(); 
     document.getElementById('sel-depto').innerHTML = deptos.map(d => `<option value="${d}">${d}</option>`).join('');
     updateResidentes();
 }
@@ -373,6 +446,7 @@ function confirmResidente() {
     const item = STATE.colBaserFiltrada.find(i => i.Nombre === document.getElementById('sel-nombre').value);
     STATE[p] = { residente: item.Nombre, torre: item.Torre, depto: item.Departamento };
     if(document.getElementById(`${p}-torre`)) document.getElementById(`${p}-torre`).value = item.Torre;
+    if(document.getElementById(`${p}-depto`)) document.getElementById(`${p}-depto`).value = item.Departamento;
     if(document.getElementById(`${p}-res-name`)) document.getElementById(`${p}-res-name`).value = item.Nombre;
     document.getElementById('modal-selector').classList.remove('active');
 }
@@ -412,15 +486,16 @@ function startScan(targetInputId) {
         document.getElementById('qr-modal').classList.remove('active');
         document.getElementById(STATE.targetInputForQR).value = decodedText;
     }).catch(err => {
-        alert("Cámara error: " + err);
+        alert("Error cámara: " + err);
         document.getElementById('qr-modal').classList.remove('active');
     });
 }
 
+// --- SUBMITS ---
 async function submitAviso(p) {
     const nom = document.getElementById(p+'-nombre').value;
     if(!nom || !STATE[p]?.residente) return alert("Faltan datos");
-    STATE.colvisitaOrdenada.unshift({ Nombre: nom, Torre: STATE[p].torre, Fecha: new Date().toLocaleString() });
+    STATE[p === 'aa1' ? 'colvisitaOrdenada' : 'colpersonalaviso'].unshift({ Nombre: nom, Fecha: new Date().toLocaleString(), Torre: STATE[p].torre });
     resetForm(p); navigate('SUCCESS');
 }
 
@@ -432,7 +507,7 @@ async function submitRecepcionPaquete() {
 
 async function submitEntregaPaquete() {
     const nom = document.getElementById('bb1-nombre').value;
-    if(!nom || signaturePad.isEmpty()) return alert("Firma obligatoria");
+    if(!nom || signaturePad.isEmpty()) return alert("Faltan datos");
     STATE.colEntregasLocales.unshift({ Nombre: nom, Fecha: new Date().toLocaleString() });
     resetForm('bb1'); navigate('SUCCESS');
 }
@@ -469,7 +544,7 @@ function renderGallery(colName, elementId) {
         <div class="gallery-item" onclick="showDetail('${colName}', ${idx}, '${elementId.replace('gal','detail')}')">
             <div class="gallery-text">
                 <h4>${item.Nombre || 'Registro'}</h4>
-                <p>${item.Accion || ''} • ${item.Fecha || item.Fechayhora || ''}</p>
+                <p>${item.Accion || item.Torre || ''} • ${item.Fecha || item.Fechayhora || ''}</p>
             </div>
             <i class="fas fa-chevron-right"></i>
         </div>
@@ -480,6 +555,7 @@ function showDetail(colName, idx, targetId) {
     const item = STATE[colName][idx];
     const target = document.getElementById(targetId);
     target.innerHTML = `<div class="data-row"><span class="data-label">INFO</span><span class="data-value">${item.Nombre}</span></div>
+                        <div class="data-row"><span class="data-label">DETALLE</span><span class="data-value">${item.Accion || item.Torre || ''}</span></div>
                         <div class="data-row"><span class="data-label">FECHA</span><span class="data-value">${item.Fecha || item.Fechayhora}</span></div>`;
 }
 
