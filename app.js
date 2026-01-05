@@ -35,7 +35,7 @@ const SCREENS = {
         <div class="screen">
             <header class="header-app">
                 <div class="header-logo">
-                    <img src="icons/logo.svg" class="header-main-logo" alt="Logo">
+                    <div class="header-logo-icon">R</div>
                     <span class="header-logo-text">RAVENS ACCESS</span>
                 </div>
             </header>
@@ -90,7 +90,7 @@ const SCREENS = {
             <div class="form-title-section">
                 <h2 class="form-title">Nueva Visita</h2>
                 <div class="header-icons">
-                    <img src="icons/home.svg" class="header-icon-img cursor-pointer" onclick="navigate('A1')">
+                    <i class="fas fa-arrow-left fa-lg cursor-pointer" onclick="navigate('A1')"></i>
                     <img src="icons/libreta.svg" class="header-icon-img cursor-pointer" onclick="navigate('AA2')">
                 </div>
             </div>
@@ -132,7 +132,7 @@ const SCREENS = {
             <div class="form-title-section">
                 <h2 class="form-title">Recibir Paquete</h2>
                 <div class="header-icons">
-                    <img src="icons/home.svg" class="header-icon-img cursor-pointer" onclick="navigate('B1')">
+                    <i class="fas fa-arrow-left fa-lg cursor-pointer" onclick="navigate('B1')"></i>
                     <img src="icons/libreta.svg" class="header-icon-img cursor-pointer" onclick="navigate('BA2')">
                 </div>
             </div>
@@ -164,7 +164,7 @@ const SCREENS = {
             <div class="form-title-section">
                 <h2 class="form-title">Entregar Paquete</h2>
                 <div class="header-icons">
-                    <img src="icons/home.svg" class="header-icon-img cursor-pointer" onclick="navigate('B1')">
+                    <i class="fas fa-arrow-left fa-lg cursor-pointer" onclick="navigate('B1')"></i>
                     <img src="icons/libreta.svg" class="header-icon-img cursor-pointer" onclick="navigate('BB2')">
                 </div>
             </div>
@@ -249,7 +249,7 @@ const SCREENS = {
             <div class="form-title-section">
                 <h2 class="form-title">QR Residente</h2>
                 <div class="header-icons">
-                    <img src="icons/home.svg" class="header-icon-img cursor-pointer" onclick="navigate('E1')">
+                    <i class="fas fa-arrow-left fa-lg cursor-pointer" onclick="navigate('E1')"></i>
                     <img src="icons/libreta.svg" class="header-icon-img cursor-pointer" onclick="navigate('EA2')">
                 </div>
             </div>
@@ -270,7 +270,7 @@ const SCREENS = {
             <div class="form-title-section">
                 <h2 class="form-title">QR Visita</h2>
                 <div class="header-icons">
-                    <img src="icons/home.svg" class="header-icon-img cursor-pointer" onclick="navigate('E1')">
+                    <i class="fas fa-arrow-left fa-lg cursor-pointer" onclick="navigate('E1')"></i>
                     <img src="icons/libreta.svg" class="header-icon-img cursor-pointer" onclick="navigate('EB2')">
                 </div>
             </div>
@@ -286,7 +286,6 @@ const SCREENS = {
     `,
     'EB2': `<div class="screen form-page"><div class="form-title-section"><h2 class="form-title">Historial VFS</h2><div class="cursor-pointer" onclick="navigate('EB1')"><img src="icons/home.svg" class="header-icon-img"></div></div><div class="form-container"><div id="gal-eb2" class="gallery-container"></div><div id="detail-eb2" class="detail-view"></div></div></div>`,
 
-    // --- MÓDULO EC1: EVENTOS ---
     'EC1': `
         <div class="screen form-page">
             <div class="form-title-section">
@@ -303,14 +302,13 @@ const SCREENS = {
             </div>
         </div>
     `,
-
-    // --- MÓDULO ED1: PROVEEDOR NIP ---
+    
     'ED1': `
         <div class="screen form-page">
             <div class="form-title-section">
                 <h2 class="form-title">Proveedor NIP</h2>
                 <div class="header-icons">
-                    <img src="icons/home.svg" class="header-icon-img cursor-pointer" onclick="navigate('E1')">
+                    <i class="fas fa-arrow-left fa-lg cursor-pointer" onclick="navigate('E1')"></i>
                     <img src="icons/libreta.svg" class="header-icon-img cursor-pointer" onclick="navigate('ED2')">
                 </div>
             </div>
@@ -325,7 +323,6 @@ const SCREENS = {
     `,
     'ED2': `<div class="screen form-page"><div class="form-title-section"><h2 class="form-title">Historial NIP</h2><div class="cursor-pointer" onclick="navigate('ED1')"><img src="icons/home.svg" class="header-icon-img"></div></div><div class="form-container"><div id="gal-ed2" class="gallery-container"></div><div id="detail-ed2" class="detail-view"></div></div></div>`,
 
-    // --- PERSONAL INTERNO (F1) ---
     'F1': `
         <div class="screen form-page">
             <div class="form-title-section">
@@ -348,13 +345,12 @@ const SCREENS = {
     `,
     'F2': `<div class="screen form-page"><div class="form-title-section"><h2 class="form-title">Bitácora Interna</h2><div class="cursor-pointer" onclick="navigate('F1')"><img src="icons/home.svg" class="header-icon-img"></div></div><div class="form-container"><div id="gal-f2" class="gallery-container"></div><div id="detail-f2" class="detail-view"></div></div></div>`,
 
-    // --- AC: PERSONAL SERVICIO ---
     'AC1': `
         <div class="screen form-page">
             <div class="form-title-section">
                 <h2 class="form-title">Personal Servicio</h2>
                 <div class="header-icons">
-                    <img src="icons/home.svg" class="header-icon-img cursor-pointer" onclick="navigate('A1')">
+                    <i class="fas fa-arrow-left fa-lg cursor-pointer" onclick="navigate('A1')"></i>
                     <img src="icons/libreta.svg" class="header-icon-img cursor-pointer" onclick="navigate('AC2')">
                 </div>
             </div>
@@ -379,7 +375,7 @@ const SCREENS = {
 };
 
 /* =========================================
-   3. MOTOR LÓGICO COMPLETO
+   3. MOTOR LÓGICO
    ========================================= */
 let signaturePad;
 let html5QrCode;
@@ -388,10 +384,7 @@ function navigate(screen) {
     if(html5QrCode && html5QrCode.isScanning) {
          html5QrCode.stop().then(() => { html5QrCode.clear(); }).catch(err => {});
     }
-    
     document.getElementById('viewport').innerHTML = SCREENS[screen] || SCREENS['INICIO'];
-    
-    // Inits de lógica por pantalla
     if(screen === 'BB1') initSignature();
     if(screen === 'AA2') renderGallery('colvisitaOrdenada', 'gal-aa2');
     if(screen === 'AC2') renderGallery('colpersonalaviso', 'gal-ac2');
@@ -402,14 +395,13 @@ function navigate(screen) {
     if(screen === 'EB2') renderGallery('colQRResidenteEB1', 'gal-eb2');
     if(screen === 'ED2') renderGallery('colResetNip', 'gal-ed2');
     if(screen === 'F2') renderGallery('colPersonalServicio', 'gal-f2');
-    
     if(screen === 'SUCCESS' || screen === 'FAILURE') setTimeout(() => navigate('INICIO'), 2000);
 }
 
 function resetForm(prefix) {
     const inputs = document.querySelectorAll(`[id^="${prefix}-"]`);
     inputs.forEach(input => {
-        if(input.tagName === 'SELECT') input.selectedIndex = 0;
+        if(input.tagName === 'SELECT' && input.options.length > 0) input.selectedIndex = 0;
         else input.value = '';
     });
     STATE[prefix] = {};
@@ -430,6 +422,7 @@ function openResidenteModal(ctx) {
 function updateDeptos() {
     const t = document.getElementById('sel-torre').value;
     const deptos = STATE.colBaserFiltrada.filter(i => i.Torre === t).map(i => i.Departamento);
+    deptos.sort(); 
     document.getElementById('sel-depto').innerHTML = deptos.map(d => `<option value="${d}">${d}</option>`).join('');
     updateResidentes();
 }
@@ -444,12 +437,14 @@ function updateResidentes() {
 function confirmResidente() {
     const p = STATE.currentContext; 
     const item = STATE.colBaserFiltrada.find(i => i.Nombre === document.getElementById('sel-nombre').value);
-    STATE[p] = { residente: item.Nombre, torre: item.Torre, depto: item.Departamento };
+    STATE[p] = { residente: item.Nombre, numero: item.Número, torre: item.Torre, depto: item.Departamento };
     if(document.getElementById(`${p}-torre`)) document.getElementById(`${p}-torre`).value = item.Torre;
     if(document.getElementById(`${p}-depto`)) document.getElementById(`${p}-depto`).value = item.Departamento;
     if(document.getElementById(`${p}-res-name`)) document.getElementById(`${p}-res-name`).value = item.Nombre;
-    document.getElementById('modal-selector').classList.remove('active');
+    closeResidenteModal();
 }
+
+function closeResidenteModal() { document.getElementById('modal-selector').classList.remove('active'); }
 
 function initSignature() {
     setTimeout(() => {
@@ -481,72 +476,137 @@ function startScan(targetInputId) {
     STATE.targetInputForQR = targetInputId;
     document.getElementById('qr-modal').classList.add('active');
     html5QrCode = new Html5Qrcode("qr-reader-view");
-    html5QrCode.start({ facingMode: "environment" }, { fps: 10, qrbox: 250 }, (decodedText) => {
-        html5QrCode.stop().then(() => html5QrCode.clear());
-        document.getElementById('qr-modal').classList.remove('active');
-        document.getElementById(STATE.targetInputForQR).value = decodedText;
-    }).catch(err => {
-        alert("Error cámara: " + err);
+    html5QrCode.start(
+        { facingMode: "environment" },
+        { fps: 10, qrbox: 250 },
+        (decodedText) => {
+            html5QrCode.stop().then(() => html5QrCode.clear());
+            document.getElementById('qr-modal').classList.remove('active');
+            if(STATE.targetInputForQR && document.getElementById(STATE.targetInputForQR)) {
+                document.getElementById(STATE.targetInputForQR).value = decodedText;
+            }
+        },
+        (errorMessage) => { }
+    ).catch(err => {
+        alert("Error iniciando cámara: " + err);
         document.getElementById('qr-modal').classList.remove('active');
     });
 }
 
-// --- SUBMITS ---
+function closeQRScanner() {
+    if(html5QrCode) html5QrCode.stop().then(() => html5QrCode.clear()).catch(()=>{});
+    document.getElementById('qr-modal').classList.remove('active');
+}
+
 async function submitAviso(p) {
     const nom = document.getElementById(p+'-nombre').value;
     if(!nom || !STATE[p]?.residente) return alert("Faltan datos");
-    STATE[p === 'aa1' ? 'colvisitaOrdenada' : 'colpersonalaviso'].unshift({ Nombre: nom, Fecha: new Date().toLocaleString(), Torre: STATE[p].torre });
-    resetForm(p); navigate('SUCCESS');
+    const record = { 
+        Nombre: nom, Torre: STATE[p].torre, Depto: STATE[p].depto, 
+        Placa: document.getElementById(p+'-placa')?.value || "",
+        Estatus: "Nuevo", Fecha: new Date().toLocaleString() 
+    };
+    STATE[p === 'aa1' ? 'colvisitaOrdenada' : 'colpersonalaviso'].unshift(record);
+    resetForm(p); 
+    navigate('SUCCESS');
+}
+
+async function submitProveedor() {
+    const nombre = document.getElementById('d1-nombre').value;
+    if(!nombre) return alert("Faltan datos");
+    const record = {
+        Nombre: nombre, Empresa: document.getElementById('d1-empresa').value,
+        Torre: STATE['d1']?.torre || "", Departamento: STATE['d1']?.depto || "",
+        Estatus: "Nuevo", 'Fecha y hora': new Date().toLocaleString()
+    };
+    STATE.colproveedorOrdenada.unshift(record);
+    resetForm('d1');
+    navigate('SUCCESS');
 }
 
 async function submitRecepcionPaquete() {
-    if(!STATE['ba1']?.residente) return alert("Selecciona residente");
-    STATE.colrecibirunpaqueteOrdenada.unshift({ Nombre: STATE['ba1'].residente, Foto: STATE.photos['ba1'], Fechayhora: new Date().toLocaleString() });
-    resetForm('ba1'); navigate('SUCCESS');
+    if(!STATE['ba1']?.residente) return alert("Debes seleccionar un residente");
+    STATE.colrecibirunpaqueteOrdenada.unshift({
+        Nombre: STATE['ba1'].residente, 
+        Torre: STATE['ba1'].torre, 
+        Departamento: STATE['ba1'].depto,
+        Paqueteria: document.getElementById('ba1-paqueteria').value,
+        Estatus: document.getElementById('ba1-estatus').value,
+        Foto: STATE.photos['ba1'], 
+        Fechayhora: new Date().toLocaleString()
+    });
+    resetForm('ba1');
+    navigate('SUCCESS');
 }
 
 async function submitEntregaPaquete() {
     const nom = document.getElementById('bb1-nombre').value;
-    if(!nom || signaturePad.isEmpty()) return alert("Faltan datos");
-    STATE.colEntregasLocales.unshift({ Nombre: nom, Fecha: new Date().toLocaleString() });
-    resetForm('bb1'); navigate('SUCCESS');
+    if(!nom || !STATE['bb1']?.residente || signaturePad.isEmpty()) return alert("Faltan datos");
+    STATE.colEntregasLocales.unshift({
+        Nombre: nom, Residente: STATE['bb1'].residente,
+        Torre: STATE['bb1'].torre, Departamento: STATE['bb1'].depto,
+        FotoBase64: STATE.photos['bb1'], FirmaBase64: signaturePad.toDataURL(),
+        Fechayhora: new Date().toLocaleString()
+    });
+    resetForm('bb1');
+    navigate('SUCCESS');
 }
 
 function submitQRResidente() {
     const val = document.getElementById('ea1-dni').value;
-    if(!val) return alert("Escanea código");
+    if(!val) return alert("Escanea o escribe un código");
     STATE.colQRResidenteEA1.unshift({ Nombre: "Residente", DNI: val, Fecha: new Date().toLocaleString() });
-    resetForm('ea1'); navigate('SUCCESS');
+    resetForm('ea1');
+    navigate('SUCCESS');
 }
 
 function submitQRVisita() {
     const val = document.getElementById('eb1-code').value;
-    if(!val) return alert("Escanea código");
+    if(!val) return alert("Escanea o escribe un código");
     STATE.colQRResidenteEB1.unshift({ Nombre: "Visita", Codigo: val, Fecha: new Date().toLocaleString() });
-    resetForm('eb1'); navigate('SUCCESS');
+    resetForm('eb1');
+    navigate('SUCCESS');
+}
+
+function submitEvento() {
+    const val = document.getElementById('ec1-code').value;
+    if(!val) return alert("Escanea o escribe un código");
+    navigate('SUCCESS');
+}
+
+function submitProveedorNIP() {
+    const val = document.getElementById('ed1-nip').value;
+    if(!val) return alert("Escribe el NIP/DNI");
+    if(val.length > 3) navigate('SUCCESS');
+    else navigate('FAILURE');
 }
 
 function submitPersonalInterno(tipo) {
     const id = document.getElementById('f1-id').value;
-    if(!id) return alert("Ingresa ID");
-    STATE.colPersonalServicio.unshift({ Nombre: "ID: " + id, Accion: tipo, Fecha: new Date().toLocaleString() });
-    resetForm('f1'); navigate('SUCCESS');
+    if(!id) return alert("Primero escanea el gafete o ingresa ID");
+    STATE.colPersonalServicio.unshift({
+        Nombre: "Personal ID: " + id,
+        Accion: tipo,
+        Fecha: new Date().toLocaleString()
+    });
+    resetForm('f1');
+    navigate('SUCCESS');
 }
 
 function renderGallery(colName, elementId) {
     const container = document.getElementById(elementId);
     const collection = STATE[colName];
     if(!collection || collection.length === 0) {
-        container.innerHTML = `<div style="padding:20px; text-align:center;">Sin registros.</div>`;
+        container.innerHTML = `<div style="padding:20px; text-align:center; color:#555">Sin registros.</div>`;
         return;
     }
     container.innerHTML = collection.map((item, idx) => `
         <div class="gallery-item" onclick="showDetail('${colName}', ${idx}, '${elementId.replace('gal','detail')}')">
             <div class="gallery-text">
-                <h4>${item.Nombre || 'Registro'}</h4>
-                <p>${item.Accion || item.Torre || ''} • ${item.Fecha || item.Fechayhora || ''}</p>
+                <h4>${item.Nombre || item.Usuario || 'Registro'}</h4>
+                <p>${item.Accion || item.Torre || item.Estatus || ''} • ${item.Fecha || item['Fecha y hora'] || item.Fechayhora}</p>
             </div>
-            <i class="fas fa-chevron-right"></i>
+            <i class="fas fa-chevron-right" style="color:#555"></i>
         </div>
     `).join('');
 }
@@ -554,9 +614,24 @@ function renderGallery(colName, elementId) {
 function showDetail(colName, idx, targetId) {
     const item = STATE[colName][idx];
     const target = document.getElementById(targetId);
-    target.innerHTML = `<div class="data-row"><span class="data-label">INFO</span><span class="data-value">${item.Nombre}</span></div>
-                        <div class="data-row"><span class="data-label">DETALLE</span><span class="data-value">${item.Accion || item.Torre || ''}</span></div>
-                        <div class="data-row"><span class="data-label">FECHA</span><span class="data-value">${item.Fecha || item.Fechayhora}</span></div>`;
+    let html = "";
+    if(colName === 'colPersonalServicio') {
+        html = `<div class="data-row"><span class="data-label">ID / NOMBRE</span><span class="data-value">${item.Nombre}</span></div>
+                <div class="data-row"><span class="data-label">MOVIMIENTO</span><span class="data-value ${item.Accion==='Entrada'?'status-success':'status-error'}">${item.Accion}</span></div>
+                <div class="data-row"><span class="data-label">FECHA</span><span class="data-value">${item.Fecha}</span></div>`;
+    }
+    else if(colName === 'colrecibirunpaqueteOrdenada') {
+        html = `<div class="data-row"><span class="data-label">DESTINATARIO</span><span class="data-value">${item.Nombre}</span></div>
+                <div class="data-row"><span class="data-label">PAQUETERIA</span><span class="data-value">${item.Paqueteria}</span></div>
+                <div class="data-row"><span class="data-label">ESTATUS</span><span class="data-value ${item.Estatus==='Aceptado'?'status-success':'status-error'}">${item.Estatus}</span></div>
+                <div class="data-row"><span class="data-label">FOTO</span><img src="${item.Foto}" /></div>`;
+    }
+    else {
+        html = `<div class="data-row"><span class="data-label">INFO</span><span class="data-value">${item.Nombre || item.Usuario}</span></div>
+                <div class="data-row"><span class="data-label">DETALLE</span><span class="data-value">${item.Torre || item.Empresa || item.DNI || item.Codigo || ''}</span></div>
+                <div class="data-row"><span class="data-label">FECHA</span><span class="data-value">${item.Fecha || item['Fecha y hora'] || item.Fechayhora}</span></div>`;
+    }
+    target.innerHTML = html;
 }
 
 window.onload = () => navigate('INICIO');
