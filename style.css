@@ -1,4 +1,3 @@
-/* RESET & BASE */
 html, body { 
     height: 100%; 
     margin: 0; 
@@ -88,13 +87,13 @@ html, body {
     transform: scale(0.98);
 }
 
-/* NUEVO: ESTILO PARA TUS ICONOS DE LA CARPETA ICONS */
+/* ESTILO PARA TUS ICONOS DE LA CARPETA ICONS */
 .custom-icon {
     width: 50px;       /* Ajusta el tamaño según tus imágenes */
     height: 50px;
     object-fit: contain;
     margin-bottom: 0.75rem;
-    filter: brightness(0) invert(1); /* Esto hace que iconos negros se vean blancos. Quítalo si tus iconos ya tienen color */
+    /* Se eliminó el filtro que causaba los cuadros blancos */
 }
 
 /* Iconos pequeños para header (como home) */
@@ -117,7 +116,7 @@ html, body {
 .form-page { 
     flex-direction: column; 
     height: 100vh; 
-    background-color: #ffffff;
+    background-color: #ffffff; 
     display: flex;
 }
 
