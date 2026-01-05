@@ -75,11 +75,11 @@ const SCREENS = {
             </header>
             <main class="main-menu-grid">
                 <div class="menu-item" onclick="navigate('AA1')">
-                    <img src="icons/visita.svg" class="custom-icon" onerror="this.src='icons/visita.svg'">
+                    <img src="icons/visita.svg" class="custom-icon">
                     <div>Registrar Visita</div>
                 </div>
                 <div class="menu-item" onclick="navigate('AC1')">
-                    <img src="icons/servicio2.svg" class="custom-icon" onerror="this.src='icons/visita.svg'">
+                    <img src="icons/servicio2.svg" class="custom-icon">
                     <div>Personal Servicio</div>
                 </div>
             </main>
@@ -90,7 +90,7 @@ const SCREENS = {
             <div class="form-title-section">
                 <h2 class="form-title">Nueva Visita</h2>
                 <div class="header-icons">
-                    <i class="fas fa-arrow-left fa-lg cursor-pointer" onclick="navigate('A1')"></i>
+                    <img src="icons/libreta.svg" class="header-icon-img cursor-pointer" onclick="navigate('A1')">
                     <i class="fas fa-clipboard-list fa-lg cursor-pointer" onclick="navigate('AA2')"></i>
                 </div>
             </div>
@@ -102,7 +102,6 @@ const SCREENS = {
                 <button class="btn-primary" onclick="openResidenteModal('aa1')"><i class="fas fa-search"></i> Seleccionar Residente</button>
                 <div class="input-group" style="margin-top:15px"><label>Placa</label><input type="text" id="aa1-placa" class="form-input"></div>
                 <div class="input-group"><label>Motivo</label><input type="text" id="aa1-motivo" class="form-input"></div>
-                
                 <div style="margin-top: 20px;">
                     <button class="btn-save" onclick="submitAviso('aa1')">Guardar</button>
                     <button class="btn-clean" onclick="resetForm('aa1')"><i class="fas fa-eraser"></i> Limpiar</button>
@@ -110,19 +109,34 @@ const SCREENS = {
             </div>
         </div>
     `,
-    'AA2': `<div class="screen form-page"><div class="form-title-section"><h2 class="form-title">Libreta Visitas</h2><div class="cursor-pointer" onclick="navigate('AA1')"><i class="fas fa-arrow-left fa-lg"></i></div></div><div class="form-container"><div id="gal-aa2" class="gallery-container"></div><div id="detail-aa2" class="detail-view"></div></div></div>`,
+    'AA2': `
+        <div class="screen form-page">
+            <div class="form-title-section">
+                <h2 class="form-title">Libreta Visitas</h2>
+                <img src="icons/libreta.svg" class="header-icon-img cursor-pointer" onclick="navigate('AA1')">
+            </div>
+            <div class="form-container">
+                <div id="gal-aa2" class="gallery-container"></div>
+                <div id="detail-aa2" class="detail-view"></div>
+            </div>
+        </div>`,
 
     // --- MÓDULO B: PAQUETERÍA ---
     'B1': `
         <div class="screen">
-            <header class="header-app"><div class="header-logo"><span class="header-logo-text">PAQUETERÍA</span></div><div class="cursor-pointer" onclick="navigate('INICIO')"><img src="icons/libreta.svg" class="header-icon-img"></div></header>
+            <header class="header-app">
+                <div class="header-logo"><span class="header-logo-text">PAQUETERÍA</span></div>
+                <div class="cursor-pointer" onclick="navigate('INICIO')">
+                    <img src="icons/libreta.svg" class="header-icon-img">
+                </div>
+            </header>
             <main class="main-menu-grid">
                 <div class="menu-item" onclick="navigate('BA1')">
-                    <img src="icons/paquete2.svg" class="custom-icon" onerror="this.src='icons/paquete1.svg'">
+                    <img src="icons/paquete2.svg" class="custom-icon">
                     <div>Recibir</div>
                 </div>
                 <div class="menu-item" onclick="navigate('BB1')">
-                    <img src="icons/paquete3.svg" class="custom-icon" onerror="this.src='icons/paquete1.svg'">
+                    <img src="icons/paquete3.svg" class="custom-icon">
                     <div>Entregar</div>
                 </div>
             </main>
@@ -133,7 +147,7 @@ const SCREENS = {
             <div class="form-title-section">
                 <h2 class="form-title">Recibir Paquete</h2>
                 <div class="header-icons">
-                    <i class="fas fa-arrow-left fa-lg cursor-pointer" onclick="navigate('B1')"></i>
+                    <img src="icons/libreta.svg" class="header-icon-img cursor-pointer" onclick="navigate('B1')">
                     <i class="fas fa-clipboard-list fa-lg cursor-pointer" onclick="navigate('BA2')"></i>
                 </div>
             </div>
@@ -142,10 +156,8 @@ const SCREENS = {
                 <div class="input-group"><label>Departamento</label><input type="text" id="ba1-depto" class="form-input" readonly></div>
                 <div class="input-group"><label>Destinatario (Residente)</label><input type="text" id="ba1-res-name" class="form-input" readonly></div>
                 <button class="btn-primary" onclick="openResidenteModal('ba1')"><i class="fas fa-search"></i> Seleccionar Residente</button>
-                
                 <div class="input-group" style="margin-top:15px"><label>Paquetería *</label><input type="text" id="ba1-paqueteria" class="form-input"></div>
                 <div class="input-group"><label>Estatus</label><select id="ba1-estatus" class="form-input"><option>Aceptado</option><option>Dañado</option></select></div>
-                
                 <div class="input-group"><label>Foto</label>
                     <div class="photo-placeholder" onclick="document.getElementById('cam-ba1').click()">
                         <input type="file" id="cam-ba1" hidden accept="image/*" capture="environment" onchange="previewImg(this, 'ba1')">
@@ -153,7 +165,6 @@ const SCREENS = {
                         <span><i class="fas fa-camera"></i> Tocar para cámara</span>
                     </div>
                 </div>
-                
                 <div style="margin-top: 20px;">
                     <button class="btn-save" onclick="submitRecepcionPaquete()">Guardar</button>
                     <button class="btn-clean" onclick="resetForm('ba1')"><i class="fas fa-eraser"></i> Limpiar</button>
@@ -161,14 +172,14 @@ const SCREENS = {
             </div>
         </div>
     `,
-    'BA2': `<div class="screen form-page"><div class="form-title-section"><h2 class="form-title">Libreta Recepción</h2><div class="cursor-pointer" onclick="navigate('BA1')"><i class="fas fa-arrow-left fa-lg"></i></div></div><div class="form-container"><div id="gal-ba2" class="gallery-container"></div><div id="detail-ba2" class="detail-view"></div></div></div>`,
+    'BA2': `<div class="screen form-page"><div class="form-title-section"><h2 class="form-title">Libreta Recepción</h2><img src="icons/libreta.svg" class="header-icon-img cursor-pointer" onclick="navigate('BA1')"></div><div class="form-container"><div id="gal-ba2" class="gallery-container"></div><div id="detail-ba2" class="detail-view"></div></div></div>`,
 
     'BB1': `
         <div class="screen form-page">
             <div class="form-title-section">
                 <h2 class="form-title">Entregar Paquete</h2>
                 <div class="header-icons">
-                    <i class="fas fa-arrow-left fa-lg cursor-pointer" onclick="navigate('B1')"></i>
+                    <img src="icons/libreta.svg" class="header-icon-img cursor-pointer" onclick="navigate('B1')">
                     <i class="fas fa-clipboard-list fa-lg cursor-pointer" onclick="navigate('BB2')"></i>
                 </div>
             </div>
@@ -178,7 +189,6 @@ const SCREENS = {
                 <div class="input-group"><label>Depto</label><input type="text" id="bb1-depto" class="form-input" readonly></div>
                 <div class="input-group"><label>Dueño (Residente)</label><input type="text" id="bb1-res-name" class="form-input" readonly></div>
                 <button class="btn-primary" onclick="openResidenteModal('bb1')"><i class="fas fa-search"></i> Seleccionar Dueño</button>
-                
                 <div class="input-group" style="margin-top:15px"><label>Foto Evidencia</label>
                     <div class="photo-placeholder" onclick="document.getElementById('cam-bb1').click()">
                         <input type="file" id="cam-bb1" hidden accept="image/*" capture="environment" onchange="previewImg(this, 'bb1')">
@@ -189,7 +199,6 @@ const SCREENS = {
                 <div class="input-group"><label>Firma</label>
                     <div class="signature-wrapper"><canvas id="sig-canvas"></canvas><i class="fas fa-times-circle clear-sig" onclick="clearSignature()"></i></div>
                 </div>
-                
                 <div style="margin-top: 20px;">
                     <button class="btn-save" onclick="submitEntregaPaquete()">Guardar</button>
                     <button class="btn-clean" onclick="resetForm('bb1')"><i class="fas fa-eraser"></i> Limpiar</button>
@@ -197,7 +206,7 @@ const SCREENS = {
             </div>
         </div>
     `,
-    'BB2': `<div class="screen form-page"><div class="form-title-section"><h2 class="form-title">Libreta Entregas</h2><div class="cursor-pointer" onclick="navigate('BB1')"><i class="fas fa-arrow-left fa-lg"></i></div></div><div class="form-container"><div id="gal-bb2" class="gallery-container"></div><div id="detail-bb2" class="detail-view"></div></div></div>`,
+    'BB2': `<div class="screen form-page"><div class="form-title-section"><h2 class="form-title">Libreta Entregas</h2><img src="icons/libreta.svg" class="header-icon-img cursor-pointer" onclick="navigate('BB1')"></div><div class="form-container"><div id="gal-bb2" class="gallery-container"></div><div id="detail-bb2" class="detail-view"></div></div></div>`,
 
     // --- MÓDULO D: PROVEEDOR ---
     'D1': `
@@ -205,7 +214,7 @@ const SCREENS = {
             <div class="form-title-section">
                 <h2 class="form-title">Proveedor</h2>
                 <div class="header-icons">
-                    <i class="fas fa-arrow-left fa-lg cursor-pointer" onclick="navigate('INICIO')"></i>
+                    <img src="icons/libreta.svg" class="header-icon-img cursor-pointer" onclick="navigate('INICIO')">
                     <i class="fas fa-clipboard-list fa-lg cursor-pointer" onclick="navigate('D2')"></i>
                 </div>
             </div>
@@ -217,7 +226,6 @@ const SCREENS = {
                 <div class="input-group"><label>Depto</label><input type="text" id="d1-depto" class="form-input" readonly></div>
                 <div class="input-group"><label>Residente</label><input type="text" id="d1-res-name" class="form-input" readonly></div>
                 <button class="btn-primary" onclick="openResidenteModal('d1')"><i class="fas fa-search"></i> Seleccionar Residente</button>
-                
                 <div style="margin-top: 20px;">
                     <button class="btn-save" onclick="submitProveedor()">Guardar</button>
                     <button class="btn-clean" onclick="resetForm('d1')"><i class="fas fa-eraser"></i> Limpiar</button>
@@ -225,27 +233,32 @@ const SCREENS = {
             </div>
         </div>
     `,
-    'D2': `<div class="screen form-page"><div class="form-title-section"><h2 class="form-title">Libreta Proveedor</h2><div class="cursor-pointer" onclick="navigate('D1')"><i class="fas fa-arrow-left fa-lg"></i></div></div><div class="form-container"><div id="gal-d2" class="gallery-container"></div><div id="detail-d2" class="detail-view"></div></div></div>`,
+    'D2': `<div class="screen form-page"><div class="form-title-section"><h2 class="form-title">Libreta Proveedor</h2><img src="icons/libreta.svg" class="header-icon-img cursor-pointer" onclick="navigate('D1')"></div><div class="form-container"><div id="gal-d2" class="gallery-container"></div><div id="detail-d2" class="detail-view"></div></div></div>`,
 
     // --- MÓDULO E: QR ---
     'E1': `
         <div class="screen">
-            <header class="header-app"><div class="header-logo"><span class="header-logo-text">MÓDULOS QR</span></div><div class="cursor-pointer" onclick="navigate('INICIO')"><img src="icons/libreta.svg" class="header-icon-img"></div></header>
+            <header class="header-app">
+                <div class="header-logo"><span class="header-logo-text">MÓDULOS QR</span></div>
+                <div class="cursor-pointer" onclick="navigate('INICIO')">
+                    <img src="icons/libreta.svg" class="header-icon-img">
+                </div>
+            </header>
             <main class="main-menu-grid">
                 <div class="menu-item" onclick="navigate('EA1')">
-                    <img src="icons/residente.svg" class="custom-icon" onerror="this.src='icons/qr.svg'">
+                    <img src="icons/residente.svg" class="custom-icon">
                     <div>QR Residente</div>
                 </div>
                 <div class="menu-item" onclick="navigate('EB1')">
-                    <img src="icons/visita.svg" class="custom-icon" onerror="this.src='icons/qr.svg'">
+                    <img src="icons/visita.svg" class="custom-icon">
                     <div>QR Visita</div>
                 </div>
                 <div class="menu-item" onclick="navigate('EC1')">
-                    <img src="icons/evento.svg" class="custom-icon" onerror="this.src='icons/qr.svg'">
+                    <img src="icons/evento.svg" class="custom-icon">
                     <div>Eventos</div>
                 </div>
                 <div class="menu-item" onclick="navigate('ED1')">
-                    <img src="icons/residente.svg" class="custom-icon" onerror="this.src='icons/qr.svg'">
+                    <img src="icons/residente.svg" class="custom-icon">
                     <div>Proveedor NIP</div>
                 </div>
             </main>
@@ -256,7 +269,7 @@ const SCREENS = {
             <div class="form-title-section">
                 <h2 class="form-title">QR Residente</h2>
                 <div class="header-icons">
-                    <i class="fas fa-arrow-left fa-lg cursor-pointer" onclick="navigate('E1')"></i>
+                    <img src="icons/libreta.svg" class="header-icon-img cursor-pointer" onclick="navigate('E1')">
                     <i class="fas fa-clipboard-list fa-lg cursor-pointer" onclick="navigate('EA2')"></i>
                 </div>
             </div>
@@ -270,14 +283,14 @@ const SCREENS = {
             </div>
         </div>
     `,
-    'EA2': `<div class="screen form-page"><div class="form-title-section"><h2 class="form-title">Historial QR</h2><div class="cursor-pointer" onclick="navigate('EA1')"><i class="fas fa-arrow-left fa-lg"></i></div></div><div class="form-container"><div id="gal-ea2" class="gallery-container"></div><div id="detail-ea2" class="detail-view"></div></div></div>`,
+    'EA2': `<div class="screen form-page"><div class="form-title-section"><h2 class="form-title">Historial QR</h2><img src="icons/libreta.svg" class="header-icon-img cursor-pointer" onclick="navigate('EA1')"></div><div class="form-container"><div id="gal-ea2" class="gallery-container"></div><div id="detail-ea2" class="detail-view"></div></div></div>`,
     
     'EB1': `
         <div class="screen form-page">
             <div class="form-title-section">
                 <h2 class="form-title">QR Visita</h2>
                 <div class="header-icons">
-                    <i class="fas fa-arrow-left fa-lg cursor-pointer" onclick="navigate('E1')"></i>
+                    <img src="icons/libreta.svg" class="header-icon-img cursor-pointer" onclick="navigate('E1')">
                     <i class="fas fa-clipboard-list fa-lg cursor-pointer" onclick="navigate('EB2')"></i>
                 </div>
             </div>
@@ -291,21 +304,17 @@ const SCREENS = {
             </div>
         </div>
     `,
-    'EB2': `<div class="screen form-page"><div class="form-title-section"><h2 class="form-title">Historial VFS</h2><div class="cursor-pointer" onclick="navigate('EB1')"><i class="fas fa-arrow-left fa-lg"></i></div></div><div class="form-container"><div id="gal-eb2" class="gallery-container"></div><div id="detail-eb2" class="detail-view"></div></div></div>`,
+    'EB2': `<div class="screen form-page"><div class="form-title-section"><h2 class="form-title">Historial VFS</h2><img src="icons/libreta.svg" class="header-icon-img cursor-pointer" onclick="navigate('EB1')"></div><div class="form-container"><div id="gal-eb2" class="gallery-container"></div><div id="detail-eb2" class="detail-view"></div></div></div>`,
 
-    // --- EC1: EVENTOS ---
     'EC1': `
         <div class="screen form-page">
             <div class="form-title-section">
                 <h2 class="form-title">Validar Evento</h2>
-                <div class="header-icons">
-                    <i class="fas fa-arrow-left fa-lg cursor-pointer" onclick="navigate('E1')"></i>
-                </div>
+                <img src="icons/libreta.svg" class="header-icon-img cursor-pointer" onclick="navigate('E1')">
             </div>
             <div class="form-container">
                 <div class="input-group"><label>Código Evento *</label><input type="text" id="ec1-code" class="form-input"></div>
                 <button class="btn-primary" onclick="startScan('ec1-code')"><i class="fas fa-camera"></i> Escanear QR</button>
-                
                 <div style="margin-top: 20px;">
                     <button class="btn-save" onclick="submitEvento()">Validar Acceso</button>
                     <button class="btn-clean" onclick="resetForm('ec1')"><i class="fas fa-eraser"></i> Limpiar</button>
@@ -314,19 +323,17 @@ const SCREENS = {
         </div>
     `,
     
-    // --- ED1: PROVEEDOR NIP ---
     'ED1': `
         <div class="screen form-page">
             <div class="form-title-section">
                 <h2 class="form-title">Proveedor NIP</h2>
                 <div class="header-icons">
-                    <i class="fas fa-arrow-left fa-lg cursor-pointer" onclick="navigate('E1')"></i>
+                    <img src="icons/libreta.svg" class="header-icon-img cursor-pointer" onclick="navigate('E1')">
                     <i class="fas fa-clipboard-list fa-lg cursor-pointer" onclick="navigate('ED2')"></i>
                 </div>
             </div>
             <div class="form-container">
                 <div class="input-group"><label>NIP / DNI *</label><input type="text" id="ed1-nip" class="form-input"></div>
-                
                 <div style="margin-top: 20px;">
                     <button class="btn-save" onclick="submitProveedorNIP()">Validar</button>
                     <button class="btn-clean" onclick="resetForm('ed1')"><i class="fas fa-eraser"></i> Limpiar</button>
@@ -334,22 +341,20 @@ const SCREENS = {
             </div>
         </div>
     `,
-    'ED2': `<div class="screen form-page"><div class="form-title-section"><h2 class="form-title">Historial NIP</h2><div class="cursor-pointer" onclick="navigate('ED1')"><i class="fas fa-arrow-left fa-lg"></i></div></div><div class="form-container"><div id="gal-ed2" class="gallery-container"></div><div id="detail-ed2" class="detail-view"></div></div></div>`,
+    'ED2': `<div class="screen form-page"><div class="form-title-section"><h2 class="form-title">Historial NIP</h2><img src="icons/libreta.svg" class="header-icon-img cursor-pointer" onclick="navigate('ED1')"></div><div class="form-container"><div id="gal-ed2" class="gallery-container"></div><div id="detail-ed2" class="detail-view"></div></div></div>`,
 
-    // --- PERSONAL INTERNO (F1) ---
     'F1': `
         <div class="screen form-page">
             <div class="form-title-section">
                 <h2 class="form-title">Personal Interno</h2>
                 <div class="header-icons">
-                    <i class="fas fa-arrow-left fa-lg cursor-pointer" onclick="navigate('INICIO')"></i>
+                    <img src="icons/libreta.svg" class="header-icon-img cursor-pointer" onclick="navigate('INICIO')">
                     <i class="fas fa-clipboard-list fa-lg cursor-pointer" onclick="navigate('F2')"></i>
                 </div>
             </div>
             <div class="form-container">
                 <div class="input-group"><label>ID Personal *</label><input type="text" id="f1-id" class="form-input" placeholder="Escanea gafete"></div>
                 <button class="btn-primary" style="background:#333" onclick="startScan('f1-id')"><i class="fas fa-camera"></i> Escanear Gafete</button>
-                
                 <div style="display:flex; gap:10px; margin-top:20px;">
                     <button class="btn-save" onclick="submitPersonalInterno('Entrada')">Entrada</button>
                     <button class="btn-secondary" style="background:#3860B2" onclick="submitPersonalInterno('Salida')">Salida</button>
@@ -358,15 +363,14 @@ const SCREENS = {
             </div>
         </div>
     `,
-    'F2': `<div class="screen form-page"><div class="form-title-section"><h2 class="form-title">Bitácora Interna</h2><div class="cursor-pointer" onclick="navigate('F1')"><i class="fas fa-arrow-left fa-lg"></i></div></div><div class="form-container"><div id="gal-f2" class="gallery-container"></div><div id="detail-f2" class="detail-view"></div></div></div>`,
+    'F2': `<div class="screen form-page"><div class="form-title-section"><h2 class="form-title">Bitácora Interna</h2><img src="icons/libreta.svg" class="header-icon-img cursor-pointer" onclick="navigate('F1')"></div><div class="form-container"><div id="gal-f2" class="gallery-container"></div><div id="detail-f2" class="detail-view"></div></div></div>`,
 
-    // --- AC: PERSONAL SERVICIO ---
     'AC1': `
         <div class="screen form-page">
             <div class="form-title-section">
                 <h2 class="form-title">Personal Servicio</h2>
                 <div class="header-icons">
-                    <i class="fas fa-arrow-left fa-lg cursor-pointer" onclick="navigate('A1')"></i>
+                    <img src="icons/libreta.svg" class="header-icon-img cursor-pointer" onclick="navigate('A1')">
                     <i class="fas fa-clipboard-list fa-lg cursor-pointer" onclick="navigate('AC2')"></i>
                 </div>
             </div>
@@ -376,9 +380,7 @@ const SCREENS = {
                 <div class="input-group"><label>Depto</label><input type="text" id="ac1-depto" class="form-input" readonly></div>
                 <div class="input-group"><label>Residente</label><input type="text" id="ac1-res-name" class="form-input" readonly></div>
                 <button class="btn-primary" onclick="openResidenteModal('ac1')"><i class="fas fa-search"></i> Seleccionar Residente</button>
-                
                 <div class="input-group" style="margin-top:15px"><label>Cargo</label><input type="text" id="ac1-cargo" class="form-input"></div>
-                
                 <div style="margin-top: 20px;">
                     <button class="btn-save" onclick="submitAviso('ac1')">Guardar</button>
                     <button class="btn-clean" onclick="resetForm('ac1')"><i class="fas fa-eraser"></i> Limpiar</button>
@@ -386,9 +388,8 @@ const SCREENS = {
             </div>
         </div>
     `,
-    'AC2': `<div class="screen form-page"><div class="form-title-section"><h2 class="form-title">Libreta Personal</h2><div class="cursor-pointer" onclick="navigate('AC1')"><i class="fas fa-arrow-left fa-lg"></i></div></div><div class="form-container"><div id="gal-ac2" class="gallery-container"></div><div id="detail-ac2" class="detail-view"></div></div></div>`,
+    'AC2': `<div class="screen form-page"><div class="form-title-section"><h2 class="form-title">Libreta Personal</h2><img src="icons/libreta.svg" class="header-icon-img cursor-pointer" onclick="navigate('AC1')"></div><div class="form-container"><div id="gal-ac2" class="gallery-container"></div><div id="detail-ac2" class="detail-view"></div></div></div>`,
 
-    // --- FEEDBACK SCREENS ---
     'SUCCESS': `<div class="screen" style="display:flex; justify-content:center; align-items:center; height:100vh; flex-direction:column"><i class="fas fa-check-circle fa-5x status-success"></i><h2 class="form-title" style="margin-top:20px">ÉXITO</h2></div>`,
     'FAILURE': `<div class="screen" style="display:flex; justify-content:center; align-items:center; height:100vh; flex-direction:column"><i class="fas fa-times-circle fa-5x status-error"></i><h2 class="form-title" style="margin-top:20px">DENEGADO</h2></div>`
 };
@@ -406,7 +407,6 @@ function navigate(screen) {
     
     document.getElementById('viewport').innerHTML = SCREENS[screen] || SCREENS['INICIO'];
     
-    // Inits
     if(screen === 'BB1') initSignature();
     if(screen === 'AA2') renderGallery('colvisitaOrdenada', 'gal-aa2');
     if(screen === 'AC2') renderGallery('colpersonalaviso', 'gal-ac2');
@@ -421,24 +421,19 @@ function navigate(screen) {
     if(screen === 'SUCCESS' || screen === 'FAILURE') setTimeout(() => navigate('INICIO'), 2000);
 }
 
-// RESET FORM LOGIC
 function resetForm(prefix) {
     const inputs = document.querySelectorAll(`[id^="${prefix}-"]`);
     inputs.forEach(input => {
         if(input.tagName === 'SELECT' && input.options.length > 0) input.selectedIndex = 0;
         else input.value = '';
     });
-    
     STATE[prefix] = {};
     if(STATE.photos[prefix]) STATE.photos[prefix] = null;
-    
     const prev = document.getElementById(`prev-${prefix}`);
     if(prev) { prev.style.backgroundImage = 'none'; prev.classList.add('hidden'); }
-    
     if(prefix === 'bb1' && signaturePad) signaturePad.clear();
 }
 
-// --- MODAL RESIDENTE ---
 function openResidenteModal(ctx) {
     STATE.currentContext = ctx;
     const torres = [...new Set(STATE.colBaserFiltrada.map(i => i.Torre))];
@@ -465,19 +460,15 @@ function updateResidentes() {
 function confirmResidente() {
     const p = STATE.currentContext; 
     const item = STATE.colBaserFiltrada.find(i => i.Nombre === document.getElementById('sel-nombre').value);
-    
     STATE[p] = { residente: item.Nombre, numero: item.Número, torre: item.Torre, depto: item.Departamento };
-    
     if(document.getElementById(`${p}-torre`)) document.getElementById(`${p}-torre`).value = item.Torre;
     if(document.getElementById(`${p}-depto`)) document.getElementById(`${p}-depto`).value = item.Departamento;
     if(document.getElementById(`${p}-res-name`)) document.getElementById(`${p}-res-name`).value = item.Nombre;
-    
     closeResidenteModal();
 }
 
 function closeResidenteModal() { document.getElementById('modal-selector').classList.remove('active'); }
 
-// --- FIRMA & FOTO ---
 function initSignature() {
     setTimeout(() => {
         const canvas = document.getElementById('sig-canvas');
@@ -504,11 +495,9 @@ function previewImg(input, id) {
     }
 }
 
-// --- LOGICA DE ESCÁNER QR ---
 function startScan(targetInputId) {
     STATE.targetInputForQR = targetInputId;
     document.getElementById('qr-modal').classList.add('active');
-    
     html5QrCode = new Html5Qrcode("qr-reader-view");
     html5QrCode.start(
         { facingMode: "environment" },
@@ -532,19 +521,15 @@ function closeQRScanner() {
     document.getElementById('qr-modal').classList.remove('active');
 }
 
-
-// --- SUBMITS ---
 async function submitAviso(p) {
     const nom = document.getElementById(p+'-nombre').value;
     if(!nom || !STATE[p]?.residente) return alert("Faltan datos");
-    
     const record = { 
         Nombre: nom, Torre: STATE[p].torre, Depto: STATE[p].depto, 
         Placa: document.getElementById(p+'-placa')?.value || "",
         Estatus: "Nuevo", Fecha: new Date().toLocaleString() 
     };
     STATE[p === 'aa1' ? 'colvisitaOrdenada' : 'colpersonalaviso'].unshift(record);
-    
     resetForm(p); 
     navigate('SUCCESS');
 }
@@ -564,7 +549,6 @@ async function submitProveedor() {
 
 async function submitRecepcionPaquete() {
     if(!STATE['ba1']?.residente) return alert("Debes seleccionar un residente");
-    
     STATE.colrecibirunpaqueteOrdenada.unshift({
         Nombre: STATE['ba1'].residente, 
         Torre: STATE['ba1'].torre, 
@@ -610,13 +594,12 @@ function submitQRVisita() {
 function submitEvento() {
     const val = document.getElementById('ec1-code').value;
     if(!val) return alert("Escanea o escribe un código");
-    navigate('SUCCESS'); // Simulación de validación OK
+    navigate('SUCCESS');
 }
 
 function submitProveedorNIP() {
     const val = document.getElementById('ed1-nip').value;
     if(!val) return alert("Escribe el NIP/DNI");
-    // Lógica de validación simulada
     if(val.length > 3) navigate('SUCCESS');
     else navigate('FAILURE');
 }
@@ -633,7 +616,6 @@ function submitPersonalInterno(tipo) {
     navigate('SUCCESS');
 }
 
-// --- RENDERIZADO GALERÍAS ---
 function renderGallery(colName, elementId) {
     const container = document.getElementById(elementId);
     const collection = STATE[colName];
@@ -656,7 +638,6 @@ function showDetail(colName, idx, targetId) {
     const item = STATE[colName][idx];
     const target = document.getElementById(targetId);
     let html = "";
-    
     if(colName === 'colPersonalServicio') {
         html = `<div class="data-row"><span class="data-label">ID / NOMBRE</span><span class="data-value">${item.Nombre}</span></div>
                 <div class="data-row"><span class="data-label">MOVIMIENTO</span><span class="data-value ${item.Accion==='Entrada'?'status-success':'status-error'}">${item.Accion}</span></div>
