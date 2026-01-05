@@ -89,20 +89,22 @@ html, body {
 
 /* ESTILO PARA TUS ICONOS DE LA CARPETA ICONS */
 .custom-icon {
-    width: 50px;       /* Ajusta el tamaño según tus imágenes */
+    width: 50px;
     height: 50px;
     object-fit: contain;
     margin-bottom: 0.75rem;
-    /* Se eliminó el filtro que causaba los cuadros blancos */
+    /* Filtro eliminado aquí previamente */
 }
 
-/* Iconos pequeños para header (como home) */
+/* --- CORRECCIÓN AQUÍ --- */
+/* Iconos pequeños para header (como la libreta) */
 .header-icon-img {
     width: 24px;
     height: 24px;
-    filter: brightness(0) invert(1);
+    /* Se eliminó el filtro que causaba el problema en la libreta */
     cursor: pointer;
 }
+/* ----------------------- */
 
 .menu-item.full {
     grid-column: span 2;
