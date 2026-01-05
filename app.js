@@ -70,7 +70,7 @@ const SCREENS = {
             <header class="header-app">
                 <div class="header-logo"><span class="header-logo-text">VISITAS</span></div>
                 <div class="cursor-pointer" onclick="navigate('INICIO')">
-                    <img src="icons/libreta.svg" class="header-icon-img" alt="Inicio">
+                    <img src="icons/home.svg" class="header-icon-img" alt="Inicio">
                 </div>
             </header>
             <main class="main-menu-grid">
@@ -90,8 +90,8 @@ const SCREENS = {
             <div class="form-title-section">
                 <h2 class="form-title">Nueva Visita</h2>
                 <div class="header-icons">
-                    <img src="icons/libreta.svg" class="header-icon-img cursor-pointer" onclick="navigate('A1')">
-                    <i class="fas fa-clipboard-list fa-lg cursor-pointer" onclick="navigate('AA2')"></i>
+                    <i class="fas fa-arrow-left fa-lg cursor-pointer" onclick="navigate('A1')"></i>
+                    <img src="icons/libreta.svg" class="header-icon-img cursor-pointer" onclick="navigate('AA2')">
                 </div>
             </div>
             <div class="form-container">
@@ -109,27 +109,12 @@ const SCREENS = {
             </div>
         </div>
     `,
-    'AA2': `
-        <div class="screen form-page">
-            <div class="form-title-section">
-                <h2 class="form-title">Libreta Visitas</h2>
-                <img src="icons/libreta.svg" class="header-icon-img cursor-pointer" onclick="navigate('AA1')">
-            </div>
-            <div class="form-container">
-                <div id="gal-aa2" class="gallery-container"></div>
-                <div id="detail-aa2" class="detail-view"></div>
-            </div>
-        </div>`,
+    'AA2': `<div class="screen form-page"><div class="form-title-section"><h2 class="form-title">Libreta Visitas</h2><div class="cursor-pointer" onclick="navigate('AA1')"><img src="icons/home.svg" class="header-icon-img"></div></div><div class="form-container"><div id="gal-aa2" class="gallery-container"></div><div id="detail-aa2" class="detail-view"></div></div></div>`,
 
     // --- MÓDULO B: PAQUETERÍA ---
     'B1': `
         <div class="screen">
-            <header class="header-app">
-                <div class="header-logo"><span class="header-logo-text">PAQUETERÍA</span></div>
-                <div class="cursor-pointer" onclick="navigate('INICIO')">
-                    <img src="icons/libreta.svg" class="header-icon-img">
-                </div>
-            </header>
+            <header class="header-app"><div class="header-logo"><span class="header-logo-text">PAQUETERÍA</span></div><div class="cursor-pointer" onclick="navigate('INICIO')"><img src="icons/home.svg" class="header-icon-img"></div></header>
             <main class="main-menu-grid">
                 <div class="menu-item" onclick="navigate('BA1')">
                     <img src="icons/paquete2.svg" class="custom-icon">
@@ -147,8 +132,8 @@ const SCREENS = {
             <div class="form-title-section">
                 <h2 class="form-title">Recibir Paquete</h2>
                 <div class="header-icons">
-                    <img src="icons/libreta.svg" class="header-icon-img cursor-pointer" onclick="navigate('B1')">
-                    <i class="fas fa-clipboard-list fa-lg cursor-pointer" onclick="navigate('BA2')"></i>
+                    <i class="fas fa-arrow-left fa-lg cursor-pointer" onclick="navigate('B1')"></i>
+                    <img src="icons/libreta.svg" class="header-icon-img cursor-pointer" onclick="navigate('BA2')">
                 </div>
             </div>
             <div class="form-container">
@@ -172,15 +157,15 @@ const SCREENS = {
             </div>
         </div>
     `,
-    'BA2': `<div class="screen form-page"><div class="form-title-section"><h2 class="form-title">Libreta Recepción</h2><img src="icons/libreta.svg" class="header-icon-img cursor-pointer" onclick="navigate('BA1')"></div><div class="form-container"><div id="gal-ba2" class="gallery-container"></div><div id="detail-ba2" class="detail-view"></div></div></div>`,
+    'BA2': `<div class="screen form-page"><div class="form-title-section"><h2 class="form-title">Libreta Recepción</h2><div class="cursor-pointer" onclick="navigate('BA1')"><img src="icons/home.svg" class="header-icon-img"></div></div><div class="form-container"><div id="gal-ba2" class="gallery-container"></div><div id="detail-ba2" class="detail-view"></div></div></div>`,
 
     'BB1': `
         <div class="screen form-page">
             <div class="form-title-section">
                 <h2 class="form-title">Entregar Paquete</h2>
                 <div class="header-icons">
-                    <img src="icons/libreta.svg" class="header-icon-img cursor-pointer" onclick="navigate('B1')">
-                    <i class="fas fa-clipboard-list fa-lg cursor-pointer" onclick="navigate('BB2')"></i>
+                    <i class="fas fa-arrow-left fa-lg cursor-pointer" onclick="navigate('B1')"></i>
+                    <img src="icons/libreta.svg" class="header-icon-img cursor-pointer" onclick="navigate('BB2')">
                 </div>
             </div>
             <div class="form-container">
@@ -206,7 +191,7 @@ const SCREENS = {
             </div>
         </div>
     `,
-    'BB2': `<div class="screen form-page"><div class="form-title-section"><h2 class="form-title">Libreta Entregas</h2><img src="icons/libreta.svg" class="header-icon-img cursor-pointer" onclick="navigate('BB1')"></div><div class="form-container"><div id="gal-bb2" class="gallery-container"></div><div id="detail-bb2" class="detail-view"></div></div></div>`,
+    'BB2': `<div class="screen form-page"><div class="form-title-section"><h2 class="form-title">Libreta Entregas</h2><div class="cursor-pointer" onclick="navigate('BB1')"><img src="icons/home.svg" class="header-icon-img"></div></div><div class="form-container"><div id="gal-bb2" class="gallery-container"></div><div id="detail-bb2" class="detail-view"></div></div></div>`,
 
     // --- MÓDULO D: PROVEEDOR ---
     'D1': `
@@ -214,8 +199,8 @@ const SCREENS = {
             <div class="form-title-section">
                 <h2 class="form-title">Proveedor</h2>
                 <div class="header-icons">
-                    <img src="icons/libreta.svg" class="header-icon-img cursor-pointer" onclick="navigate('INICIO')">
-                    <i class="fas fa-clipboard-list fa-lg cursor-pointer" onclick="navigate('D2')"></i>
+                    <img src="icons/home.svg" class="header-icon-img cursor-pointer" onclick="navigate('INICIO')">
+                    <img src="icons/libreta.svg" class="header-icon-img cursor-pointer" onclick="navigate('D2')">
                 </div>
             </div>
             <div class="form-container">
@@ -233,17 +218,12 @@ const SCREENS = {
             </div>
         </div>
     `,
-    'D2': `<div class="screen form-page"><div class="form-title-section"><h2 class="form-title">Libreta Proveedor</h2><img src="icons/libreta.svg" class="header-icon-img cursor-pointer" onclick="navigate('D1')"></div><div class="form-container"><div id="gal-d2" class="gallery-container"></div><div id="detail-d2" class="detail-view"></div></div></div>`,
+    'D2': `<div class="screen form-page"><div class="form-title-section"><h2 class="form-title">Libreta Proveedor</h2><div class="cursor-pointer" onclick="navigate('D1')"><img src="icons/home.svg" class="header-icon-img"></div></div><div class="form-container"><div id="gal-d2" class="gallery-container"></div><div id="detail-d2" class="detail-view"></div></div></div>`,
 
     // --- MÓDULO E: QR ---
     'E1': `
         <div class="screen">
-            <header class="header-app">
-                <div class="header-logo"><span class="header-logo-text">MÓDULOS QR</span></div>
-                <div class="cursor-pointer" onclick="navigate('INICIO')">
-                    <img src="icons/libreta.svg" class="header-icon-img">
-                </div>
-            </header>
+            <header class="header-app"><div class="header-logo"><span class="header-logo-text">MÓDULOS QR</span></div><div class="cursor-pointer" onclick="navigate('INICIO')"><img src="icons/home.svg" class="header-icon-img"></div></header>
             <main class="main-menu-grid">
                 <div class="menu-item" onclick="navigate('EA1')">
                     <img src="icons/residente.svg" class="custom-icon">
@@ -269,8 +249,8 @@ const SCREENS = {
             <div class="form-title-section">
                 <h2 class="form-title">QR Residente</h2>
                 <div class="header-icons">
-                    <img src="icons/libreta.svg" class="header-icon-img cursor-pointer" onclick="navigate('E1')">
-                    <i class="fas fa-clipboard-list fa-lg cursor-pointer" onclick="navigate('EA2')"></i>
+                    <i class="fas fa-arrow-left fa-lg cursor-pointer" onclick="navigate('E1')"></i>
+                    <img src="icons/libreta.svg" class="header-icon-img cursor-pointer" onclick="navigate('EA2')">
                 </div>
             </div>
             <div class="form-container">
@@ -283,15 +263,15 @@ const SCREENS = {
             </div>
         </div>
     `,
-    'EA2': `<div class="screen form-page"><div class="form-title-section"><h2 class="form-title">Historial QR</h2><img src="icons/libreta.svg" class="header-icon-img cursor-pointer" onclick="navigate('EA1')"></div><div class="form-container"><div id="gal-ea2" class="gallery-container"></div><div id="detail-ea2" class="detail-view"></div></div></div>`,
+    'EA2': `<div class="screen form-page"><div class="form-title-section"><h2 class="form-title">Historial QR</h2><div class="cursor-pointer" onclick="navigate('EA1')"><img src="icons/home.svg" class="header-icon-img"></div></div><div class="form-container"><div id="gal-ea2" class="gallery-container"></div><div id="detail-ea2" class="detail-view"></div></div></div>`,
     
     'EB1': `
         <div class="screen form-page">
             <div class="form-title-section">
                 <h2 class="form-title">QR Visita</h2>
                 <div class="header-icons">
-                    <img src="icons/libreta.svg" class="header-icon-img cursor-pointer" onclick="navigate('E1')">
-                    <i class="fas fa-clipboard-list fa-lg cursor-pointer" onclick="navigate('EB2')"></i>
+                    <i class="fas fa-arrow-left fa-lg cursor-pointer" onclick="navigate('E1')"></i>
+                    <img src="icons/libreta.svg" class="header-icon-img cursor-pointer" onclick="navigate('EB2')">
                 </div>
             </div>
             <div class="form-container">
@@ -304,13 +284,13 @@ const SCREENS = {
             </div>
         </div>
     `,
-    'EB2': `<div class="screen form-page"><div class="form-title-section"><h2 class="form-title">Historial VFS</h2><img src="icons/libreta.svg" class="header-icon-img cursor-pointer" onclick="navigate('EB1')"></div><div class="form-container"><div id="gal-eb2" class="gallery-container"></div><div id="detail-eb2" class="detail-view"></div></div></div>`,
+    'EB2': `<div class="screen form-page"><div class="form-title-section"><h2 class="form-title">Historial VFS</h2><div class="cursor-pointer" onclick="navigate('EB1')"><img src="icons/home.svg" class="header-icon-img"></div></div><div class="form-container"><div id="gal-eb2" class="gallery-container"></div><div id="detail-eb2" class="detail-view"></div></div></div>`,
 
     'EC1': `
         <div class="screen form-page">
             <div class="form-title-section">
                 <h2 class="form-title">Validar Evento</h2>
-                <img src="icons/libreta.svg" class="header-icon-img cursor-pointer" onclick="navigate('E1')">
+                <div class="cursor-pointer" onclick="navigate('E1')"><img src="icons/home.svg" class="header-icon-img"></div>
             </div>
             <div class="form-container">
                 <div class="input-group"><label>Código Evento *</label><input type="text" id="ec1-code" class="form-input"></div>
@@ -328,8 +308,8 @@ const SCREENS = {
             <div class="form-title-section">
                 <h2 class="form-title">Proveedor NIP</h2>
                 <div class="header-icons">
-                    <img src="icons/libreta.svg" class="header-icon-img cursor-pointer" onclick="navigate('E1')">
-                    <i class="fas fa-clipboard-list fa-lg cursor-pointer" onclick="navigate('ED2')"></i>
+                    <i class="fas fa-arrow-left fa-lg cursor-pointer" onclick="navigate('E1')"></i>
+                    <img src="icons/libreta.svg" class="header-icon-img cursor-pointer" onclick="navigate('ED2')">
                 </div>
             </div>
             <div class="form-container">
@@ -341,15 +321,15 @@ const SCREENS = {
             </div>
         </div>
     `,
-    'ED2': `<div class="screen form-page"><div class="form-title-section"><h2 class="form-title">Historial NIP</h2><img src="icons/libreta.svg" class="header-icon-img cursor-pointer" onclick="navigate('ED1')"></div><div class="form-container"><div id="gal-ed2" class="gallery-container"></div><div id="detail-ed2" class="detail-view"></div></div></div>`,
+    'ED2': `<div class="screen form-page"><div class="form-title-section"><h2 class="form-title">Historial NIP</h2><div class="cursor-pointer" onclick="navigate('ED1')"><img src="icons/home.svg" class="header-icon-img"></div></div><div class="form-container"><div id="gal-ed2" class="gallery-container"></div><div id="detail-ed2" class="detail-view"></div></div></div>`,
 
     'F1': `
         <div class="screen form-page">
             <div class="form-title-section">
                 <h2 class="form-title">Personal Interno</h2>
                 <div class="header-icons">
-                    <img src="icons/libreta.svg" class="header-icon-img cursor-pointer" onclick="navigate('INICIO')">
-                    <i class="fas fa-clipboard-list fa-lg cursor-pointer" onclick="navigate('F2')"></i>
+                    <img src="icons/home.svg" class="header-icon-img cursor-pointer" onclick="navigate('INICIO')">
+                    <img src="icons/libreta.svg" class="header-icon-img cursor-pointer" onclick="navigate('F2')">
                 </div>
             </div>
             <div class="form-container">
@@ -363,15 +343,15 @@ const SCREENS = {
             </div>
         </div>
     `,
-    'F2': `<div class="screen form-page"><div class="form-title-section"><h2 class="form-title">Bitácora Interna</h2><img src="icons/libreta.svg" class="header-icon-img cursor-pointer" onclick="navigate('F1')"></div><div class="form-container"><div id="gal-f2" class="gallery-container"></div><div id="detail-f2" class="detail-view"></div></div></div>`,
+    'F2': `<div class="screen form-page"><div class="form-title-section"><h2 class="form-title">Bitácora Interna</h2><div class="cursor-pointer" onclick="navigate('F1')"><img src="icons/home.svg" class="header-icon-img"></div></div><div class="form-container"><div id="gal-f2" class="gallery-container"></div><div id="detail-f2" class="detail-view"></div></div></div>`,
 
     'AC1': `
         <div class="screen form-page">
             <div class="form-title-section">
                 <h2 class="form-title">Personal Servicio</h2>
                 <div class="header-icons">
-                    <img src="icons/libreta.svg" class="header-icon-img cursor-pointer" onclick="navigate('A1')">
-                    <i class="fas fa-clipboard-list fa-lg cursor-pointer" onclick="navigate('AC2')"></i>
+                    <i class="fas fa-arrow-left fa-lg cursor-pointer" onclick="navigate('A1')"></i>
+                    <img src="icons/libreta.svg" class="header-icon-img cursor-pointer" onclick="navigate('AC2')">
                 </div>
             </div>
             <div class="form-container">
@@ -388,7 +368,7 @@ const SCREENS = {
             </div>
         </div>
     `,
-    'AC2': `<div class="screen form-page"><div class="form-title-section"><h2 class="form-title">Libreta Personal</h2><img src="icons/libreta.svg" class="header-icon-img cursor-pointer" onclick="navigate('AC1')"></div><div class="form-container"><div id="gal-ac2" class="gallery-container"></div><div id="detail-ac2" class="detail-view"></div></div></div>`,
+    'AC2': `<div class="screen form-page"><div class="form-title-section"><h2 class="form-title">Libreta Personal</h2><div class="cursor-pointer" onclick="navigate('AC1')"><img src="icons/home.svg" class="header-icon-img"></div></div><div class="form-container"><div id="gal-ac2" class="gallery-container"></div><div id="detail-ac2" class="detail-view"></div></div></div>`,
 
     'SUCCESS': `<div class="screen" style="display:flex; justify-content:center; align-items:center; height:100vh; flex-direction:column"><i class="fas fa-check-circle fa-5x status-success"></i><h2 class="form-title" style="margin-top:20px">ÉXITO</h2></div>`,
     'FAILURE': `<div class="screen" style="display:flex; justify-content:center; align-items:center; height:100vh; flex-direction:column"><i class="fas fa-times-circle fa-5x status-error"></i><h2 class="form-title" style="margin-top:20px">DENEGADO</h2></div>`
@@ -404,9 +384,7 @@ function navigate(screen) {
     if(html5QrCode && html5QrCode.isScanning) {
          html5QrCode.stop().then(() => { html5QrCode.clear(); }).catch(err => {});
     }
-    
     document.getElementById('viewport').innerHTML = SCREENS[screen] || SCREENS['INICIO'];
-    
     if(screen === 'BB1') initSignature();
     if(screen === 'AA2') renderGallery('colvisitaOrdenada', 'gal-aa2');
     if(screen === 'AC2') renderGallery('colpersonalaviso', 'gal-ac2');
@@ -417,7 +395,6 @@ function navigate(screen) {
     if(screen === 'EB2') renderGallery('colQRResidenteEB1', 'gal-eb2');
     if(screen === 'ED2') renderGallery('colResetNip', 'gal-ed2');
     if(screen === 'F2') renderGallery('colPersonalServicio', 'gal-f2');
-    
     if(screen === 'SUCCESS' || screen === 'FAILURE') setTimeout(() => navigate('INICIO'), 2000);
 }
 
