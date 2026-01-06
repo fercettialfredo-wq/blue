@@ -35,7 +35,7 @@ const SCREENS = {
         <div class="screen">
             <header class="header-app">
                 <div class="header-logo">
-                    <img src="icons/logo.svg" alt="Logo" style="height: 40px; margin-right: 15px;">
+                    <img src="icons/logo.png" alt="Logo" style="height: 40px; margin-right: 15px;">
                     <span class="header-logo-text">RAVENS ACCESS</span>
                 </div>
             </header>
