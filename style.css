@@ -31,18 +31,13 @@ html, body {
     align-items: center; 
 }
 
-.header-logo-icon { 
-    height: 40px; 
-    width: 40px;
-    background-color: #5a1a2e; /* Guinda Logo Placeholder */
-    border-radius: 50%;
-    display: flex;
-    align-items: center;
-    justify-content: center;
+/* CAMBIO: Estilo para la imagen del logo en el header */
+.header-logo img {
+    height: 40px;
     margin-right: 15px;
-    font-weight: bold;
-    color: white;
 }
+
+/* Se eliminó .header-logo-icon porque fue reemplazado por la imagen */
 
 .header-logo-text { 
     font-weight: bold; 
@@ -93,18 +88,14 @@ html, body {
     height: 50px;
     object-fit: contain;
     margin-bottom: 0.75rem;
-    /* Filtro eliminado aquí previamente */
 }
 
-/* --- CORRECCIÓN AQUÍ --- */
 /* Iconos pequeños para header (como la libreta) */
 .header-icon-img {
     width: 24px;
     height: 24px;
-    /* Se eliminó el filtro que causaba el problema en la libreta */
     cursor: pointer;
 }
-/* ----------------------- */
 
 .menu-item.full {
     grid-column: span 2;
