@@ -31,13 +31,18 @@ html, body {
     align-items: center; 
 }
 
-/* CAMBIO: Estilo para la imagen del logo en el header */
-.header-logo img {
-    height: 40px;
+.header-logo-icon { 
+    height: 40px; 
+    width: 40px;
+    background-color: #5a1a2e; /* Guinda Logo Placeholder */
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
     margin-right: 15px;
+    font-weight: bold;
+    color: white;
 }
-
-/* Se eliminó .header-logo-icon porque fue reemplazado por la imagen */
 
 .header-logo-text { 
     font-weight: bold; 
@@ -90,12 +95,14 @@ html, body {
     margin-bottom: 0.75rem;
 }
 
-/* Iconos pequeños para header (como la libreta) */
+/* --- CAMBIO REALIZADO AQUÍ --- */
+/* Iconos pequeños para header (libreta y casa) */
 .header-icon-img {
-    width: 24px;
-    height: 24px;
+    width: 38px; /* Aumentado de 24px a 38px */
+    height: 38px; /* Aumentado de 24px a 38px */
     cursor: pointer;
 }
+/* ------------------------------ */
 
 .menu-item.full {
     grid-column: span 2;
