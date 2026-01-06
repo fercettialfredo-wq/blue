@@ -238,7 +238,7 @@ const SCREENS = {
                     <div>Eventos</div>
                 </div>
                 <div class="menu-item" onclick="navigate('ED1')">
-                    <img src="icons/residente.svg" class="custom-icon">
+                    <img src="icons/proveedor.svg" class="custom-icon">
                     <div>Proveedor NIP</div>
                 </div>
             </main>
