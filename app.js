@@ -11,7 +11,7 @@ const STATE = {
     colvisitaOrdenada: [],            
     colpersonalaviso: [],              
     colrecibirunpaqueteOrdenada: [], 
-    colEntregasLocales: [],           
+    colEntregasLocales: [],            
     colproveedorOrdenada: [],        
     colPersonalServicio: [], 
     colQRResidenteEA1: [],
@@ -25,6 +25,7 @@ const STATE = {
     currentContext: "",
     targetInputForQR: ""
 };
+
 /* =========================================
    2. MOTOR DE PANTALLAS
    ========================================= */
@@ -34,8 +35,7 @@ const SCREENS = {
         <div class="screen">
             <header class="header-app">
                 <div class="header-logo">
-                    <img src="icons/logo.svg" alt="Logo" style="height: 40px; margin-right: 10px;">
-                    
+                    <img src="icons/logo.svg" alt="Logo" style="height: 40px; margin-right: 15px;">
                     <span class="header-logo-text">RAVENS ACCESS</span>
                 </div>
             </header>
@@ -63,8 +63,6 @@ const SCREENS = {
             </main>
         </div>
     `,
-    
-    // ... el resto de tus pantallas (A1, AA1, etc.) siguen igual ...
 
     // --- MÓDULO A: VISITAS ---
     'A1': `
