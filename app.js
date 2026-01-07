@@ -1,7 +1,18 @@
 /* =========================================
-   1. ESTADO GLOBAL & COLECCIONES
+   1. CONFIGURACIÓN Y ESTADO GLOBAL
    ========================================= */
+const CONFIG = {
+    API_PROXY_URL: 'https://proxy-g8a7cyeeeecsg5hc.mexicocentral-01.azurewebsites.net/api/ravens-proxy'
+};
+
 const STATE = {
+    // Sesión de Usuario
+    session: {
+        isLoggedIn: false,
+        condominioId: null,
+        usuario: null
+    },
+
     colBaserFiltrada: [
         { Torre: "A", Departamento: "101", Nombre: "Juan Perez", Número: "5512345678" },
         { Torre: "B", Departamento: "205", Nombre: "Ana Gomez", Número: "5587654321" },
@@ -30,6 +41,28 @@ const STATE = {
    2. MOTOR DE PANTALLAS
    ========================================= */
 const SCREENS = {
+    // --- LOGIN SCREEN (NUEVO) ---
+    'LOGIN': `
+        <div class="screen login-screen-container">
+            <div class="login-box">
+                <div style="text-align:center; margin-bottom:40px;">
+                    <img src="icons/logo.png" style="width:100px; margin-bottom:20px;">
+                    <h1 style="color:white; font-size:1.5rem; margin:0;">RAVENS ACCESS</h1>
+                </div>
+                <div class="input-group">
+                    <label class="login-label">Usuario</label>
+                    <input type="text" id="login-user" class="form-input" placeholder="Ej. guardia1">
+                </div>
+                <div class="input-group">
+                    <label class="login-label">Contraseña</label>
+                    <input type="password" id="login-pass" class="form-input" placeholder="••••••">
+                </div>
+                <button class="btn-primary" onclick="doLogin()">INICIAR SESIÓN</button>
+                <p id="login-error" style="color:#ef4444; text-align:center; margin-top:20px; display:none; font-weight:bold;"></p>
+            </div>
+        </div>
+    `,
+
     // --- MENÚ PRINCIPAL ---
     'INICIO': `
         <div class="screen">
@@ -37,6 +70,9 @@ const SCREENS = {
                 <div class="header-logo">
                     <img src="icons/logo.png" alt="Logo" style="height: 40px; margin-right: 15px;">
                     <span class="header-logo-text">RAVENS ACCESS</span>
+                </div>
+                <div onclick="doLogout()" style="cursor:pointer; color:#ef4444;">
+                    <i class="fas fa-sign-out-alt fa-lg"></i>
                 </div>
             </header>
             <main class="main-menu-grid">
@@ -375,16 +411,86 @@ const SCREENS = {
 };
 
 /* =========================================
-   3. MOTOR LÓGICO
+   3. MOTOR LÓGICO Y FUNCIONES DE LOGIN
    ========================================= */
 let signaturePad;
 let html5QrCode;
+
+// --- FUNCIONES DE LOGIN ---
+
+async function doLogin() {
+    const user = document.getElementById('login-user').value;
+    const pass = document.getElementById('login-pass').value;
+    const errorMsg = document.getElementById('login-error');
+    const btn = document.querySelector('.login-box .btn-primary');
+
+    if(!user || !pass) {
+        errorMsg.innerText = "Ingresa usuario y contraseña";
+        errorMsg.style.display = "block";
+        return;
+    }
+
+    btn.innerText = "Verificando...";
+    btn.disabled = true;
+    errorMsg.style.display = "none";
+
+    try {
+        const response = await fetch(CONFIG.API_PROXY_URL, {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({
+                action: 'login', 
+                username: user,
+                password: pass
+            })
+        });
+
+        const data = await response.json();
+
+        if (response.ok && data.success) {
+            // Guardar sesión
+            STATE.session.isLoggedIn = true;
+            STATE.session.condominioId = data.condominioId || (data.data && data.data.condominio); // Soporte para ambas estructuras
+            STATE.session.usuario = user; // O data.nombreUsuario si el backend lo devuelve
+
+            localStorage.setItem('ravensUser', JSON.stringify(STATE.session));
+            navigate('INICIO');
+        } else {
+            throw new Error(data.message || "Credenciales incorrectas");
+        }
+
+    } catch (error) {
+        errorMsg.innerText = error.message;
+        errorMsg.style.display = "block";
+    } finally {
+        btn.innerText = "INICIAR SESIÓN";
+        btn.disabled = false;
+    }
+}
+
+function doLogout() {
+    STATE.session = { isLoggedIn: false, condominioId: null, usuario: null };
+    localStorage.removeItem('ravensUser');
+    navigate('LOGIN');
+}
+
+function checkSession() {
+    const savedSession = localStorage.getItem('ravensUser');
+    if (savedSession) {
+        STATE.session = JSON.parse(savedSession);
+        navigate('INICIO');
+    } else {
+        navigate('LOGIN');
+    }
+}
+
+// --- FUNCIONES DE NAVEGACIÓN ---
 
 function navigate(screen) {
     if(html5QrCode && html5QrCode.isScanning) {
          html5QrCode.stop().then(() => { html5QrCode.clear(); }).catch(err => {});
     }
-    document.getElementById('viewport').innerHTML = SCREENS[screen] || SCREENS['INICIO'];
+    document.getElementById('viewport').innerHTML = SCREENS[screen] || SCREENS['LOGIN'];
     if(screen === 'BB1') initSignature();
     if(screen === 'AA2') renderGallery('colvisitaOrdenada', 'gal-aa2');
     if(screen === 'AC2') renderGallery('colpersonalaviso', 'gal-ac2');
@@ -497,6 +603,8 @@ function closeQRScanner() {
     if(html5QrCode) html5QrCode.stop().then(() => html5QrCode.clear()).catch(()=>{});
     document.getElementById('qr-modal').classList.remove('active');
 }
+
+// --- FUNCIONES DE ENVÍO DE FORMULARIOS ---
 
 async function submitAviso(p) {
     const nom = document.getElementById(p+'-nombre').value;
@@ -634,4 +742,5 @@ function showDetail(colName, idx, targetId) {
     target.innerHTML = html;
 }
 
-window.onload = () => navigate('INICIO');
+// INICIALIZACIÓN: Verificamos sesión en lugar de ir directo a INICIO
+window.onload = () => checkSession();
