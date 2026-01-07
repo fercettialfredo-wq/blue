@@ -2,7 +2,7 @@
    1. CONFIGURACIÓN Y ESTADO GLOBAL
    ========================================= */
 const CONFIG = {
-    API_PROXY_URL: 'https://flex-proxyoperador-6ca8.azurewebsites.net/api/ravens-proxy'
+    API_PROXY_URL: 'https://proxyoperador.azurewebsites.net/api/ravens-proxy'
 };
 
 const STATE = {
