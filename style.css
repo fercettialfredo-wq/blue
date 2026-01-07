@@ -31,19 +31,6 @@ html, body {
     align-items: center; 
 }
 
-.header-logo-icon { 
-    height: 40px; 
-    width: 40px;
-    background-color: #5a1a2e; /* Guinda Logo Placeholder */
-    border-radius: 50%;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    margin-right: 15px;
-    font-weight: bold;
-    color: white;
-}
-
 .header-logo-text { 
     font-weight: bold; 
     font-size: 1.25rem; 
@@ -95,14 +82,12 @@ html, body {
     margin-bottom: 0.75rem;
 }
 
-/* --- CAMBIO REALIZADO AQUÍ --- */
 /* Iconos pequeños para header (libreta y casa) */
 .header-icon-img {
-    width: 38px; /* Aumentado de 24px a 38px */
-    height: 38px; /* Aumentado de 24px a 38px */
+    width: 38px; 
+    height: 38px; 
     cursor: pointer;
 }
-/* ------------------------------ */
 
 .menu-item.full {
     grid-column: span 2;
@@ -111,6 +96,23 @@ html, body {
 /* FORMS & SCREENS */
 .screen {
     animation: fadeIn 0.3s ease;
+}
+
+/* ESTILOS ESPECÍFICOS PARA LOGIN */
+.login-screen-container {
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    align-items: center;
+    height: 100vh;
+    padding: 2rem;
+    box-sizing: border-box;
+    background-color: #000000;
+}
+
+.login-box {
+    width: 100%;
+    max-width: 350px;
 }
 
 .form-page { 
@@ -162,6 +164,11 @@ html, body {
     margin-bottom: 0.5rem;
 }
 
+/* Estilo especial para labels en login (fondo negro) */
+.login-label {
+    color: #ffffff !important;
+}
+
 .form-input { 
     display: block; 
     width: 100%;
@@ -173,6 +180,7 @@ html, body {
     background-color: #ffffff; 
     outline: none;
     transition: border-color 0.2s;
+    box-sizing: border-box;
 }
 
 .form-input:focus { 
@@ -207,6 +215,7 @@ html, body {
     color: white;
 }
 .btn-primary:hover { background-color: #4e1628; }
+.btn-primary:disabled { background-color: #888; cursor: not-allowed; }
 
 .btn-save { 
     background-color: #16a34a; 
