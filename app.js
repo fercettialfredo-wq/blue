@@ -2,20 +2,20 @@
    1. CONFIGURACIÓN Y ESTADO GLOBAL
    ========================================= */
 const CONFIG = {
-    // Tu Proxy en Azure (Plan Flex/Consumo)
+    // Tu Proxy en Azure (Function App 'proxyoperador')
     API_PROXY_URL: 'https://proxyoperador.azurewebsites.net/api/ravens-proxy'
 };
 
 const STATE = {
-    // Sesión de Usuario
+    // Sesión de Usuario (El Guardia que inicia sesión)
     session: {
         isLoggedIn: false,
         condominioId: null,
         usuario: null
     },
 
-    // ESTA ES LA LISTA "BASER" CONECTADA A SHAREPOINT
-    // Se llenará automáticamente al hacer Login
+    // LISTA 'UsuariosApp' (Directorio de Residentes)
+    // Se descarga de SharePoint al iniciar sesión para llenar los Dropdowns.
     colBaserFiltrada: [], 
 
     // Estado temporal para UI
@@ -290,7 +290,7 @@ async function callBackend(action, extraData = {}) {
     }
 }
 
-// --- B. SESIÓN, LOGIN Y CARGA DE RESIDENTES (BASER) ---
+// --- B. SESIÓN, LOGIN Y CARGA DE RESIDENTES (UsuariosApp) ---
 async function doLogin() {
     const user = document.getElementById('login-user').value;
     const pass = document.getElementById('login-pass').value;
@@ -304,6 +304,7 @@ async function doLogin() {
     errorMsg.style.display = "none";
 
     try {
+        // 1. VALIDAMOS LOGIN (CONTRA LISTA 'permisos app' vía Logic App)
         const response = await fetch(CONFIG.API_PROXY_URL, {
             method: 'POST',
             headers: { 'Content-Type': 'application/json' },
@@ -313,12 +314,13 @@ async function doLogin() {
         const data = await response.json();
 
         if (response.ok && data.success) {
+            // Guardamos sesión
             STATE.session.isLoggedIn = true;
             STATE.session.condominioId = data.condominioId || data.data?.condominio || "GARDENIAS"; 
             STATE.session.usuario = user;
             localStorage.setItem('ravensUser', JSON.stringify(STATE.session));
             
-            // AQUÍ OCURRE LA MAGIA: Descargamos la lista "Baser" real
+            // 2. DESCARGAMOS LISTA 'UsuariosApp' (Para los Dropdowns)
             await loadResidentesList();
             
             navigate('INICIO');
@@ -334,19 +336,17 @@ async function doLogin() {
     }
 }
 
-// Esta función conecta tu lista "Baser" de SharePoint al select
 async function loadResidentesList() {
-    console.log("Cargando lista de residentes (Baser)...");
-    // Usamos el mismo mecanismo de historial, pero pidiendo la lista "RESIDENTES"
-    // Asegúrate de crear la variable URL_LOGIC_RESIDENTES_GARDENIAS en tu Proxy
-    const res = await callBackend('get_history', { tipo_lista: 'RESIDENTES' });
+    console.log("Descargando lista 'UsuariosApp' para dropdowns...");
+    // Solicitamos al backend la lista 'USUARIOS_APP'
+    // La Logic App de Historial debe estar configurada para devolver los items de esa lista
+    const res = await callBackend('get_history', { tipo_lista: 'USUARIOS_APP' });
     
     if(res && res.data && res.data.length > 0) {
-        STATE.colBaserFiltrada = res.data;
-        console.log("Residentes cargados: " + res.data.length);
+        STATE.colBaserFiltrada = res.data; 
+        console.log("Lista UsuariosApp actualizada: " + res.data.length + " residentes.");
     } else {
-        // Fallback solo si falla la conexión
-        console.warn("No se pudo cargar la lista, usando caché o vacío.");
+        console.warn("No se pudo cargar UsuariosApp. Usando datos demo.");
     }
 }
 
@@ -360,8 +360,9 @@ function checkSession() {
     const savedSession = localStorage.getItem('ravensUser');
     if (savedSession) {
         STATE.session = JSON.parse(savedSession);
-        // Recargamos la lista al volver a entrar
-        loadResidentesList().then(() => navigate('INICIO'));
+        // Intentamos actualizar la lista UsuariosApp en segundo plano
+        loadResidentesList();
+        navigate('INICIO');
     } else {
         navigate('LOGIN');
     }
@@ -427,13 +428,15 @@ async function submitAviso(p) {
     const nom = document.getElementById(p+'-nombre').value;
     const formType = p === 'aa1' ? 'VISITA' : 'PERSONAL_DE_SERVICIO';
     
+    // Aquí validamos que el residente se haya seleccionado de la lista 'UsuariosApp'
     if(!nom || !STATE[p]?.residente) return alert("Faltan datos obligatorios.");
 
+    // Preparamos datos para la Logic App (que enviará el WhatsApp)
     const data = {
         Visitante: nom, 
         Torre: STATE[p].torre,
         Depto: STATE[p].depto,
-        Residente: STATE[p].residente,
+        Residente: STATE[p].residente, // Dato sacado de UsuariosApp
         Placa: document.getElementById(p+'-placa')?.value || "N/A",
         Motivo: document.getElementById(p+'-motivo')?.value || "Servicio",
         Cargo: document.getElementById(p+'-cargo')?.value || ""
@@ -538,7 +541,7 @@ function resetForm(prefix) {
 
 function openResidenteModal(ctx) {
     STATE.currentContext = ctx;
-    // Llenamos el select con los datos reales de STATE.colBaserFiltrada
+    // Llenamos el select con los datos reales descargados de 'UsuariosApp'
     const torres = [...new Set(STATE.colBaserFiltrada.map(i => i.Torre))];
     document.getElementById('sel-torre').innerHTML = torres.map(t => `<option value="${t}">${t}</option>`).join('');
     updateDeptos();
@@ -565,6 +568,7 @@ function confirmResidente() {
     const p = STATE.currentContext; 
     const item = STATE.colBaserFiltrada.find(i => i.Nombre === document.getElementById('sel-nombre').value);
     if(item) {
+        // Guardamos los datos seleccionados para enviarlos luego a la Logic App
         STATE[p] = { residente: item.Nombre, torre: item.Torre, depto: item.Departamento };
         if(document.getElementById(`${p}-torre`)) document.getElementById(`${p}-torre`).value = item.Torre;
         if(document.getElementById(`${p}-depto`)) document.getElementById(`${p}-depto`).value = item.Departamento;
