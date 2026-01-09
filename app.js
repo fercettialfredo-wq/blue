@@ -14,10 +14,10 @@ const STATE = {
         usuario: null
     },
 
-    // LISTA 'UsuariosApp' (Base de Datos Local)
+    // LISTA 'UsuariosApp' (Base de Datos Local descargada)
     colBaserFiltrada: [], 
 
-    // Estado temporal para UI
+    // Estado temporal para UI (Fotos, Firma, Datos del Formulario)
     photos: {}, 
     signature: null,
     currentContext: "",
@@ -97,13 +97,19 @@ const SCREENS = {
             <div class="form-title-section"><h2 class="form-title">Nueva Visita</h2><div class="header-icons"><i class="fas fa-arrow-left fa-lg cursor-pointer" onclick="navigate('A1')"></i><img src="icons/libreta.svg" class="header-icon-img cursor-pointer" onclick="navigate('AA2')"></div></div>
             <div class="form-container">
                 <div class="input-group"><label>Nombre Visitante *</label><input type="text" id="aa1-nombre" class="form-input"></div>
+                
                 <div class="input-group"><label>Torre</label><input type="text" id="aa1-torre" class="form-input" readonly></div>
                 <div class="input-group"><label>Departamento</label><input type="text" id="aa1-depto" class="form-input" readonly></div>
                 <div class="input-group"><label>Residente</label><input type="text" id="aa1-res-name" class="form-input" readonly></div>
                 <button class="btn-primary" onclick="openResidenteModal('aa1')"><i class="fas fa-search"></i> Seleccionar Residente</button>
+                
                 <div class="input-group" style="margin-top:15px"><label>Placa</label><input type="text" id="aa1-placa" class="form-input"></div>
-                <div class="input-group"><label>Motivo</label><input type="text" id="aa1-motivo" class="form-input"></div>
-                <div style="margin-top: 20px;"><button class="btn-save" onclick="submitAviso('aa1')">Guardar</button><button class="btn-clean" onclick="resetForm('aa1')"><i class="fas fa-eraser"></i> Limpiar</button></div>
+                <div class="input-group"><label>Motivo *</label><input type="text" id="aa1-motivo" class="form-input"></div>
+                
+                <div style="margin-top: 20px;">
+                    <button class="btn-save" onclick="submitAviso('aa1')">Guardar</button>
+                    <button class="btn-clean" onclick="resetForm('aa1')"><i class="fas fa-eraser"></i> Limpiar</button>
+                </div>
             </div>
         </div>
     `,
@@ -291,7 +297,7 @@ async function callBackend(action, extraData = {}) {
     }
 }
 
-// --- B. LOGIN Y CARGA DE RESIDENTES ---
+// --- B. LOGIN Y CARGA DE RESIDENTES (UsuariosApp) ---
 async function doLogin() {
     const user = document.getElementById('login-user').value;
     const pass = document.getElementById('login-pass').value;
@@ -340,7 +346,7 @@ async function loadResidentesList() {
     const res = await callBackend('get_history', { tipo_lista: 'USUARIOS_APP' });
     
     if(res && res.data && res.data.length > 0) {
-        // Mapeo inteligente con 'Title' como fallback y FILTRO DE CONDOMINIO
+        // Mapeo inteligente con 'Title' como fallback
         STATE.colBaserFiltrada = res.data
             .map(item => ({
                 ...item, 
@@ -350,9 +356,9 @@ async function loadResidentesList() {
                 Número: item.Número || item.Numero || item.OData_Numero,
                 Condominio: item.Condominio || item.OData_Condominio
             }))
-            // --- FILTRO: Solo residentes de MI condominio ---
+            // --- FILTRO: Solo residentes del condominio actual ---
             .filter(item => {
-                if(!item.Condominio) return true; // Dejar pasar si no tiene condominio asignado
+                if(!item.Condominio) return true; 
                 return item.Condominio.toString().toUpperCase().trim() === STATE.session.condominioId.toString().toUpperCase().trim();
             });
 
@@ -387,7 +393,7 @@ function navigate(screen) {
     document.getElementById('viewport').innerHTML = SCREENS[screen] || SCREENS['LOGIN'];
     if(screen === 'BB1') initSignature();
     
-    // Auto-carga de historiales
+    // Auto-carga de historiales para las pantallas '2'
     if(screen.endsWith('2')) {
         const map = {
             'AA2': 'VISITA', 'AC2': 'PERSONAL_DE_SERVICIO', 'BA2': 'PAQUETERIA_RECEPCION',
@@ -431,19 +437,28 @@ function renderRemoteGallery(data, elementId) {
 
 async function submitAviso(p) {
     const nom = document.getElementById(p+'-nombre').value;
+    const motivo = document.getElementById(p+'-motivo')?.value;
     const formType = p === 'aa1' ? 'VISITA' : 'PERSONAL_DE_SERVICIO';
     
-    if(!nom || !STATE[p]?.residente) return alert("Faltan datos obligatorios.");
+    // Validación 1: Nombre y Residente obligatorios
+    if(!nom || !STATE[p]?.residente) {
+        return alert("Faltan datos: Nombre o Residente.");
+    }
+
+    // Validación 2: MOTIVO OBLIGATORIO (Solo para Visita)
+    if(p === 'aa1' && !motivo) {
+        return alert("❌ El campo 'Motivo' es obligatorio.");
+    }
 
     const data = {
         Visitante: nom, 
         Torre: STATE[p].torre,
         Depto: STATE[p].depto,
         Residente: STATE[p].residente,
-        // --- AQUÍ ENVIAMOS EL TELÉFONO PARA LA LOGIC APP ---
+        // ENVIAMOS EL TELÉFONO DEL RESIDENTE
         Telefono: STATE[p].telefono || "", 
         Placa: document.getElementById(p+'-placa')?.value || "N/A",
-        Motivo: document.getElementById(p+'-motivo')?.value || "Servicio",
+        Motivo: motivo || "Servicio",
         Cargo: document.getElementById(p+'-cargo')?.value || ""
     };
 
@@ -462,7 +477,7 @@ async function submitProveedor() {
         Torre: STATE['d1']?.torre || "Admin",
         Depto: STATE['d1']?.depto || "Admin",
         Residente: STATE['d1']?.residente || "Administración",
-        Telefono: STATE['d1']?.telefono || "" // Enviar teléfono si aplica
+        Telefono: STATE['d1']?.telefono || ""
     };
 
     const res = await callBackend('submit_form', { formulario: 'PROVEEDOR', data: data });
@@ -476,7 +491,7 @@ async function submitRecepcionPaquete() {
         Residente: STATE['ba1'].residente,
         Torre: STATE['ba1'].torre,
         Departamento: STATE['ba1'].depto,
-        Telefono: STATE['ba1']?.telefono || "", // Para avisar al residente
+        Telefono: STATE['ba1']?.telefono || "",
         Paqueteria: document.getElementById('ba1-paqueteria').value,
         Estatus: document.getElementById('ba1-estatus').value,
         FotoBase64: STATE.photos['ba1'] || ""
@@ -488,8 +503,7 @@ async function submitRecepcionPaquete() {
 
 async function submitEntregaPaquete() {
     const nom = document.getElementById('bb1-nombre').value;
-    if(!nom || signaturePad.isEmpty()) return alert("Falta nombre o firma.");
-
+    if(!nom) return alert("Falta quien recibe.");
     const data = {
         Recibio: nom,
         Residente: STATE['bb1'].residente,
@@ -505,28 +519,16 @@ async function submitEntregaPaquete() {
 
 async function submitPersonalInterno(accion) {
     const id = document.getElementById('f1-id').value;
-    if(!id) return alert("Escanea o escribe el ID del personal.");
-
-    const res = await callBackend('submit_form', { 
-        formulario: 'PERSONAL_INTERNO', 
-        data: { ID_Personal: id, Accion: accion } 
-    });
+    if(!id) return alert("Falta ID.");
+    const res = await callBackend('submit_form', { formulario: 'PERSONAL_INTERNO', data: { ID_Personal: id, Accion: accion } });
     if (res && res.success) { resetForm('f1'); navigate('SUCCESS'); }
 }
-
-// --- E. VALIDACIONES QR Y NIP ---
 
 async function validarAccesoQR(tipo, inputId, formId) {
     const codigo = document.getElementById(inputId).value;
     if(!codigo) return alert("Código vacío.");
-
     const res = await callBackend('validate_qr', { tipo_validacion: tipo, codigo_leido: codigo });
-    
-    if (res && res.autorizado) {
-        resetForm(formId); navigate('SUCCESS');
-    } else {
-        navigate('FAILURE');
-    }
+    if (res && res.autorizado) { resetForm(formId); navigate('SUCCESS'); } else { navigate('FAILURE'); }
 }
 
 function submitQRResidente() { validarAccesoQR('RESIDENTE', 'ea1-dni', 'ea1'); }
@@ -535,7 +537,7 @@ function submitEvento() { validarAccesoQR('EVENTO', 'ec1-code', 'ec1'); }
 function submitProveedorNIP() { validarAccesoQR('NIP_PROVEEDOR', 'ed1-nip', 'ed1'); }
 
 
-// --- F. UTILIDADES UI (MODALES, CÁMARA, FIRMA) ---
+// --- F. UTILIDADES UI (MODALES Y ORDENAMIENTO) ---
 
 function resetForm(prefix) {
     document.querySelectorAll(`[id^="${prefix}-"]`).forEach(i => i.value = '');
@@ -548,7 +550,7 @@ function resetForm(prefix) {
 
 function openResidenteModal(ctx) {
     STATE.currentContext = ctx;
-    // ORDENAMOS LAS TORRES ALFABÉTICAMENTE
+    // ORDENAMOS LAS TORRES
     const torres = [...new Set(STATE.colBaserFiltrada.map(i => i.Torre))].sort();
     document.getElementById('sel-torre').innerHTML = '<option value="">Selecciona...</option>' + torres.map(t => `<option value="${t}">${t}</option>`).join('');
     updateDeptos();
@@ -567,7 +569,7 @@ function updateDeptos() {
 function updateResidentes() {
     const t = document.getElementById('sel-torre').value;
     const d = document.getElementById('sel-depto').value;
-    // ORDENAMOS LOS NOMBRES
+    // FILTRAMOS Y ORDENAMOS LOS NOMBRES
     let res = STATE.colBaserFiltrada
         .filter(i => i.Torre == t && i.Departamento == d)
         .map(r => r.Nombre);
@@ -583,7 +585,7 @@ function confirmResidente() {
     const item = STATE.colBaserFiltrada.find(i => i.Nombre === nombreSel);
     
     if(item) {
-        // --- GUARDAMOS TODO, INCLUYENDO TELÉFONO PARA WHATSAPP ---
+        // GUARDAMOS DATOS Y TELÉFONO PARA WHATSAPP
         STATE[p] = { 
             residente: item.Nombre, 
             torre: item.Torre, 
