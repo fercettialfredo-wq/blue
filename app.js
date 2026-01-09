@@ -340,32 +340,47 @@ async function doLogin() {
     }
 }
 
+// --- VERSIÓN CORREGIDA Y ROBUSTA ---
 async function loadResidentesList() {
-    console.log("Descargando lista 'UsuariosApp'...");
+    console.log("🔄 Descargando lista 'UsuariosApp'...");
     
     const res = await callBackend('get_history', { tipo_lista: 'USUARIOS_APP' });
     
     if(res && res.data && res.data.length > 0) {
-        // Mapeo inteligente con soporte para variantes de nombres de columna
+        
+        console.log("🔎 Primer registro para depuración:", res.data[0]);
+
         STATE.colBaserFiltrada = res.data
-            .map(item => ({
-                ...item, 
-                Nombre: item.Nombre || item.OData_Nombre || item.Title || "Sin Nombre",
-                Torre: item.Torre || item.OData_Torre, 
-                Departamento: item.Departamento || item.OData_Departamento,
-                // AQUÍ ESTÁ LA CORRECCIÓN CLAVE PARA EL TELÉFONO:
-                Número: item.Número || item.Numero || item.N_x00fa_mero || item.OData_Numero || item.Celular || item.Telefono || "",
-                Condominio: item.Condominio || item.OData_Condominio
-            }))
+            .map(item => {
+                // Buscamos el teléfono en TODAS las variantes posibles
+                // Agrega aquí si tu columna se llama diferente (ej. "Celular", "Movil", "Phone")
+                const rawTel = item.Número || item.Numero || item.N_x00fa_mero || item.OData_Numero || item.Celular || item.Telefono || item.Phone || item.Movil || "";
+                
+                // Limpieza del número: Quitamos espacios, guiones y paréntesis para dejar solo números
+                const cleanTel = rawTel ? rawTel.toString().replace(/\D/g, '') : "";
+
+                return {
+                    ...item, 
+                    Nombre: item.Nombre || item.OData_Nombre || item.Title || "Sin Nombre",
+                    Torre: item.Torre || item.OData_Torre, 
+                    Departamento: item.Departamento || item.OData_Departamento,
+                    Número: cleanTel, // Guardamos el número limpio
+                    Condominio: item.Condominio || item.OData_Condominio
+                };
+            })
             // --- FILTRO: Solo residentes del condominio actual ---
             .filter(item => {
                 if(!item.Condominio) return true; 
                 return item.Condominio.toString().toUpperCase().trim() === STATE.session.condominioId.toString().toUpperCase().trim();
             });
 
-        console.log("Residentes cargados y filtrados:", STATE.colBaserFiltrada.length);
+        console.log(`✅ ${STATE.colBaserFiltrada.length} Residentes cargados.`);
+        // Verificamos si se cargaron teléfonos
+        const conTelefono = STATE.colBaserFiltrada.filter(r => r.Número).length;
+        console.log(`📱 ${conTelefono} residentes tienen número de teléfono válido.`);
+        
     } else {
-        console.warn("Fallo carga residentes. Usando demo.");
+        console.warn("⚠️ No se encontraron residentes o hubo error en la carga.");
     }
 }
 
@@ -456,7 +471,7 @@ async function submitAviso(p) {
         Torre: STATE[p].torre,
         Depto: STATE[p].depto,
         Residente: STATE[p].residente,
-        // ENVIAMOS EL TELÉFONO DEL RESIDENTE ASEGURADO
+        // ENVIAMOS EL TELÉFONO DEL RESIDENTE
         Telefono: STATE[p].telefono || "", 
         Placa: document.getElementById(p+'-placa')?.value || "N/A",
         Motivo: motivo || "Servicio",
@@ -591,8 +606,7 @@ function confirmResidente() {
             residente: item.Nombre, 
             torre: item.Torre, 
             depto: item.Departamento,
-            // Esta propiedad 'Número' viene del mapeo corregido en loadResidentesList
-            telefono: item.Número 
+            telefono: item.Número // Ahora sí tiene el número correcto
         };
         if(document.getElementById(`${p}-torre`)) document.getElementById(`${p}-torre`).value = item.Torre;
         if(document.getElementById(`${p}-depto`)) document.getElementById(`${p}-depto`).value = item.Departamento;
