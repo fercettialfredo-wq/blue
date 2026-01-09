@@ -340,7 +340,6 @@ async function doLogin() {
     }
 }
 
-// --- VERSIÓN CORREGIDA Y ROBUSTA ---
 async function loadResidentesList() {
     console.log("🔄 Descargando lista 'UsuariosApp'...");
     
@@ -348,16 +347,20 @@ async function loadResidentesList() {
     
     if(res && res.data && res.data.length > 0) {
         
-        console.log("🔎 Primer registro para depuración:", res.data[0]);
+        console.log("🔎 Primer registro crudo:", res.data[0]);
 
         STATE.colBaserFiltrada = res.data
             .map(item => {
-                // Buscamos el teléfono en TODAS las variantes posibles
-                // Agrega aquí si tu columna se llama diferente (ej. "Celular", "Movil", "Phone")
-                const rawTel = item.Número || item.Numero || item.N_x00fa_mero || item.OData_Numero || item.Celular || item.Telefono || item.Phone || item.Movil || "";
+                // AQUÍ ESTÁ EL ARREGLO BLINDADO: Usamos corchetes para el nombre con acento
+                const rawTel = item['Número'] || item.Numero || item.N_x00fa_mero || item.OData_Numero || item.Celular || item.Movil || item.Telefono || item.Phone || "";
                 
-                // Limpieza del número: Quitamos espacios, guiones y paréntesis para dejar solo números
-                const cleanTel = rawTel ? rawTel.toString().replace(/\D/g, '') : "";
+                // Limpiamos el número para que quede solo dígitos
+                let cleanTel = rawTel ? rawTel.toString().replace(/\D/g, '') : "";
+                
+                // Si viene con +52, se lo quitamos para estandarizar
+                if(cleanTel.startsWith('52') && cleanTel.length > 10) {
+                    cleanTel = cleanTel.substring(2);
+                }
 
                 return {
                     ...item, 
@@ -368,16 +371,14 @@ async function loadResidentesList() {
                     Condominio: item.Condominio || item.OData_Condominio
                 };
             })
-            // --- FILTRO: Solo residentes del condominio actual ---
             .filter(item => {
                 if(!item.Condominio) return true; 
                 return item.Condominio.toString().toUpperCase().trim() === STATE.session.condominioId.toString().toUpperCase().trim();
             });
 
         console.log(`✅ ${STATE.colBaserFiltrada.length} Residentes cargados.`);
-        // Verificamos si se cargaron teléfonos
-        const conTelefono = STATE.colBaserFiltrada.filter(r => r.Número).length;
-        console.log(`📱 ${conTelefono} residentes tienen número de teléfono válido.`);
+        const conTelefono = STATE.colBaserFiltrada.filter(r => r.Número && r.Número.length >= 10).length;
+        console.log(`📱 ${conTelefono} residentes tienen número válido.`);
         
     } else {
         console.warn("⚠️ No se encontraron residentes o hubo error en la carga.");
