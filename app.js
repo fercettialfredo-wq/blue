@@ -346,14 +346,15 @@ async function loadResidentesList() {
     const res = await callBackend('get_history', { tipo_lista: 'USUARIOS_APP' });
     
     if(res && res.data && res.data.length > 0) {
-        // Mapeo inteligente con 'Title' como fallback
+        // Mapeo inteligente con soporte para variantes de nombres de columna
         STATE.colBaserFiltrada = res.data
             .map(item => ({
                 ...item, 
                 Nombre: item.Nombre || item.OData_Nombre || item.Title || "Sin Nombre",
                 Torre: item.Torre || item.OData_Torre, 
                 Departamento: item.Departamento || item.OData_Departamento,
-                Número: item.Número || item.Numero || item.OData_Numero,
+                // AQUÍ ESTÁ LA CORRECCIÓN CLAVE PARA EL TELÉFONO:
+                Número: item.Número || item.Numero || item.N_x00fa_mero || item.OData_Numero || item.Celular || item.Telefono || "",
                 Condominio: item.Condominio || item.OData_Condominio
             }))
             // --- FILTRO: Solo residentes del condominio actual ---
@@ -455,7 +456,7 @@ async function submitAviso(p) {
         Torre: STATE[p].torre,
         Depto: STATE[p].depto,
         Residente: STATE[p].residente,
-        // ENVIAMOS EL TELÉFONO DEL RESIDENTE
+        // ENVIAMOS EL TELÉFONO DEL RESIDENTE ASEGURADO
         Telefono: STATE[p].telefono || "", 
         Placa: document.getElementById(p+'-placa')?.value || "N/A",
         Motivo: motivo || "Servicio",
@@ -590,6 +591,7 @@ function confirmResidente() {
             residente: item.Nombre, 
             torre: item.Torre, 
             depto: item.Departamento,
+            // Esta propiedad 'Número' viene del mapeo corregido en loadResidentesList
             telefono: item.Número 
         };
         if(document.getElementById(`${p}-torre`)) document.getElementById(`${p}-torre`).value = item.Torre;
