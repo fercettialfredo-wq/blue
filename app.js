@@ -351,13 +351,10 @@ async function loadResidentesList() {
 
         STATE.colBaserFiltrada = res.data
             .map(item => {
-                // AQUÍ ESTÁ EL ARREGLO BLINDADO: Usamos corchetes para el nombre con acento
                 const rawTel = item['Número'] || item.Numero || item.N_x00fa_mero || item.OData_Numero || item.Celular || item.Movil || item.Telefono || item.Phone || "";
                 
-                // Limpiamos el número para que quede solo dígitos
                 let cleanTel = rawTel ? rawTel.toString().replace(/\D/g, '') : "";
                 
-                // Si viene con +52, se lo quitamos para estandarizar
                 if(cleanTel.startsWith('52') && cleanTel.length > 10) {
                     cleanTel = cleanTel.substring(2);
                 }
@@ -367,7 +364,7 @@ async function loadResidentesList() {
                     Nombre: item.Nombre || item.OData_Nombre || item.Title || "Sin Nombre",
                     Torre: item.Torre || item.OData_Torre, 
                     Departamento: item.Departamento || item.OData_Departamento,
-                    Número: cleanTel, // Guardamos el número limpio
+                    Número: cleanTel, 
                     Condominio: item.Condominio || item.OData_Condominio
                 };
             })
@@ -410,7 +407,6 @@ function navigate(screen) {
     document.getElementById('viewport').innerHTML = SCREENS[screen] || SCREENS['LOGIN'];
     if(screen === 'BB1') initSignature();
     
-    // Auto-carga de historiales para las pantallas '2'
     if(screen.endsWith('2')) {
         const map = {
             'AA2': 'VISITA', 'AC2': 'PERSONAL_DE_SERVICIO', 'BA2': 'PAQUETERIA_RECEPCION',
@@ -452,17 +448,15 @@ function renderRemoteGallery(data, elementId) {
 
 // --- D. ENVÍO DE FORMULARIOS (SUBMITS) ---
 
+// MODIFICADO: Ahora submitAviso usa el flujo AVISOG para Visitas y Personal
 async function submitAviso(p) {
     const nom = document.getElementById(p+'-nombre').value;
     const motivo = document.getElementById(p+'-motivo')?.value;
-    const formType = p === 'aa1' ? 'VISITA' : 'PERSONAL_DE_SERVICIO';
     
-    // Validación 1: Nombre y Residente obligatorios
     if(!nom || !STATE[p]?.residente) {
         return alert("Faltan datos: Nombre o Residente.");
     }
 
-    // Validación 2: MOTIVO OBLIGATORIO (Solo para Visita)
     if(p === 'aa1' && !motivo) {
         return alert("❌ El campo 'Motivo' es obligatorio.");
     }
@@ -472,17 +466,19 @@ async function submitAviso(p) {
         Torre: STATE[p].torre,
         Depto: STATE[p].depto,
         Residente: STATE[p].residente,
-        // ENVIAMOS EL TELÉFONO DEL RESIDENTE
         Telefono: STATE[p].telefono || "", 
         Placa: document.getElementById(p+'-placa')?.value || "N/A",
         Motivo: motivo || "Servicio",
-        Cargo: document.getElementById(p+'-cargo')?.value || ""
+        Cargo: document.getElementById(p+'-cargo')?.value || "",
+        TipoRegistro: p === 'aa1' ? 'VISITA' : 'PERSONAL_SERVICIO'
     };
 
-    const res = await callBackend('submit_form', { formulario: formType, data: data });
+    // Apuntamos a la lógica AVISOG configurada en el Proxy
+    const res = await callBackend('submit_form', { formulario: 'AVISOG', data: data });
     if (res && res.success) { resetForm(p); navigate('SUCCESS'); }
 }
 
+// MODIFICADO: Ahora submitProveedor usa el flujo AVISOG
 async function submitProveedor() {
     const nombre = document.getElementById('d1-nombre').value;
     if(!nombre) return alert("Falta nombre del proveedor.");
@@ -494,10 +490,11 @@ async function submitProveedor() {
         Torre: STATE['d1']?.torre || "Admin",
         Depto: STATE['d1']?.depto || "Admin",
         Residente: STATE['d1']?.residente || "Administración",
-        Telefono: STATE['d1']?.telefono || ""
+        Telefono: STATE['d1']?.telefono || "",
+        TipoRegistro: 'PROVEEDOR'
     };
 
-    const res = await callBackend('submit_form', { formulario: 'PROVEEDOR', data: data });
+    const res = await callBackend('submit_form', { formulario: 'AVISOG', data: data });
     if (res && res.success) { resetForm('d1'); navigate('SUCCESS'); }
 }
 
@@ -567,7 +564,6 @@ function resetForm(prefix) {
 
 function openResidenteModal(ctx) {
     STATE.currentContext = ctx;
-    // ORDENAMOS LAS TORRES
     const torres = [...new Set(STATE.colBaserFiltrada.map(i => i.Torre))].sort();
     document.getElementById('sel-torre').innerHTML = '<option value="">Selecciona...</option>' + torres.map(t => `<option value="${t}">${t}</option>`).join('');
     updateDeptos();
@@ -577,7 +573,6 @@ function openResidenteModal(ctx) {
 function updateDeptos() {
     const t = document.getElementById('sel-torre').value;
     const deptos = STATE.colBaserFiltrada.filter(i => i.Torre == t).map(i => i.Departamento);
-    // ORDENAMOS LOS DEPARTAMENTOS
     const uniqueDeptos = [...new Set(deptos)].sort();
     document.getElementById('sel-depto').innerHTML = '<option value="">Selecciona...</option>' + uniqueDeptos.map(d => `<option value="${d}">${d}</option>`).join('');
     updateResidentes();
@@ -586,7 +581,6 @@ function updateDeptos() {
 function updateResidentes() {
     const t = document.getElementById('sel-torre').value;
     const d = document.getElementById('sel-depto').value;
-    // FILTRAMOS Y ORDENAMOS LOS NOMBRES
     let res = STATE.colBaserFiltrada
         .filter(i => i.Torre == t && i.Departamento == d)
         .map(r => r.Nombre);
@@ -602,12 +596,11 @@ function confirmResidente() {
     const item = STATE.colBaserFiltrada.find(i => i.Nombre === nombreSel);
     
     if(item) {
-        // GUARDAMOS DATOS Y TELÉFONO PARA WHATSAPP
         STATE[p] = { 
             residente: item.Nombre, 
             torre: item.Torre, 
             depto: item.Departamento,
-            telefono: item.Número // Ahora sí tiene el número correcto
+            telefono: item.Número 
         };
         if(document.getElementById(`${p}-torre`)) document.getElementById(`${p}-torre`).value = item.Torre;
         if(document.getElementById(`${p}-depto`)) document.getElementById(`${p}-depto`).value = item.Departamento;
