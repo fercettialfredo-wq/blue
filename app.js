@@ -280,7 +280,6 @@ async function callBackend(action, extraData = {}) {
             loadingBtn.innerText = loadingBtn.dataset.originalText || "Guardar"; 
         }
 
-        // Si la Logic App devuelve una imagen o éxito 200/202, el Proxy responde JSON con success: true
         if (result && result.success) return result;
         throw new Error(result.message || "Error en el servidor");
 
@@ -295,7 +294,7 @@ async function callBackend(action, extraData = {}) {
     }
 }
 
-// --- B. LOGIN Y CARGA DE RESIDENTES (UsuariosApp) ---
+// --- B. LOGIN Y CARGA DE RESIDENTES ---
 async function doLogin() {
     const user = document.getElementById('login-user').value;
     const pass = document.getElementById('login-pass').value;
@@ -324,7 +323,6 @@ async function doLogin() {
             localStorage.setItem('ravensUser', JSON.stringify(STATE.session));
             
             await loadResidentesList();
-            
             navigate('INICIO');
         } else {
             throw new Error(data.message || "Credenciales incorrectas");
@@ -339,20 +337,19 @@ async function doLogin() {
 }
 
 async function loadResidentesList() {
-    console.log("🔄 Descargando lista 'UsuariosApp'...");
     const res = await callBackend('get_history', { tipo_lista: 'USUARIOS_APP' });
     
     if(res && res.data && res.data.length > 0) {
         STATE.colBaserFiltrada = res.data.map(item => {
-            const rawTel = item['Número'] || item.Numero || item.N_x00fa_mero || item.OData_Numero || item.Celular || item.Movil || item.Telefono || item.Phone || "";
+            const rawTel = item['Número'] || item.Numero || item.Celular || item.Telefono || "";
             let cleanTel = rawTel ? rawTel.toString().replace(/\D/g, '') : "";
             if(cleanTel.startsWith('52') && cleanTel.length > 10) { cleanTel = cleanTel.substring(2); }
 
             return {
                 ...item, 
                 Nombre: item.Nombre || item.OData_Nombre || item.Title || "Sin Nombre",
-                Torre: item.Torre || item.OData_Torre, 
-                Departamento: item.Departamento || item.OData_Departamento,
+                Torre: item.Torre || item.OData_Torre || "N/A", 
+                Departamento: item.Departamento || item.OData_Departamento || "N/A",
                 Número: cleanTel, 
                 Condominio: item.Condominio || item.OData_Condominio
             };
@@ -360,7 +357,6 @@ async function loadResidentesList() {
             if(!item.Condominio) return true; 
             return item.Condominio.toString().toUpperCase().trim() === STATE.session.condominioId.toString().toUpperCase().trim();
         });
-        console.log(`✅ ${STATE.colBaserFiltrada.length} Residentes cargados.`);
     }
 }
 
@@ -370,18 +366,6 @@ function doLogout() {
     navigate('LOGIN');
 }
 
-function checkSession() {
-    const savedSession = localStorage.getItem('ravensUser');
-    if (savedSession) {
-        STATE.session = JSON.parse(savedSession);
-        loadResidentesList();
-        navigate('INICIO');
-    } else {
-        navigate('LOGIN');
-    }
-}
-
-// --- C. NAVEGACIÓN Y CARGA DE HISTORIALES ---
 function navigate(screen) {
     if(html5QrCode && html5QrCode.isScanning) {
         html5QrCode.stop().then(() => { html5QrCode.clear(); }).catch(err => {});
@@ -404,46 +388,39 @@ async function loadHistory(tipo, elementId) {
     container.innerHTML = '<div style="padding:20px; text-align:center;">Cargando registros...</div>';
     const response = await callBackend('get_history', { tipo_lista: tipo });
     if(response && response.data) {
-        renderRemoteGallery(response.data, elementId);
-    } else {
-        container.innerHTML = '<div style="padding:20px; text-align:center;">No hay datos disponibles.</div>';
-    }
-}
-
-function renderRemoteGallery(data, elementId) {
-    const container = document.getElementById(elementId);
-    if(!data || data.length === 0) {
-        container.innerHTML = `<div style="padding:20px; text-align:center; color:#555">Sin registros recientes.</div>`;
-        return;
-    }
-    container.innerHTML = data.map(item => `
-        <div class="gallery-item">
-            <div class="gallery-text">
-                <h4>${item.Title || item.Nombre || item.Visitante || 'Registro'}</h4>
-                <p>${item.Estatus || item.Accion || item.Empresa || ''} • ${item.Created || item.Fecha || ''}</p>
+        container.innerHTML = response.data.map(item => `
+            <div class="gallery-item">
+                <div class="gallery-text">
+                    <h4>${item.Title || item.Nombre || item.Visitante || 'Registro'}</h4>
+                    <p>${item.Created || item.Fecha || ''}</p>
+                </div>
             </div>
-        </div>
-    `).join('');
+        `).join('');
+    } else {
+        container.innerHTML = '<div style="padding:20px; text-align:center;">No hay datos.</div>';
+    }
 }
 
-// --- D. ENVÍO DE FORMULARIOS (SUBMITS ADAPTADOS A AVISOG POST) ---
+// --- D. ENVÍO DE FORMULARIOS (ADAPTADOS A AVISOG POST) ---
 
 async function submitAviso(p) {
     const nom = document.getElementById(p+'-nombre').value;
     const motivo = document.getElementById(p+'-motivo')?.value;
     
-    if(!nom || !STATE[p]?.residente) { return alert("Faltan datos obligatorios."); }
+    if(!nom || !STATE[p]?.residente) { return alert("Faltan datos obligatorios (Nombre o Residente)."); }
     if(p === 'aa1' && !motivo) { return alert("❌ El campo 'Motivo' es obligatorio."); }
 
-    // Mapeo de datos para triggerBody() en Logic App
     const data = {
         Nombre: nom,
+        Residente: STATE[p].residente,
+        Torre: STATE[p].torre,
+        Depto: STATE[p].depto,
         Telefono: STATE[p].telefono || "",
         Tipo_Lista: p === 'aa1' ? 'VISITA' : 'ENTRADA',
         Cargo: document.getElementById(p+'-cargo')?.value || "N/A",
         Motivo: motivo || "Servicio",
-        Empresa: "N/A",
-        Placa: document.getElementById(p+'-placa')?.value || "N/A"
+        Placa: document.getElementById(p+'-placa')?.value || "N/A",
+        Empresa: "N/A"
     };
 
     const res = await callBackend('submit_form', { formulario: 'AVISOG', data: data });
@@ -451,16 +428,19 @@ async function submitAviso(p) {
 }
 
 async function submitProveedor() {
-    const nombre = document.getElementById('d1-nombre').value;
-    if(!nombre) return alert("Falta nombre del proveedor.");
+    const nom = document.getElementById('d1-nombre').value;
+    if(!nom || !STATE['d1']?.residente) return alert("Falta nombre o seleccionar residente.");
 
     const data = {
-        Nombre: nombre,
+        Nombre: nom,
+        Residente: STATE['d1'].residente,
+        Torre: STATE['d1'].torre,
+        Depto: STATE['d1'].depto,
         Telefono: STATE['d1']?.telefono || "",
         Tipo_Lista: 'PROVEEDOR',
         Empresa: document.getElementById('d1-empresa').value || "Genérica",
         Cargo: "Proveedor",
-        Motivo: document.getElementById('d1-asunto').value || "Visita de Proveedor"
+        Motivo: document.getElementById('d1-asunto').value || "Visita Proveedor"
     };
 
     const res = await callBackend('submit_form', { formulario: 'AVISOG', data: data });
@@ -468,13 +448,13 @@ async function submitProveedor() {
 }
 
 async function submitRecepcionPaquete() {
-    if(!STATE['ba1']?.residente) return alert("Selecciona un residente.");
+    if(!STATE['ba1']?.residente) return alert("Selecciona residente.");
     const data = {
         Residente: STATE['ba1'].residente, Torre: STATE['ba1'].torre, Departamento: STATE['ba1'].depto,
-        Telefono: STATE['ba1']?.telefono || "", Paqueteria: document.getElementById('ba1-paqueteria').value,
+        Telefono: STATE['ba1'].telefono, Paqueteria: document.getElementById('ba1-paqueteria').value,
         Estatus: document.getElementById('ba1-estatus').value, FotoBase64: STATE.photos['ba1'] || ""
     };
-    const res = await callBackend('submit_form', { formulario: 'PAQUETERIA_RECEPCION', data: data });
+    const res = await callBackend('submit_form', { formulario: 'PAQUETERIA_RECEPCION', data });
     if (res && res.success) { resetForm('ba1'); navigate('SUCCESS'); }
 }
 
@@ -486,7 +466,7 @@ async function submitEntregaPaquete() {
         Departamento: STATE['bb1'].depto, FotoBase64: STATE.photos['bb1'] || "",
         FirmaBase64: signaturePad.toDataURL()
     };
-    const res = await callBackend('submit_form', { formulario: 'PAQUETERIA_ENTREGA', data: data });
+    const res = await callBackend('submit_form', { formulario: 'PAQUETERIA_ENTREGA', data });
     if (res && res.success) { resetForm('bb1'); navigate('SUCCESS'); }
 }
 
@@ -498,9 +478,9 @@ async function submitPersonalInterno(accion) {
 }
 
 async function validarAccesoQR(tipo, inputId, formId) {
-    const codigo = document.getElementById(inputId).value;
-    if(!codigo) return alert("Código vacío.");
-    const res = await callBackend('validate_qr', { tipo_validacion: tipo, codigo_leido: codigo });
+    const code = document.getElementById(inputId).value;
+    if(!code) return alert("Código vacío.");
+    const res = await callBackend('validate_qr', { tipo_validacion: tipo, codigo_leido: code });
     if (res && res.autorizado) { resetForm(formId); navigate('SUCCESS'); } else { navigate('FAILURE'); }
 }
 
@@ -515,32 +495,25 @@ function submitProveedorNIP() { validarAccesoQR('NIP_PROVEEDOR', 'ed1-nip', 'ed1
 function resetForm(prefix) {
     document.querySelectorAll(`[id^="${prefix}-"]`).forEach(i => i.value = '');
     STATE[prefix] = {};
-    if(STATE.photos[prefix]) STATE.photos[prefix] = null;
-    const prev = document.getElementById(`prev-${prefix}`);
-    if(prev) { prev.style.backgroundImage = 'none'; prev.classList.add('hidden'); }
-    if(prefix === 'bb1' && signaturePad) signaturePad.clear();
 }
 
 function openResidenteModal(ctx) {
     STATE.currentContext = ctx;
     const torres = [...new Set(STATE.colBaserFiltrada.map(i => i.Torre))].sort();
     document.getElementById('sel-torre').innerHTML = '<option value="">Selecciona...</option>' + torres.map(t => `<option value="${t}">${t}</option>`).join('');
-    updateDeptos();
     document.getElementById('modal-selector').classList.add('active');
 }
 
 function updateDeptos() {
     const t = document.getElementById('sel-torre').value;
-    const deptos = STATE.colBaserFiltrada.filter(i => i.Torre == t).map(i => i.Departamento);
-    const uniqueDeptos = [...new Set(deptos)].sort();
-    document.getElementById('sel-depto').innerHTML = '<option value="">Selecciona...</option>' + uniqueDeptos.map(d => `<option value="${d}">${d}</option>`).join('');
-    updateResidentes();
+    const deptos = [...new Set(STATE.colBaserFiltrada.filter(i => i.Torre == t).map(i => i.Departamento))].sort();
+    document.getElementById('sel-depto').innerHTML = '<option value="">Selecciona...</option>' + deptos.map(d => `<option value="${d}">${d}</option>`).join('');
 }
 
 function updateResidentes() {
     const t = document.getElementById('sel-torre').value;
     const d = document.getElementById('sel-depto').value;
-    let res = STATE.colBaserFiltrada.filter(i => i.Torre == t && i.Departamento == d).map(r => r.Nombre).sort();
+    const res = STATE.colBaserFiltrada.filter(i => i.Torre == t && i.Departamento == d).map(r => r.Nombre).sort();
     document.getElementById('sel-nombre').innerHTML = '<option value="">Selecciona...</option>' + res.map(n => `<option value="${n}">${n}</option>`).join('');
 }
 
@@ -554,10 +527,8 @@ function confirmResidente() {
         if(document.getElementById(`${p}-depto`)) document.getElementById(`${p}-depto`).value = item.Departamento;
         if(document.getElementById(`${p}-res-name`)) document.getElementById(`${p}-res-name`).value = item.Nombre;
     }
-    closeResidenteModal();
+    document.getElementById('modal-selector').classList.remove('active');
 }
-
-function closeResidenteModal() { document.getElementById('modal-selector').classList.remove('active'); }
 
 function initSignature() {
     setTimeout(() => {
@@ -565,15 +536,15 @@ function initSignature() {
         if(canvas) {
             canvas.width = canvas.parentElement.offsetWidth;
             canvas.height = canvas.parentElement.offsetHeight;
-            signaturePad = new SignaturePad(canvas, { backgroundColor: 'rgb(255, 255, 255)' });
+            signaturePad = new SignaturePad(canvas);
         }
     }, 300);
 }
 
-function clearSignature() { if(signaturePad) signaturePad.clear(); }
+function clearSignature() { signaturePad?.clear(); }
 
 function previewImg(input, id) {
-    if (input.files && input.files[0]) {
+    if (input.files?.[0]) {
         const reader = new FileReader();
         reader.onload = e => {
             STATE.photos[id] = e.target.result;
@@ -585,28 +556,25 @@ function previewImg(input, id) {
     }
 }
 
-function startScan(targetInputId) {
-    STATE.targetInputForQR = targetInputId;
+function startScan(targetId) {
+    STATE.targetInputForQR = targetId;
     document.getElementById('qr-modal').classList.add('active');
     html5QrCode = new Html5Qrcode("qr-reader-view");
-    html5QrCode.start({ facingMode: "environment" }, { fps: 10, qrbox: 250 },
-        (decodedText) => {
-            html5QrCode.stop().then(() => html5QrCode.clear());
+    html5QrCode.start({ facingMode: "environment" }, { fps: 10, qrbox: 250 }, (txt) => {
+        html5QrCode.stop().then(() => {
             document.getElementById('qr-modal').classList.remove('active');
-            if(document.getElementById(STATE.targetInputForQR)) {
-                document.getElementById(STATE.targetInputForQR).value = decodedText;
-            }
-        }, () => {}
-    ).catch(err => {
-        alert("Error cámara: " + err);
-        document.getElementById('qr-modal').classList.remove('active');
-    });
+            document.getElementById(STATE.targetInputForQR).value = txt;
+        });
+    }).catch(() => { alert("Error cámara"); document.getElementById('qr-modal').classList.remove('active'); });
 }
 
-function closeQRScanner() {
-    if(html5QrCode) html5QrCode.stop().then(() => html5QrCode.clear()).catch(()=>{});
-    document.getElementById('qr-modal').classList.remove('active');
-}
-
-// ARRANQUE
-window.onload = () => checkSession();
+window.onload = () => {
+    const saved = localStorage.getItem('ravensUser');
+    if (saved) {
+        STATE.session = JSON.parse(saved);
+        loadResidentesList();
+        navigate('INICIO');
+    } else {
+        navigate('LOGIN');
+    }
+};
