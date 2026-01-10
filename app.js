@@ -97,15 +97,12 @@ const SCREENS = {
             <div class="form-title-section"><h2 class="form-title">Nueva Visita</h2><div class="header-icons"><i class="fas fa-arrow-left fa-lg cursor-pointer" onclick="navigate('A1')"></i><img src="icons/libreta.svg" class="header-icon-img cursor-pointer" onclick="navigate('AA2')"></div></div>
             <div class="form-container">
                 <div class="input-group"><label>Nombre Visitante *</label><input type="text" id="aa1-nombre" class="form-input"></div>
-                
                 <div class="input-group"><label>Torre</label><input type="text" id="aa1-torre" class="form-input" readonly></div>
                 <div class="input-group"><label>Departamento</label><input type="text" id="aa1-depto" class="form-input" readonly></div>
                 <div class="input-group"><label>Residente</label><input type="text" id="aa1-res-name" class="form-input" readonly></div>
                 <button class="btn-primary" onclick="openResidenteModal('aa1')"><i class="fas fa-search"></i> Seleccionar Residente</button>
-                
                 <div class="input-group" style="margin-top:15px"><label>Placa</label><input type="text" id="aa1-placa" class="form-input"></div>
                 <div class="input-group"><label>Motivo *</label><input type="text" id="aa1-motivo" class="form-input"></div>
-                
                 <div style="margin-top: 20px;">
                     <button class="btn-save" onclick="submitAviso('aa1')">Guardar</button>
                     <button class="btn-clean" onclick="resetForm('aa1')"><i class="fas fa-eraser"></i> Limpiar</button>
@@ -146,7 +143,7 @@ const SCREENS = {
             <div class="form-container">
                 <div class="input-group"><label>Torre</label><input type="text" id="ba1-torre" class="form-input" readonly></div>
                 <div class="input-group"><label>Departamento</label><input type="text" id="ba1-depto" class="form-input" readonly></div>
-                <div class="input-group"><label>Destinatario (Residente)</label><input type="text" id="ba1-res-name" class="form-input" readonly></div>
+                <div class="input-group"><label>Residente</label><input type="text" id="ba1-res-name" class="form-input" readonly></div>
                 <button class="btn-primary" onclick="openResidenteModal('ba1')"><i class="fas fa-search"></i> Seleccionar Residente</button>
                 <div class="input-group" style="margin-top:15px"><label>Paquetería *</label><input type="text" id="ba1-paqueteria" class="form-input"></div>
                 <div class="input-group"><label>Estatus</label><select id="ba1-estatus" class="form-input"><option>Aceptado</option><option>Dañado</option></select></div>
@@ -283,8 +280,9 @@ async function callBackend(action, extraData = {}) {
             loadingBtn.innerText = loadingBtn.dataset.originalText || "Guardar"; 
         }
 
-        if (!response.ok) throw new Error(result.message || "Error en el servidor");
-        return result;
+        // Si la Logic App devuelve una imagen o éxito 200/202, el Proxy responde JSON con success: true
+        if (result && result.success) return result;
+        throw new Error(result.message || "Error en el servidor");
 
     } catch (error) {
         if(loadingBtn) { 
@@ -342,43 +340,27 @@ async function doLogin() {
 
 async function loadResidentesList() {
     console.log("🔄 Descargando lista 'UsuariosApp'...");
-    
     const res = await callBackend('get_history', { tipo_lista: 'USUARIOS_APP' });
     
     if(res && res.data && res.data.length > 0) {
-        
-        console.log("🔎 Primer registro crudo:", res.data[0]);
+        STATE.colBaserFiltrada = res.data.map(item => {
+            const rawTel = item['Número'] || item.Numero || item.N_x00fa_mero || item.OData_Numero || item.Celular || item.Movil || item.Telefono || item.Phone || "";
+            let cleanTel = rawTel ? rawTel.toString().replace(/\D/g, '') : "";
+            if(cleanTel.startsWith('52') && cleanTel.length > 10) { cleanTel = cleanTel.substring(2); }
 
-        STATE.colBaserFiltrada = res.data
-            .map(item => {
-                const rawTel = item['Número'] || item.Numero || item.N_x00fa_mero || item.OData_Numero || item.Celular || item.Movil || item.Telefono || item.Phone || "";
-                
-                let cleanTel = rawTel ? rawTel.toString().replace(/\D/g, '') : "";
-                
-                if(cleanTel.startsWith('52') && cleanTel.length > 10) {
-                    cleanTel = cleanTel.substring(2);
-                }
-
-                return {
-                    ...item, 
-                    Nombre: item.Nombre || item.OData_Nombre || item.Title || "Sin Nombre",
-                    Torre: item.Torre || item.OData_Torre, 
-                    Departamento: item.Departamento || item.OData_Departamento,
-                    Número: cleanTel, 
-                    Condominio: item.Condominio || item.OData_Condominio
-                };
-            })
-            .filter(item => {
-                if(!item.Condominio) return true; 
-                return item.Condominio.toString().toUpperCase().trim() === STATE.session.condominioId.toString().toUpperCase().trim();
-            });
-
+            return {
+                ...item, 
+                Nombre: item.Nombre || item.OData_Nombre || item.Title || "Sin Nombre",
+                Torre: item.Torre || item.OData_Torre, 
+                Departamento: item.Departamento || item.OData_Departamento,
+                Número: cleanTel, 
+                Condominio: item.Condominio || item.OData_Condominio
+            };
+        }).filter(item => {
+            if(!item.Condominio) return true; 
+            return item.Condominio.toString().toUpperCase().trim() === STATE.session.condominioId.toString().toUpperCase().trim();
+        });
         console.log(`✅ ${STATE.colBaserFiltrada.length} Residentes cargados.`);
-        const conTelefono = STATE.colBaserFiltrada.filter(r => r.Número && r.Número.length >= 10).length;
-        console.log(`📱 ${conTelefono} residentes tienen número válido.`);
-        
-    } else {
-        console.warn("⚠️ No se encontraron residentes o hubo error en la carga.");
     }
 }
 
@@ -420,9 +402,7 @@ function navigate(screen) {
 async function loadHistory(tipo, elementId) {
     const container = document.getElementById(elementId);
     container.innerHTML = '<div style="padding:20px; text-align:center;">Cargando registros...</div>';
-    
     const response = await callBackend('get_history', { tipo_lista: tipo });
-    
     if(response && response.data) {
         renderRemoteGallery(response.data, elementId);
     } else {
@@ -446,52 +426,41 @@ function renderRemoteGallery(data, elementId) {
     `).join('');
 }
 
-// --- D. ENVÍO DE FORMULARIOS (SUBMITS) ---
+// --- D. ENVÍO DE FORMULARIOS (SUBMITS ADAPTADOS A AVISOG POST) ---
 
-// MODIFICADO: Ahora submitAviso usa el flujo AVISOG para Visitas y Personal
 async function submitAviso(p) {
     const nom = document.getElementById(p+'-nombre').value;
     const motivo = document.getElementById(p+'-motivo')?.value;
     
-    if(!nom || !STATE[p]?.residente) {
-        return alert("Faltan datos: Nombre o Residente.");
-    }
+    if(!nom || !STATE[p]?.residente) { return alert("Faltan datos obligatorios."); }
+    if(p === 'aa1' && !motivo) { return alert("❌ El campo 'Motivo' es obligatorio."); }
 
-    if(p === 'aa1' && !motivo) {
-        return alert("❌ El campo 'Motivo' es obligatorio.");
-    }
-
+    // Mapeo de datos para triggerBody() en Logic App
     const data = {
-        Visitante: nom, 
-        Torre: STATE[p].torre,
-        Depto: STATE[p].depto,
-        Residente: STATE[p].residente,
-        Telefono: STATE[p].telefono || "", 
-        Placa: document.getElementById(p+'-placa')?.value || "N/A",
+        Nombre: nom,
+        Telefono: STATE[p].telefono || "",
+        Tipo_Lista: p === 'aa1' ? 'VISITA' : 'ENTRADA',
+        Cargo: document.getElementById(p+'-cargo')?.value || "N/A",
         Motivo: motivo || "Servicio",
-        Cargo: document.getElementById(p+'-cargo')?.value || "",
-        TipoRegistro: p === 'aa1' ? 'VISITA' : 'PERSONAL_SERVICIO'
+        Empresa: "N/A",
+        Placa: document.getElementById(p+'-placa')?.value || "N/A"
     };
 
-    // Apuntamos a la lógica AVISOG configurada en el Proxy
     const res = await callBackend('submit_form', { formulario: 'AVISOG', data: data });
     if (res && res.success) { resetForm(p); navigate('SUCCESS'); }
 }
 
-// MODIFICADO: Ahora submitProveedor usa el flujo AVISOG
 async function submitProveedor() {
     const nombre = document.getElementById('d1-nombre').value;
     if(!nombre) return alert("Falta nombre del proveedor.");
 
     const data = {
-        Proveedor: nombre,
-        Empresa: document.getElementById('d1-empresa').value,
-        Asunto: document.getElementById('d1-asunto').value,
-        Torre: STATE['d1']?.torre || "Admin",
-        Depto: STATE['d1']?.depto || "Admin",
-        Residente: STATE['d1']?.residente || "Administración",
+        Nombre: nombre,
         Telefono: STATE['d1']?.telefono || "",
-        TipoRegistro: 'PROVEEDOR'
+        Tipo_Lista: 'PROVEEDOR',
+        Empresa: document.getElementById('d1-empresa').value || "Genérica",
+        Cargo: "Proveedor",
+        Motivo: document.getElementById('d1-asunto').value || "Visita de Proveedor"
     };
 
     const res = await callBackend('submit_form', { formulario: 'AVISOG', data: data });
@@ -500,17 +469,11 @@ async function submitProveedor() {
 
 async function submitRecepcionPaquete() {
     if(!STATE['ba1']?.residente) return alert("Selecciona un residente.");
-    
     const data = {
-        Residente: STATE['ba1'].residente,
-        Torre: STATE['ba1'].torre,
-        Departamento: STATE['ba1'].depto,
-        Telefono: STATE['ba1']?.telefono || "",
-        Paqueteria: document.getElementById('ba1-paqueteria').value,
-        Estatus: document.getElementById('ba1-estatus').value,
-        FotoBase64: STATE.photos['ba1'] || ""
+        Residente: STATE['ba1'].residente, Torre: STATE['ba1'].torre, Departamento: STATE['ba1'].depto,
+        Telefono: STATE['ba1']?.telefono || "", Paqueteria: document.getElementById('ba1-paqueteria').value,
+        Estatus: document.getElementById('ba1-estatus').value, FotoBase64: STATE.photos['ba1'] || ""
     };
-
     const res = await callBackend('submit_form', { formulario: 'PAQUETERIA_RECEPCION', data: data });
     if (res && res.success) { resetForm('ba1'); navigate('SUCCESS'); }
 }
@@ -519,14 +482,10 @@ async function submitEntregaPaquete() {
     const nom = document.getElementById('bb1-nombre').value;
     if(!nom) return alert("Falta quien recibe.");
     const data = {
-        Recibio: nom,
-        Residente: STATE['bb1'].residente,
-        Torre: STATE['bb1'].torre,
-        Departamento: STATE['bb1'].depto,
-        FotoBase64: STATE.photos['bb1'] || "",
+        Recibio: nom, Residente: STATE['bb1'].residente, Torre: STATE['bb1'].torre,
+        Departamento: STATE['bb1'].depto, FotoBase64: STATE.photos['bb1'] || "",
         FirmaBase64: signaturePad.toDataURL()
     };
-
     const res = await callBackend('submit_form', { formulario: 'PAQUETERIA_ENTREGA', data: data });
     if (res && res.success) { resetForm('bb1'); navigate('SUCCESS'); }
 }
@@ -551,7 +510,7 @@ function submitEvento() { validarAccesoQR('EVENTO', 'ec1-code', 'ec1'); }
 function submitProveedorNIP() { validarAccesoQR('NIP_PROVEEDOR', 'ed1-nip', 'ed1'); }
 
 
-// --- F. UTILIDADES UI (MODALES Y ORDENAMIENTO) ---
+// --- F. UTILIDADES UI ---
 
 function resetForm(prefix) {
     document.querySelectorAll(`[id^="${prefix}-"]`).forEach(i => i.value = '');
@@ -581,12 +540,7 @@ function updateDeptos() {
 function updateResidentes() {
     const t = document.getElementById('sel-torre').value;
     const d = document.getElementById('sel-depto').value;
-    let res = STATE.colBaserFiltrada
-        .filter(i => i.Torre == t && i.Departamento == d)
-        .map(r => r.Nombre);
-    
-    res.sort();
-    
+    let res = STATE.colBaserFiltrada.filter(i => i.Torre == t && i.Departamento == d).map(r => r.Nombre).sort();
     document.getElementById('sel-nombre').innerHTML = '<option value="">Selecciona...</option>' + res.map(n => `<option value="${n}">${n}</option>`).join('');
 }
 
@@ -594,14 +548,8 @@ function confirmResidente() {
     const p = STATE.currentContext; 
     const nombreSel = document.getElementById('sel-nombre').value;
     const item = STATE.colBaserFiltrada.find(i => i.Nombre === nombreSel);
-    
     if(item) {
-        STATE[p] = { 
-            residente: item.Nombre, 
-            torre: item.Torre, 
-            depto: item.Departamento,
-            telefono: item.Número 
-        };
+        STATE[p] = { residente: item.Nombre, torre: item.Torre, depto: item.Departamento, telefono: item.Número };
         if(document.getElementById(`${p}-torre`)) document.getElementById(`${p}-torre`).value = item.Torre;
         if(document.getElementById(`${p}-depto`)) document.getElementById(`${p}-depto`).value = item.Departamento;
         if(document.getElementById(`${p}-res-name`)) document.getElementById(`${p}-res-name`).value = item.Nombre;
@@ -645,12 +593,12 @@ function startScan(targetInputId) {
         (decodedText) => {
             html5QrCode.stop().then(() => html5QrCode.clear());
             document.getElementById('qr-modal').classList.remove('active');
-            if(STATE.targetInputForQR && document.getElementById(STATE.targetInputForQR)) {
+            if(document.getElementById(STATE.targetInputForQR)) {
                 document.getElementById(STATE.targetInputForQR).value = decodedText;
             }
         }, () => {}
     ).catch(err => {
-        alert("Error iniciando cámara: " + err);
+        alert("Error cámara: " + err);
         document.getElementById('qr-modal').classList.remove('active');
     });
 }
