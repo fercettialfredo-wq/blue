@@ -247,13 +247,18 @@ let html5QrCode;
 
 // --- A. FUNCIÓN MAESTRA DE CONEXIÓN BACKEND ---
 async function callBackend(action, extraData = {}) {
-    console.log(`📡 Llamando a Backend: ${action}`, extraData);
+    console.log(`📡 Solicitando acción: ${action}...`);
     
+    // Verificamos si hay sesión activa antes de intentar cualquier acción
     if (!STATE.session.condominioId) {
-        console.warn("⚠️ Advertencia: No hay condominioId en la sesión.");
-        // Intentamos recuperar si se perdió el estado
+        console.warn("⚠️ No se detectó ID de condominio en STATE. Intentando recuperar de localStorage...");
         const saved = localStorage.getItem('ravensUser');
-        if(saved) STATE.session = JSON.parse(saved);
+        if (saved) {
+            STATE.session = JSON.parse(saved);
+        } else {
+            console.error("❌ Error: No hay sesión activa.");
+            return null;
+        }
     }
 
     const loadingBtn = document.querySelector('.btn-save') || document.querySelector('.btn-primary');
@@ -266,8 +271,8 @@ async function callBackend(action, extraData = {}) {
     try {
         const payload = {
             action: action, 
-            condominio: STATE.session.condominioId || "GARDENIAS",
-            usuario: STATE.session.usuario || "desconocido",
+            condominio: STATE.session.condominioId,
+            usuario: STATE.session.usuario || "guardia_web",
             ...extraData
         };
 
@@ -280,7 +285,7 @@ async function callBackend(action, extraData = {}) {
         if (!response.ok) throw new Error(`HTTP Error: ${response.status}`);
 
         const result = await response.json();
-        console.log("📥 Respuesta recibida:", result);
+        console.log("📥 Datos recibidos del servidor:", result);
         
         if(loadingBtn) { 
             loadingBtn.disabled = false; 
@@ -288,7 +293,7 @@ async function callBackend(action, extraData = {}) {
         }
 
         if (result && result.success) return result;
-        throw new Error(result.message || "Error en el servidor");
+        throw new Error(result.message || "Error en la respuesta del servidor.");
 
     } catch (error) {
         if(loadingBtn) { 
@@ -296,8 +301,7 @@ async function callBackend(action, extraData = {}) {
             loadingBtn.innerText = "Error"; 
             setTimeout(() => { loadingBtn.innerText = loadingBtn.dataset.originalText || "Guardar"; }, 3000);
         }
-        console.error("❌ Backend Error:", error);
-        alert("Error de conexión: " + error.message);
+        console.error("❌ Error en callBackend:", error);
         return null; 
     }
 }
@@ -326,14 +330,21 @@ async function doLogin() {
 
         if (response.ok && data.success) {
             STATE.session.isLoggedIn = true;
-            STATE.session.condominioId = data.condominioId || data.data?.condominio || "GARDENIAS"; 
+            // El ID del condominio viene directamente del servidor según el usuario
+            STATE.session.condominioId = data.condominioId || data.data?.condominio; 
             STATE.session.usuario = user;
+
+            if (!STATE.session.condominioId) {
+                throw new Error("El usuario no tiene un condominio asignado.");
+            }
+
             localStorage.setItem('ravensUser', JSON.stringify(STATE.session));
+            console.log(`✅ Login exitoso para condominio: ${STATE.session.condominioId}`);
             
             await loadResidentesList();
             navigate('INICIO');
         } else {
-            throw new Error(data.message || "Credenciales incorrectas");
+            throw new Error(data.message || "Usuario o contraseña inválidos.");
         }
     } catch (error) {
         errorMsg.innerText = error.message;
@@ -345,11 +356,11 @@ async function doLogin() {
 }
 
 async function loadResidentesList() {
-    console.log("🔄 Iniciando descarga de lista 'UsuariosApp'...");
+    console.log("🔄 Iniciando descarga de la lista 'UsuariosApp'...");
     const res = await callBackend('get_history', { tipo_lista: 'USUARIOS_APP' });
     
     if(!res) {
-        console.error("❌ No se pudo obtener respuesta del backend para residentes.");
+        console.error("❌ El servidor no respondió a la solicitud de residentes.");
         return;
     }
 
@@ -368,14 +379,15 @@ async function loadResidentesList() {
                 Condominio: item.Condominio || item.OData_Condominio
             };
         }).filter(item => {
-            if(!item.Condominio) return true; 
+            // Filtrado estricto multitenant: solo residentes del condominio de la sesión
+            if(!item.Condominio) return false; 
             const dbCond = item.Condominio.toString().toUpperCase().trim();
             const sesCond = STATE.session.condominioId.toString().toUpperCase().trim();
             return dbCond === sesCond;
         });
-        console.log(`✅ ${STATE.colBaserFiltrada.length} Residentes cargados y filtrados para ${STATE.session.condominioId}.`);
+        console.log(`✅ Lista filtrada: ${STATE.colBaserFiltrada.length} residentes cargados.`);
     } else {
-        console.warn("⚠️ La lista de residentes llegó vacía.");
+        console.warn("⚠️ La lista descargada del servidor está vacía.");
     }
 }
 
@@ -389,7 +401,7 @@ function checkSession() {
     const savedSession = localStorage.getItem('ravensUser');
     if (savedSession) {
         STATE.session = JSON.parse(savedSession);
-        console.log("🔐 Sesión recuperada:", STATE.session.usuario);
+        console.log("🔐 Sesión recuperada para:", STATE.session.usuario);
         loadResidentesList();
         navigate('INICIO');
     } else {
@@ -402,7 +414,11 @@ function navigate(screen) {
     if(html5QrCode && html5QrCode.isScanning) {
         html5QrCode.stop().then(() => { html5QrCode.clear(); }).catch(err => {});
     }
-    document.getElementById('viewport').innerHTML = SCREENS[screen] || SCREENS['LOGIN'];
+    const viewport = document.getElementById('viewport');
+    if (viewport) {
+        viewport.innerHTML = SCREENS[screen] || SCREENS['LOGIN'];
+    }
+    
     if(screen === 'BB1') initSignature();
     
     if(screen.endsWith('2')) {
@@ -418,12 +434,13 @@ function navigate(screen) {
 async function loadHistory(tipo, elementId) {
     const container = document.getElementById(elementId);
     if(!container) return;
-    container.innerHTML = '<div style="padding:20px; text-align:center;">Cargando registros...</div>';
+    container.innerHTML = '<div style="padding:20px; text-align:center;">Cargando historial...</div>';
+    
     const response = await callBackend('get_history', { tipo_lista: tipo });
     if(response && response.data) {
         renderRemoteGallery(response.data, elementId);
     } else {
-        container.innerHTML = '<div style="padding:20px; text-align:center;">No hay datos disponibles.</div>';
+        container.innerHTML = '<div style="padding:20px; text-align:center;">No hay registros disponibles.</div>';
     }
 }
 
@@ -437,7 +454,7 @@ function renderRemoteGallery(data, elementId) {
         <div class="gallery-item">
             <div class="gallery-text">
                 <h4>${item.Title || item.Nombre || item.Visitante || 'Registro'}</h4>
-                <p>${item.Created || item.Fecha || ''}</p>
+                <p>${item.Created || item.Fecha || 'Reciente'}</p>
             </div>
         </div>
     `).join('');
@@ -449,8 +466,8 @@ async function submitAviso(p) {
     const nom = document.getElementById(p+'-nombre').value;
     const motivo = document.getElementById(p+'-motivo')?.value;
     
-    if(!nom || !STATE[p]?.residente) { return alert("Faltan datos obligatorios (Nombre o Residente)."); }
-    if(p === 'aa1' && !motivo) { return alert("❌ El campo 'Motivo' es obligatorio."); }
+    if(!nom || !STATE[p]?.residente) { return alert("Error: Selecciona un residente y escribe el nombre."); }
+    if(p === 'aa1' && !motivo) { return alert("Error: El motivo es obligatorio."); }
 
     const data = {
         Nombre: nom,
@@ -461,9 +478,7 @@ async function submitAviso(p) {
         Tipo_Lista: p === 'aa1' ? 'VISITA' : 'ENTRADA',
         Cargo: document.getElementById(p+'-cargo')?.value || "N/A",
         Motivo: motivo || "Servicio",
-        Placa: document.getElementById(p+'-placa')?.value || "N/A",
-        Empresa: "N/A",
-        Asunto: "N/A"
+        Placa: document.getElementById(p+'-placa')?.value || "N/A"
     };
 
     const res = await callBackend('submit_form', { formulario: 'AVISOG', data: data });
@@ -473,7 +488,7 @@ async function submitAviso(p) {
 async function submitProveedor() {
     const nom = document.getElementById('d1-nombre').value;
     const asunto = document.getElementById('d1-asunto').value;
-    if(!nom || !STATE['d1']?.residente || !asunto) return alert("Faltan campos: Nombre, Residente o Asunto.");
+    if(!nom || !STATE['d1']?.residente || !asunto) return alert("Faltan datos obligatorios.");
 
     const data = {
         Nombre: nom,
@@ -483,10 +498,8 @@ async function submitProveedor() {
         Telefono: STATE['d1']?.telefono || "",
         Tipo_Lista: 'PROVEEDOR',
         Empresa: document.getElementById('d1-empresa').value || "Genérica",
-        Cargo: "Proveedor",
         Asunto: asunto,
-        Motivo: asunto,
-        Placa: "N/A"
+        Motivo: asunto
     };
 
     const res = await callBackend('submit_form', { formulario: 'AVISOG', data: data });
@@ -494,11 +507,15 @@ async function submitProveedor() {
 }
 
 async function submitRecepcionPaquete() {
-    if(!STATE['ba1']?.residente) return alert("Selecciona un residente.");
+    if(!STATE['ba1']?.residente) return alert("Error: Debes seleccionar un residente.");
     const data = {
-        Residente: STATE['ba1'].residente, Torre: STATE['ba1'].torre, Departamento: STATE['ba1'].depto,
-        Telefono: STATE['ba1']?.telefono || "", Paqueteria: document.getElementById('ba1-paqueteria').value,
-        Estatus: document.getElementById('ba1-estatus').value, FotoBase64: STATE.photos['ba1'] || ""
+        Residente: STATE['ba1'].residente, 
+        Torre: STATE['ba1'].torre, 
+        Departamento: STATE['ba1'].depto,
+        Telefono: STATE['ba1']?.telefono || "", 
+        Paqueteria: document.getElementById('ba1-paqueteria').value,
+        Estatus: document.getElementById('ba1-estatus').value, 
+        FotoBase64: STATE.photos['ba1'] || ""
     };
     const res = await callBackend('submit_form', { formulario: 'PAQUETERIA_RECEPCION', data: data });
     if (res && res.success) { resetForm('ba1'); navigate('SUCCESS'); }
@@ -506,10 +523,13 @@ async function submitRecepcionPaquete() {
 
 async function submitEntregaPaquete() {
     const nom = document.getElementById('bb1-nombre').value;
-    if(!nom) return alert("Falta quien recibe.");
+    if(!nom || !STATE['bb1']?.residente) return alert("Error: Datos incompletos.");
     const data = {
-        Recibio: nom, Residente: STATE['bb1'].residente, Torre: STATE['bb1'].torre,
-        Departamento: STATE['bb1'].depto, FotoBase64: STATE.photos['bb1'] || "",
+        Recibio: nom, 
+        Residente: STATE['bb1'].residente, 
+        Torre: STATE['bb1'].torre,
+        Departamento: STATE['bb1'].depto, 
+        FotoBase64: STATE.photos['bb1'] || "",
         FirmaBase64: signaturePad ? signaturePad.toDataURL() : ""
     };
     const res = await callBackend('submit_form', { formulario: 'PAQUETERIA_ENTREGA', data: data });
@@ -518,14 +538,14 @@ async function submitEntregaPaquete() {
 
 async function submitPersonalInterno(accion) {
     const id = document.getElementById('f1-id').value;
-    if(!id) return alert("Falta ID.");
+    if(!id) return alert("Error: Escanea un ID válido.");
     const res = await callBackend('submit_form', { formulario: 'PERSONAL_INTERNO', data: { ID_Personal: id, Accion: accion } });
     if (res && res.success) { resetForm('f1'); navigate('SUCCESS'); }
 }
 
 async function validarAccesoQR(tipo, inputId, formId) {
     const codigo = document.getElementById(inputId).value;
-    if(!codigo) return alert("Código vacío.");
+    if(!codigo) return alert("Error: El código está vacío.");
     const res = await callBackend('validate_qr', { tipo_validacion: tipo, codigo_leido: codigo });
     if (res && res.autorizado) { resetForm(formId); navigate('SUCCESS'); } else { navigate('FAILURE'); }
 }
@@ -546,27 +566,36 @@ function resetForm(prefix) {
 function openResidenteModal(ctx) {
     STATE.currentContext = ctx;
     if(STATE.colBaserFiltrada.length === 0) {
-        alert("La lista de residentes no está cargada. Intenta recargar la página.");
+        alert("La lista de residentes no se ha cargado todavía.");
         return;
     }
     const torres = [...new Set(STATE.colBaserFiltrada.map(i => i.Torre))].sort();
-    document.getElementById('sel-torre').innerHTML = '<option value="">Selecciona...</option>' + torres.map(t => `<option value="${t}">${t}</option>`).join('');
-    updateDeptos();
-    document.getElementById('modal-selector').classList.add('active');
+    const selTorre = document.getElementById('sel-torre');
+    if (selTorre) {
+        selTorre.innerHTML = '<option value="">Selecciona...</option>' + torres.map(t => `<option value="${t}">${t}</option>`).join('');
+        updateDeptos();
+        document.getElementById('modal-selector').classList.add('active');
+    }
 }
 
 function updateDeptos() {
     const t = document.getElementById('sel-torre').value;
     const deptos = [...new Set(STATE.colBaserFiltrada.filter(i => i.Torre == t).map(i => i.Departamento))].sort();
-    document.getElementById('sel-depto').innerHTML = '<option value="">Selecciona...</option>' + deptos.map(d => `<option value="${d}">${d}</option>`).join('');
-    updateResidentes();
+    const selDepto = document.getElementById('sel-depto');
+    if (selDepto) {
+        selDepto.innerHTML = '<option value="">Selecciona...</option>' + deptos.map(d => `<option value="${d}">${d}</option>`).join('');
+        updateResidentes();
+    }
 }
 
 function updateResidentes() {
     const t = document.getElementById('sel-torre').value;
     const d = document.getElementById('sel-depto').value;
     const res = STATE.colBaserFiltrada.filter(i => i.Torre == t && i.Departamento == d).map(r => r.Nombre).sort();
-    document.getElementById('sel-nombre').innerHTML = '<option value="">Selecciona...</option>' + res.map(n => `<option value="${n}">${n}</option>`).join('');
+    const selNombre = document.getElementById('sel-nombre');
+    if (selNombre) {
+        selNombre.innerHTML = '<option value="">Selecciona...</option>' + res.map(n => `<option value="${n}">${n}</option>`).join('');
+    }
 }
 
 function confirmResidente() {
@@ -601,7 +630,10 @@ function previewImg(input, id) {
         reader.onload = e => {
             STATE.photos[id] = e.target.result;
             const prev = document.getElementById('prev-'+id);
-            if(prev) { prev.style.backgroundImage = `url(${e.target.result})`; prev.classList.remove('hidden'); }
+            if(prev) { 
+                prev.style.backgroundImage = `url(${e.target.result})`; 
+                prev.classList.remove('hidden'); 
+            }
         };
         reader.readAsDataURL(input.files[0]);
     }
@@ -615,12 +647,11 @@ function startScan(targetInputId) {
         (decodedText) => {
             html5QrCode.stop().then(() => html5QrCode.clear());
             document.getElementById('qr-modal').classList.remove('active');
-            if(document.getElementById(STATE.targetInputForQR)) {
-                document.getElementById(STATE.targetInputForQR).value = decodedText;
-            }
+            const input = document.getElementById(STATE.targetInputForQR);
+            if(input) input.value = decodedText;
         }, () => {}
     ).catch(err => {
-        alert("Error cámara: " + err);
+        alert("Error de cámara: " + err);
         document.getElementById('qr-modal').classList.remove('active');
     });
 }
@@ -630,8 +661,8 @@ function closeQRScanner() {
     document.getElementById('qr-modal').classList.remove('active');
 }
 
-// ARRANQUE
+// --- INICIO DE APLICACIÓN ---
 window.onload = () => {
-    console.log("🚀 Aplicación iniciada.");
+    console.log("🚀 Iniciando Ravens Access...");
     checkSession();
 };
