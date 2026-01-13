@@ -97,15 +97,12 @@ const SCREENS = {
             <div class="form-title-section"><h2 class="form-title">Nueva Visita</h2><div class="header-icons"><i class="fas fa-arrow-left fa-lg cursor-pointer" onclick="navigate('A1')"></i><img src="icons/libreta.svg" class="header-icon-img cursor-pointer" onclick="navigate('AA2')"></div></div>
             <div class="form-container">
                 <div class="input-group"><label>Nombre Visitante *</label><input type="text" id="aa1-nombre" class="form-input"></div>
-                
                 <div class="input-group"><label>Torre</label><input type="text" id="aa1-torre" class="form-input" readonly></div>
                 <div class="input-group"><label>Departamento</label><input type="text" id="aa1-depto" class="form-input" readonly></div>
                 <div class="input-group"><label>Residente</label><input type="text" id="aa1-res-name" class="form-input" readonly></div>
                 <button class="btn-primary" onclick="openResidenteModal('aa1')"><i class="fas fa-search"></i> Seleccionar Residente</button>
-                
                 <div class="input-group" style="margin-top:15px"><label>Placa</label><input type="text" id="aa1-placa" class="form-input"></div>
                 <div class="input-group"><label>Motivo *</label><input type="text" id="aa1-motivo" class="form-input"></div>
-                
                 <div style="margin-top: 20px;">
                     <button class="btn-save" onclick="submitAviso('aa1')">Guardar</button>
                     <button class="btn-clean" onclick="resetForm('aa1')"><i class="fas fa-eraser"></i> Limpiar</button>
@@ -250,9 +247,13 @@ let html5QrCode;
 
 // --- A. FUNCIÓN MAESTRA DE CONEXIÓN BACKEND ---
 async function callBackend(action, extraData = {}) {
+    console.log(`📡 Llamando a Backend: ${action}`, extraData);
+    
     if (!STATE.session.condominioId) {
-        alert("Error de sesión: No se identifica el condominio.");
-        return null;
+        console.warn("⚠️ Advertencia: No hay condominioId en la sesión.");
+        // Intentamos recuperar si se perdió el estado
+        const saved = localStorage.getItem('ravensUser');
+        if(saved) STATE.session = JSON.parse(saved);
     }
 
     const loadingBtn = document.querySelector('.btn-save') || document.querySelector('.btn-primary');
@@ -265,8 +266,8 @@ async function callBackend(action, extraData = {}) {
     try {
         const payload = {
             action: action, 
-            condominio: STATE.session.condominioId,
-            usuario: STATE.session.usuario,
+            condominio: STATE.session.condominioId || "GARDENIAS",
+            usuario: STATE.session.usuario || "desconocido",
             ...extraData
         };
 
@@ -276,7 +277,10 @@ async function callBackend(action, extraData = {}) {
             body: JSON.stringify(payload)
         });
 
+        if (!response.ok) throw new Error(`HTTP Error: ${response.status}`);
+
         const result = await response.json();
+        console.log("📥 Respuesta recibida:", result);
         
         if(loadingBtn) { 
             loadingBtn.disabled = false; 
@@ -292,7 +296,8 @@ async function callBackend(action, extraData = {}) {
             loadingBtn.innerText = "Error"; 
             setTimeout(() => { loadingBtn.innerText = loadingBtn.dataset.originalText || "Guardar"; }, 3000);
         }
-        console.error("Backend Error:", error);
+        console.error("❌ Backend Error:", error);
+        alert("Error de conexión: " + error.message);
         return null; 
     }
 }
@@ -340,10 +345,15 @@ async function doLogin() {
 }
 
 async function loadResidentesList() {
-    console.log("🔄 Descargando lista 'UsuariosApp'...");
+    console.log("🔄 Iniciando descarga de lista 'UsuariosApp'...");
     const res = await callBackend('get_history', { tipo_lista: 'USUARIOS_APP' });
     
-    if(res && res.data && res.data.length > 0) {
+    if(!res) {
+        console.error("❌ No se pudo obtener respuesta del backend para residentes.");
+        return;
+    }
+
+    if(res.data && res.data.length > 0) {
         STATE.colBaserFiltrada = res.data.map(item => {
             const rawTel = item['Número'] || item.Numero || item.Celular || item.Telefono || "";
             let cleanTel = rawTel ? rawTel.toString().replace(/\D/g, '') : "";
@@ -359,9 +369,13 @@ async function loadResidentesList() {
             };
         }).filter(item => {
             if(!item.Condominio) return true; 
-            return item.Condominio.toString().toUpperCase().trim() === STATE.session.condominioId.toString().toUpperCase().trim();
+            const dbCond = item.Condominio.toString().toUpperCase().trim();
+            const sesCond = STATE.session.condominioId.toString().toUpperCase().trim();
+            return dbCond === sesCond;
         });
-        console.log(`✅ ${STATE.colBaserFiltrada.length} Residentes cargados.`);
+        console.log(`✅ ${STATE.colBaserFiltrada.length} Residentes cargados y filtrados para ${STATE.session.condominioId}.`);
+    } else {
+        console.warn("⚠️ La lista de residentes llegó vacía.");
     }
 }
 
@@ -375,6 +389,7 @@ function checkSession() {
     const savedSession = localStorage.getItem('ravensUser');
     if (savedSession) {
         STATE.session = JSON.parse(savedSession);
+        console.log("🔐 Sesión recuperada:", STATE.session.usuario);
         loadResidentesList();
         navigate('INICIO');
     } else {
@@ -402,6 +417,7 @@ function navigate(screen) {
 
 async function loadHistory(tipo, elementId) {
     const container = document.getElementById(elementId);
+    if(!container) return;
     container.innerHTML = '<div style="padding:20px; text-align:center;">Cargando registros...</div>';
     const response = await callBackend('get_history', { tipo_lista: tipo });
     if(response && response.data) {
@@ -427,7 +443,7 @@ function renderRemoteGallery(data, elementId) {
     `).join('');
 }
 
-// --- D. ENVÍO DE FORMULARIOS (SUBMITS ACTUALIZADOS PARA AVISOG POST) ---
+// --- D. ENVÍO DE FORMULARIOS ---
 
 async function submitAviso(p) {
     const nom = document.getElementById(p+'-nombre').value;
@@ -436,7 +452,6 @@ async function submitAviso(p) {
     if(!nom || !STATE[p]?.residente) { return alert("Faltan datos obligatorios (Nombre o Residente)."); }
     if(p === 'aa1' && !motivo) { return alert("❌ El campo 'Motivo' es obligatorio."); }
 
-    // Objeto DATA completo para SharePoint vía Logic App POST
     const data = {
         Nombre: nom,
         Residente: STATE[p].residente,
@@ -470,7 +485,7 @@ async function submitProveedor() {
         Empresa: document.getElementById('d1-empresa').value || "Genérica",
         Cargo: "Proveedor",
         Asunto: asunto,
-        Motivo: asunto, // Lo duplicamos para asegurar que SharePoint lo reciba
+        Motivo: asunto,
         Placa: "N/A"
     };
 
@@ -495,7 +510,7 @@ async function submitEntregaPaquete() {
     const data = {
         Recibio: nom, Residente: STATE['bb1'].residente, Torre: STATE['bb1'].torre,
         Departamento: STATE['bb1'].depto, FotoBase64: STATE.photos['bb1'] || "",
-        FirmaBase64: signaturePad.toDataURL()
+        FirmaBase64: signaturePad ? signaturePad.toDataURL() : ""
     };
     const res = await callBackend('submit_form', { formulario: 'PAQUETERIA_ENTREGA', data: data });
     if (res && res.success) { resetForm('bb1'); navigate('SUCCESS'); }
@@ -530,6 +545,10 @@ function resetForm(prefix) {
 
 function openResidenteModal(ctx) {
     STATE.currentContext = ctx;
+    if(STATE.colBaserFiltrada.length === 0) {
+        alert("La lista de residentes no está cargada. Intenta recargar la página.");
+        return;
+    }
     const torres = [...new Set(STATE.colBaserFiltrada.map(i => i.Torre))].sort();
     document.getElementById('sel-torre').innerHTML = '<option value="">Selecciona...</option>' + torres.map(t => `<option value="${t}">${t}</option>`).join('');
     updateDeptos();
@@ -612,4 +631,7 @@ function closeQRScanner() {
 }
 
 // ARRANQUE
-window.onload = () => checkSession();
+window.onload = () => {
+    console.log("🚀 Aplicación iniciada.");
+    checkSession();
+};
