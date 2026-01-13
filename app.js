@@ -247,16 +247,14 @@ let html5QrCode;
 
 // --- A. FUNCIÓN MAESTRA DE CONEXIÓN BACKEND ---
 async function callBackend(action, extraData = {}) {
-    console.log(`📡 Solicitando acción: ${action}...`);
+    console.log(`📡 Solicitando backend: ${action}...`);
     
-    // Verificamos si hay sesión activa antes de intentar cualquier acción
     if (!STATE.session.condominioId) {
-        console.warn("⚠️ No se detectó ID de condominio en STATE. Intentando recuperar de localStorage...");
         const saved = localStorage.getItem('ravensUser');
         if (saved) {
             STATE.session = JSON.parse(saved);
         } else {
-            console.error("❌ Error: No hay sesión activa.");
+            console.error("❌ No hay sesión activa para realizar peticiones.");
             return null;
         }
     }
@@ -285,7 +283,7 @@ async function callBackend(action, extraData = {}) {
         if (!response.ok) throw new Error(`HTTP Error: ${response.status}`);
 
         const result = await response.json();
-        console.log("📥 Datos recibidos del servidor:", result);
+        console.log("📥 Datos recibidos:", result);
         
         if(loadingBtn) { 
             loadingBtn.disabled = false; 
@@ -293,7 +291,7 @@ async function callBackend(action, extraData = {}) {
         }
 
         if (result && result.success) return result;
-        throw new Error(result.message || "Error en la respuesta del servidor.");
+        throw new Error(result.message || "Error en el servidor");
 
     } catch (error) {
         if(loadingBtn) { 
@@ -301,7 +299,7 @@ async function callBackend(action, extraData = {}) {
             loadingBtn.innerText = "Error"; 
             setTimeout(() => { loadingBtn.innerText = loadingBtn.dataset.originalText || "Guardar"; }, 3000);
         }
-        console.error("❌ Error en callBackend:", error);
+        console.error("❌ Error de comunicación:", error);
         return null; 
     }
 }
@@ -330,7 +328,6 @@ async function doLogin() {
 
         if (response.ok && data.success) {
             STATE.session.isLoggedIn = true;
-            // El ID del condominio viene directamente del servidor según el usuario
             STATE.session.condominioId = data.condominioId || data.data?.condominio; 
             STATE.session.usuario = user;
 
@@ -339,12 +336,12 @@ async function doLogin() {
             }
 
             localStorage.setItem('ravensUser', JSON.stringify(STATE.session));
-            console.log(`✅ Login exitoso para condominio: ${STATE.session.condominioId}`);
+            console.log(`✅ Login OK: ${STATE.session.condominioId}`);
             
             await loadResidentesList();
             navigate('INICIO');
         } else {
-            throw new Error(data.message || "Usuario o contraseña inválidos.");
+            throw new Error(data.message || "Credenciales incorrectas.");
         }
     } catch (error) {
         errorMsg.innerText = error.message;
@@ -356,11 +353,11 @@ async function doLogin() {
 }
 
 async function loadResidentesList() {
-    console.log("🔄 Iniciando descarga de la lista 'UsuariosApp'...");
+    console.log("🔄 Iniciando descarga de lista de residentes...");
     const res = await callBackend('get_history', { tipo_lista: 'USUARIOS_APP' });
     
     if(!res) {
-        console.error("❌ El servidor no respondió a la solicitud de residentes.");
+        console.error("❌ No se pudo descargar la lista de residentes.");
         return;
     }
 
@@ -379,15 +376,12 @@ async function loadResidentesList() {
                 Condominio: item.Condominio || item.OData_Condominio
             };
         }).filter(item => {
-            // Filtrado estricto multitenant: solo residentes del condominio de la sesión
             if(!item.Condominio) return false; 
             const dbCond = item.Condominio.toString().toUpperCase().trim();
             const sesCond = STATE.session.condominioId.toString().toUpperCase().trim();
             return dbCond === sesCond;
         });
-        console.log(`✅ Lista filtrada: ${STATE.colBaserFiltrada.length} residentes cargados.`);
-    } else {
-        console.warn("⚠️ La lista descargada del servidor está vacía.");
+        console.log(`✅ ${STATE.colBaserFiltrada.length} Residentes cargados.`);
     }
 }
 
@@ -434,13 +428,13 @@ function navigate(screen) {
 async function loadHistory(tipo, elementId) {
     const container = document.getElementById(elementId);
     if(!container) return;
-    container.innerHTML = '<div style="padding:20px; text-align:center;">Cargando historial...</div>';
+    container.innerHTML = '<div style="padding:20px; text-align:center;">Cargando...</div>';
     
     const response = await callBackend('get_history', { tipo_lista: tipo });
     if(response && response.data) {
         renderRemoteGallery(response.data, elementId);
     } else {
-        container.innerHTML = '<div style="padding:20px; text-align:center;">No hay registros disponibles.</div>';
+        container.innerHTML = '<div style="padding:20px; text-align:center;">Sin datos.</div>';
     }
 }
 
@@ -466,8 +460,8 @@ async function submitAviso(p) {
     const nom = document.getElementById(p+'-nombre').value;
     const motivo = document.getElementById(p+'-motivo')?.value;
     
-    if(!nom || !STATE[p]?.residente) { return alert("Error: Selecciona un residente y escribe el nombre."); }
-    if(p === 'aa1' && !motivo) { return alert("Error: El motivo es obligatorio."); }
+    if(!nom || !STATE[p]?.residente) { return alert("Faltan datos obligatorios."); }
+    if(p === 'aa1' && !motivo) { return alert("El motivo es obligatorio."); }
 
     const data = {
         Nombre: nom,
@@ -488,7 +482,7 @@ async function submitAviso(p) {
 async function submitProveedor() {
     const nom = document.getElementById('d1-nombre').value;
     const asunto = document.getElementById('d1-asunto').value;
-    if(!nom || !STATE['d1']?.residente || !asunto) return alert("Faltan datos obligatorios.");
+    if(!nom || !STATE['d1']?.residente || !asunto) return alert("Faltan datos.");
 
     const data = {
         Nombre: nom,
@@ -507,7 +501,7 @@ async function submitProveedor() {
 }
 
 async function submitRecepcionPaquete() {
-    if(!STATE['ba1']?.residente) return alert("Error: Debes seleccionar un residente.");
+    if(!STATE['ba1']?.residente) return alert("Selecciona un residente.");
     const data = {
         Residente: STATE['ba1'].residente, 
         Torre: STATE['ba1'].torre, 
@@ -523,7 +517,7 @@ async function submitRecepcionPaquete() {
 
 async function submitEntregaPaquete() {
     const nom = document.getElementById('bb1-nombre').value;
-    if(!nom || !STATE['bb1']?.residente) return alert("Error: Datos incompletos.");
+    if(!nom || !STATE['bb1']?.residente) return alert("Datos incompletos.");
     const data = {
         Recibio: nom, 
         Residente: STATE['bb1'].residente, 
@@ -538,14 +532,14 @@ async function submitEntregaPaquete() {
 
 async function submitPersonalInterno(accion) {
     const id = document.getElementById('f1-id').value;
-    if(!id) return alert("Error: Escanea un ID válido.");
+    if(!id) return alert("Escanea ID.");
     const res = await callBackend('submit_form', { formulario: 'PERSONAL_INTERNO', data: { ID_Personal: id, Accion: accion } });
     if (res && res.success) { resetForm('f1'); navigate('SUCCESS'); }
 }
 
 async function validarAccesoQR(tipo, inputId, formId) {
     const codigo = document.getElementById(inputId).value;
-    if(!codigo) return alert("Error: El código está vacío.");
+    if(!codigo) return alert("Código vacío.");
     const res = await callBackend('validate_qr', { tipo_validacion: tipo, codigo_leido: codigo });
     if (res && res.autorizado) { resetForm(formId); navigate('SUCCESS'); } else { navigate('FAILURE'); }
 }
@@ -566,7 +560,7 @@ function resetForm(prefix) {
 function openResidenteModal(ctx) {
     STATE.currentContext = ctx;
     if(STATE.colBaserFiltrada.length === 0) {
-        alert("La lista de residentes no se ha cargado todavía.");
+        alert("Lista de residentes vacía o cargando...");
         return;
     }
     const torres = [...new Set(STATE.colBaserFiltrada.map(i => i.Torre))].sort();
@@ -651,7 +645,7 @@ function startScan(targetInputId) {
             if(input) input.value = decodedText;
         }, () => {}
     ).catch(err => {
-        alert("Error de cámara: " + err);
+        alert("Error cámara: " + err);
         document.getElementById('qr-modal').classList.remove('active');
     });
 }
@@ -661,8 +655,8 @@ function closeQRScanner() {
     document.getElementById('qr-modal').classList.remove('active');
 }
 
-// --- INICIO DE APLICACIÓN ---
+// ARRANQUE
 window.onload = () => {
-    console.log("🚀 Iniciando Ravens Access...");
+    console.log("🚀 Ravens Access iniciada.");
     checkSession();
 };
