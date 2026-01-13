@@ -121,7 +121,7 @@ const SCREENS = {
                 <div class="input-group"><label>Depto</label><input type="text" id="ac1-depto" class="form-input" readonly></div>
                 <div class="input-group"><label>Residente</label><input type="text" id="ac1-res-name" class="form-input" readonly></div>
                 <button class="btn-primary" onclick="openResidenteModal('ac1')"><i class="fas fa-search"></i> Seleccionar Residente</button>
-                <div class="input-group" style="margin-top:15px"><label>Cargo</label><input type="text" id="ac1-cargo" class="form-input"></div>
+                <div class="input-group" style="margin-top:15px"><label>Cargo *</label><input type="text" id="ac1-cargo" class="form-input"></div>
                 <div style="margin-top: 20px;"><button class="btn-save" onclick="submitAviso('ac1')">Guardar</button><button class="btn-clean" onclick="resetForm('ac1')"><i class="fas fa-eraser"></i> Limpiar</button></div>
             </div>
         </div>
@@ -413,6 +413,13 @@ function navigate(screen) {
         viewport.innerHTML = SCREENS[screen] || SCREENS['LOGIN'];
     }
     
+    // --- LÓGICA DE RETORNO AUTOMÁTICO AL INICIO ---
+    if(screen === 'SUCCESS') {
+        setTimeout(() => {
+            navigate('INICIO');
+        }, 2000); // Espera 2 segundos y regresa al Inicio
+    }
+    
     if(screen === 'BB1') initSignature();
     
     if(screen.endsWith('2')) {
@@ -459,9 +466,13 @@ function renderRemoteGallery(data, elementId) {
 async function submitAviso(p) {
     const nom = document.getElementById(p+'-nombre').value;
     const motivo = document.getElementById(p+'-motivo')?.value;
+    const cargo = document.getElementById(p+'-cargo')?.value; // Capturamos el cargo
     
     if(!nom || !STATE[p]?.residente) { return alert("Faltan datos obligatorios."); }
+    
+    // Validaciones específicas
     if(p === 'aa1' && !motivo) { return alert("El motivo es obligatorio."); }
+    if(p === 'ac1' && !cargo) { return alert("El cargo es obligatorio."); } // Validación nueva
 
     const data = {
         Nombre: nom,
@@ -470,7 +481,7 @@ async function submitAviso(p) {
         Depto: STATE[p].depto,
         Telefono: STATE[p].telefono || "",
         Tipo_Lista: p === 'aa1' ? 'VISITA' : 'ENTRADA',
-        Cargo: document.getElementById(p+'-cargo')?.value || "N/A",
+        Cargo: cargo || "N/A",
         Motivo: motivo || "Servicio",
         Placa: document.getElementById(p+'-placa')?.value || "N/A"
     };
