@@ -569,16 +569,20 @@ function resetForm(prefix) {
     
     // 2. Limpiar estado
     STATE[prefix] = {};
-    if(STATE.photos[prefix]) {
+    
+    // 3. Limpiar fotos y estado UI
+    if(STATE.photos[prefix] !== undefined) {
         delete STATE.photos[prefix];
-        // 3. Resetear UI de la foto (Ocultar imagen, mostrar texto 'Cámara')
-        const prev = document.getElementById('prev-' + prefix);
-        if(prev) {
-            prev.style.backgroundImage = '';
-            prev.classList.add('hidden');
-            if (prev.nextElementSibling) {
-                prev.nextElementSibling.style.display = ''; // Restaurar visibilidad del texto
-            }
+    }
+    
+    const prev = document.getElementById('prev-' + prefix);
+    if(prev) {
+        prev.style.backgroundImage = '';
+        prev.classList.add('hidden');
+        if (prev.nextElementSibling) {
+            // RESTAURAR ÍCONO DE CÁMARA
+            prev.nextElementSibling.style.display = 'block'; 
+            prev.nextElementSibling.innerHTML = '<i class="fas fa-camera"></i> Cámara';
         }
     }
     
@@ -654,11 +658,14 @@ function previewImg(input, id) {
             STATE.photos[id] = e.target.result;
             const prev = document.getElementById('prev-'+id);
             if(prev) { 
+                // Mostrar imagen de fondo
                 prev.style.backgroundImage = `url(${e.target.result})`; 
                 prev.classList.remove('hidden'); 
-                // Ocultar el texto 'Cámara' para que se vea la foto
+                
+                // MOSTRAR PALOMITA VERDE Y TEXTO DE ÉXITO
                 if (prev.nextElementSibling) {
-                    prev.nextElementSibling.style.display = 'none';
+                    prev.nextElementSibling.style.display = 'block';
+                    prev.nextElementSibling.innerHTML = '<i class="fas fa-check-circle" style="color:#2ecc71; font-size:1.5em;"></i><br><span style="color:#2ecc71; font-weight:bold;">¡Foto Lista!</span>';
                 }
             }
         };
