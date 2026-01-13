@@ -564,8 +564,26 @@ function submitProveedorNIP() { validarAccesoQR('NIP_PROVEEDOR', 'ed1-nip', 'ed1
 // --- F. UTILIDADES UI (MODALES, ORDENAMIENTO Y CÁMARA) ---
 
 function resetForm(prefix) {
+    // 1. Limpiar inputs de texto
     document.querySelectorAll(`[id^="${prefix}-"]`).forEach(i => i.value = '');
+    
+    // 2. Limpiar estado
     STATE[prefix] = {};
+    if(STATE.photos[prefix]) {
+        delete STATE.photos[prefix];
+        // 3. Resetear UI de la foto (Ocultar imagen, mostrar texto 'Cámara')
+        const prev = document.getElementById('prev-' + prefix);
+        if(prev) {
+            prev.style.backgroundImage = '';
+            prev.classList.add('hidden');
+            if (prev.nextElementSibling) {
+                prev.nextElementSibling.style.display = ''; // Restaurar visibilidad del texto
+            }
+        }
+    }
+    
+    // 4. Limpiar Firma (solo si es entrega de paquete)
+    if(prefix === 'bb1') clearSignature();
 }
 
 function openResidenteModal(ctx) {
@@ -638,6 +656,10 @@ function previewImg(input, id) {
             if(prev) { 
                 prev.style.backgroundImage = `url(${e.target.result})`; 
                 prev.classList.remove('hidden'); 
+                // Ocultar el texto 'Cámara' para que se vea la foto
+                if (prev.nextElementSibling) {
+                    prev.nextElementSibling.style.display = 'none';
+                }
             }
         };
         reader.readAsDataURL(input.files[0]);
