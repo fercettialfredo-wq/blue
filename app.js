@@ -457,28 +457,66 @@ function showDetails(index) {
     document.body.insertAdjacentHTML('beforeend', modalHtml);
 }
 
-// --- D. ENVÍO DE FORMULARIOS ---
+// --- D. ENVÍO DE FORMULARIOS (CORREGIDO PARA LOGIC APP) ---
+
+// 1. Visitas (AA1) y Personal (AC1)
 async function submitAviso(p) {
     const nom = document.getElementById(p+'-nombre').value;
     const motivo = document.getElementById(p+'-motivo')?.value;
     const cargo = document.getElementById(p+'-cargo')?.value; 
+    
     if(!nom || !STATE[p]?.residente) { return alert("Faltan datos obligatorios."); }
     if(p === 'aa1' && !motivo) { return alert("El motivo es obligatorio."); }
     if(p === 'ac1' && !cargo) { return alert("El cargo es obligatorio."); } 
-    const data = { Nombre: nom, Residente: STATE[p].residente, Torre: STATE[p].torre, Depto: STATE[p].depto, Telefono: STATE[p].telefono || "", Tipo_Lista: p === 'aa1' ? 'VISITA' : 'ENTRADA', Cargo: cargo || "N/A", Motivo: motivo || "Servicio", Placa: document.getElementById(p+'-placa')?.value || "N/A" };
+
+    // --- CORRECCIÓN CLAVE ---
+    // Determinamos el Tipo_Lista exacto que espera el Switch de la Logic App
+    let tipoLista = '';
+    if (p === 'aa1') tipoLista = 'VISITA';
+    if (p === 'ac1') tipoLista = 'PERSONALAVISO';
+
+    const data = { 
+        Nombre: nom, 
+        Residente: STATE[p].residente, 
+        Torre: STATE[p].torre, 
+        Departamento: STATE[p].depto, 
+        Telefono: STATE[p].telefono || "", // Enviamos con 'T' mayúscula
+        Tipo_Lista: tipoLista, 
+        Cargo: cargo || "N/A", 
+        Motivo: motivo || "Servicio", 
+        Placa: document.getElementById(p+'-placa')?.value || "N/A" 
+    };
+
     const res = await callBackend('submit_form', { formulario: 'AVISOG', data: data });
     if (res && res.success) { resetForm(p); navigate('SUCCESS'); }
 }
 
+// 2. Proveedores (D1)
 async function submitProveedor() {
     const nom = document.getElementById('d1-nombre').value;
     const asunto = document.getElementById('d1-asunto').value;
+    const empresa = document.getElementById('d1-empresa').value;
+
     if(!nom || !STATE['d1']?.residente || !asunto) return alert("Faltan datos.");
-    const data = { Nombre: nom, Residente: STATE['d1'].residente, Torre: STATE['d1'].torre, Depto: STATE['d1'].depto, Telefono: STATE['d1']?.telefono || "", Tipo_Lista: 'PROVEEDOR', Empresa: document.getElementById('d1-empresa').value || "Genérica", Asunto: asunto, Motivo: asunto };
+
+    // --- CORRECCIÓN CLAVE ---
+    const data = { 
+        Nombre: nom, // Logic App mapea esto a Nombre0
+        Residente: STATE['d1'].residente, 
+        Torre: STATE['d1'].torre, 
+        Departamento: STATE['d1'].depto, 
+        Telefono: STATE['d1']?.telefono || "", // Campo obligatorio en el trigger
+        Tipo_Lista: 'PROVEEDOR', 
+        Empresa: empresa || "Genérica", 
+        Asunto: asunto, 
+        Motivo: asunto // Por si acaso se requiere como motivo
+    };
+
     const res = await callBackend('submit_form', { formulario: 'AVISOG', data: data });
     if (res && res.success) { resetForm('d1'); navigate('SUCCESS'); }
 }
 
+// 3. Paquetería Recepción
 async function submitRecepcionPaquete() {
     if(!STATE['ba1']?.residente) return alert("Selecciona un residente.");
     const data = { Residente: STATE['ba1'].residente, Torre: STATE['ba1'].torre, Departamento: STATE['ba1'].depto, Telefono: STATE['ba1']?.telefono || "", Paqueteria: document.getElementById('ba1-paqueteria').value, Estatus: document.getElementById('ba1-estatus').value, FotoBase64: STATE.photos['ba1'] || "" };
@@ -486,6 +524,7 @@ async function submitRecepcionPaquete() {
     if (res && res.success) { resetForm('ba1'); navigate('SUCCESS'); }
 }
 
+// 4. Paquetería Entrega
 async function submitEntregaPaquete() {
     const nom = document.getElementById('bb1-nombre').value;
     if(!nom || !STATE['bb1']?.residente) return alert("Datos incompletos.");
@@ -494,6 +533,7 @@ async function submitEntregaPaquete() {
     if (res && res.success) { resetForm('bb1'); navigate('SUCCESS'); }
 }
 
+// 5. Personal Interno
 async function submitPersonalInterno(accion) {
     const id = document.getElementById('f1-id').value;
     if(!id) return alert("Escanea ID.");
@@ -501,6 +541,7 @@ async function submitPersonalInterno(accion) {
     if (res && res.success) { resetForm('f1'); navigate('SUCCESS'); }
 }
 
+// 6. Validaciones QR
 async function validarAccesoQR(tipo, inputId, formId) {
     const codigo = document.getElementById(inputId).value;
     if(!codigo) return alert("Código vacío.");
