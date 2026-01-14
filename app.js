@@ -381,31 +381,28 @@ function renderRemoteGallery(data, elementId) {
     container.innerHTML = data.map((item, index) => {
         let fechaLegible = formatearFechaBonita(item.Fecha || item.Created || item.Fechayhora);
         
-        // --- CORRECCIÓN 1: Detección inteligente de Nombre ---
+        // --- 1. Detección Inteligente de Nombre ---
         let titulo = item.Nombre || item.Nombre0 || item.Title || item.Visitante || 'Registro';
         if (item.Recibio) titulo = item.Recibio; 
         if (item.Residente && !item.Nombre && !item.Recibio && !item.Nombre0) titulo = item.Residente; 
 
-        // --- CORRECCIÓN 2: Construcción Robusta del Detalle (Empresa, Torre, Depto) ---
+        // --- 2. Construcción Acumulativa del Detalle ---
         let lineasDetalle = [];
 
-        // Prioridad: Empresa (para D2 y ED2)
+        // Prioridad: Empresa (D2, ED2)
         if (item.Empresa) {
-            let txtEmpresa = item.Empresa;
-            if(item.Asunto) txtEmpresa += ` - ${item.Asunto}`;
-            lineasDetalle.push(txtEmpresa);
-        } 
+            let txt = `Empresa: ${item.Empresa}`;
+            if(item.Asunto) txt += ` (${item.Asunto})`;
+            lineasDetalle.push(txt);
+        }
         else if (item.Paqueteria) { lineasDetalle.push(`Paq: ${item.Paqueteria}`); }
         else if (item.Recibio) { lineasDetalle.push(`Recibió: ${item.Recibio}`); }
         else if (item.Cargo) { lineasDetalle.push(item.Cargo); }
-        else if (item.Motivo) { lineasDetalle.push(item.Motivo); } // Para QR Visita si no tiene empresa
+        else if (item.Motivo) { lineasDetalle.push(item.Motivo); }
 
-        // Agregar Ubicación (Torre/Depto) si existe (para EB2 y todos)
+        // Siempre intentar mostrar Torre/Depto al final
         if (item.Torre || item.Departamento) {
-            let loc = [];
-            if(item.Torre) loc.push(`T: ${item.Torre}`);
-            if(item.Departamento) loc.push(`D: ${item.Departamento}`);
-            lineasDetalle.push(loc.join(' '));
+            lineasDetalle.push(`T: ${item.Torre || '?'} D: ${item.Departamento || '?'}`);
         }
 
         let detalle = lineasDetalle.join(' | ');
@@ -429,7 +426,7 @@ function showDetails(index) {
     const item = STATE.tempHistory[index];
     if(!item) return;
     
-    // MAPEO EXTENDIDO
+    // Mapeo amigable
     const labelMap = {
         'Nombre0': 'Nombre',
         'Recibio': 'Quien Recibió', 
