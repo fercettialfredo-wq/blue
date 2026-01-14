@@ -2,7 +2,7 @@
    1. CONFIGURACIÓN Y ESTADO GLOBAL
    ========================================= */
 const CONFIG = {
-    // URL de tu Proxy en Azure (Asegúrate de que esta URL sea la correcta de tu Function App)
+    // URL de tu Proxy en Azure
     API_PROXY_URL: 'https://proxyoperador.azurewebsites.net/api/ravens-proxy'
 };
 
@@ -14,16 +14,16 @@ const STATE = {
         usuario: null
     },
 
-    // LISTA 'UsuariosApp' (Base de Datos Local descargada al inicio)
+    // LISTA 'UsuariosApp' (Base de Datos Local descargada)
     colBaserFiltrada: [], 
 
-    // Estado temporal para UI (Fotos, Firmas, Inputs)
+    // Estado temporal para UI
     photos: {}, 
     signature: null,
     currentContext: "",
     targetInputForQR: "",
     
-    // Almacenamiento temporal del historial para ver detalles en el modal
+    // Almacenamiento temporal del historial para ver detalles
     tempHistory: [] 
 };
 
@@ -31,21 +31,20 @@ const STATE = {
    2. MOTOR DE PANTALLAS (UI COMPLETA)
    ========================================= */
 
-// --- UTILIDAD DE FECHA (Para listas y detalles) ---
+// --- UTILIDAD DE FECHA ---
 function formatearFechaBonita(fechaRaw) {
     if (!fechaRaw) return "Pendiente";
     const dateObj = new Date(fechaRaw);
     if (isNaN(dateObj)) return fechaRaw;
     
-    // Ejemplo: 14/01/2026 10:30 a.m.
+    // Formato: 14/01/2026 10:30 a.m.
     return dateObj.toLocaleString('es-MX', {
         day: '2-digit', month: '2-digit', year: 'numeric',
         hour: '2-digit', minute: '2-digit', hour12: true
     }).replace(',', ''); 
 }
 
-// --- GENERADOR DE CABECERA DE LIBRETA (Optimización) ---
-// Genera: Título a la izq | Recargar (Grande) | Home (40px) | Regresar (Rojo)
+// --- CABECERA DE LIBRETA (REUTILIZABLE) ---
 const getHeaderLibreta = (titulo, funcionRecarga, pantallaRegreso) => `
     <div class="form-title-section" style="display:flex; justify-content:space-between; align-items:center; padding: 10px 0;">
         <h2 class="form-title" style="margin:0; font-size:1.4rem;">${titulo}</h2>
@@ -248,37 +247,42 @@ const SCREENS = {
         </div>
     `,
     'EA1': `
-        <div class="screen form-page"><div class="form-title-section"><h2 class="form-title">QR Residente</h2><div class="header-icons"><i class="fas fa-arrow-left fa-2x cursor-pointer" onclick="navigate('E1')" style="color:#ef4444;"></i><img src="icons/libreta.svg" class="header-icon-img cursor-pointer" onclick="navigate('EA2')" style="height:40px;"></div></div>
-        <div class="form-container"><div class="input-group"><input type="text" id="ea1-dni" class="form-input" placeholder=""></div><button class="btn-primary" onclick="startScan('ea1-dni')"><i class="fas fa-camera"></i> Escanear Código</button>
-        <div style="margin-top: 20px;"><button class="btn-save" onclick="submitQRResidente()">Asignar</button><button class="btn-clean" onclick="resetForm('ea1')"><i class="fas fa-eraser"></i> Limpiar</button></div></div></div>`,
+        <div class="screen form-page">
+            <div class="form-title-section"><h2 class="form-title">QR Residente</h2><div class="header-icons"><i class="fas fa-arrow-left fa-2x cursor-pointer" onclick="navigate('E1')" style="color:#ef4444;"></i><img src="icons/libreta.svg" class="header-icon-img cursor-pointer" onclick="navigate('EA2')" style="height:40px;"></div></div>
+            <div class="form-container"><div class="input-group"><input type="text" id="ea1-dni" class="form-input" placeholder=""></div><button class="btn-primary" onclick="startScan('ea1-dni')"><i class="fas fa-camera"></i> Escanear Código</button>
+            <div style="margin-top: 20px;"><button class="btn-save" onclick="submitQRResidente()">Asignar</button><button class="btn-clean" onclick="resetForm('ea1')"><i class="fas fa-eraser"></i> Limpiar</button></div></div></div>`,
     'EA2': `<div class="screen form-page">
             ${getHeaderLibreta('Historial QR', "loadHistory('QR_RESIDENTE', 'gal-ea2')", 'EA1')}
             <div class="form-container"><div id="gal-ea2" class="gallery-container"></div></div></div>`,
     'EB1': `
-        <div class="screen form-page"><div class="form-title-section"><h2 class="form-title">QR Visita</h2><div class="header-icons"><i class="fas fa-arrow-left fa-2x cursor-pointer" onclick="navigate('E1')" style="color:#ef4444;"></i><img src="icons/libreta.svg" class="header-icon-img cursor-pointer" onclick="navigate('EB2')" style="height:40px;"></div></div>
-        <div class="form-container"><div class="input-group"><input type="text" id="eb1-code" class="form-input" placeholder=""></div><button class="btn-primary" onclick="startScan('eb1-code')"><i class="fas fa-camera"></i> Escanear Código</button>
-        <div style="margin-top: 20px;"><button class="btn-save" onclick="submitQRVisita()">Asignar</button><button class="btn-clean" onclick="resetForm('eb1')"><i class="fas fa-eraser"></i> Limpiar</button></div></div></div>`,
+        <div class="screen form-page">
+            <div class="form-title-section"><h2 class="form-title">QR Visita</h2><div class="header-icons"><i class="fas fa-arrow-left fa-2x cursor-pointer" onclick="navigate('E1')" style="color:#ef4444;"></i><img src="icons/libreta.svg" class="header-icon-img cursor-pointer" onclick="navigate('EB2')" style="height:40px;"></div></div>
+            <div class="form-container"><div class="input-group"><input type="text" id="eb1-code" class="form-input" placeholder=""></div><button class="btn-primary" onclick="startScan('eb1-code')"><i class="fas fa-camera"></i> Escanear Código</button>
+            <div style="margin-top: 20px;"><button class="btn-save" onclick="submitQRVisita()">Asignar</button><button class="btn-clean" onclick="resetForm('eb1')"><i class="fas fa-eraser"></i> Limpiar</button></div></div></div>`,
     'EB2': `<div class="screen form-page">
             ${getHeaderLibreta('Historial QR Visita', "loadHistory('QR_VISITA', 'gal-eb2')", 'EB1')}
             <div class="form-container"><div id="gal-eb2" class="gallery-container"></div></div></div>`,
     'EC1': `
-        <div class="screen form-page"><div class="form-title-section"><h2 class="form-title">Validar Evento</h2><div class="cursor-pointer" onclick="navigate('E1')"><img src="icons/home.svg" class="header-icon-img" style="height:40px;"></div></div>
-        <div class="form-container"><div class="input-group"><input type="text" id="ec1-code" class="form-input" placeholder=""></div><button class="btn-primary" onclick="startScan('ec1-code')"><i class="fas fa-camera"></i> Escanear QR</button>
-        <div style="margin-top: 20px;"><button class="btn-save" onclick="submitEvento()">Validar Acceso</button><button class="btn-clean" onclick="resetForm('ec1')"><i class="fas fa-eraser"></i> Limpiar</button></div></div></div>`,
+        <div class="screen form-page">
+            <div class="form-title-section"><h2 class="form-title">Validar Evento</h2><div class="cursor-pointer" onclick="navigate('E1')"><img src="icons/home.svg" class="header-icon-img" style="height:40px;"></div></div>
+            <div class="form-container"><div class="input-group"><input type="text" id="ec1-code" class="form-input" placeholder=""></div><button class="btn-primary" onclick="startScan('ec1-code')"><i class="fas fa-camera"></i> Escanear QR</button>
+            <div style="margin-top: 20px;"><button class="btn-save" onclick="submitEvento()">Validar Acceso</button><button class="btn-clean" onclick="resetForm('ec1')"><i class="fas fa-eraser"></i> Limpiar</button></div></div></div>`,
     'ED1': `
-        <div class="screen form-page"><div class="form-title-section"><h2 class="form-title">Proveedor NIP</h2><div class="header-icons"><i class="fas fa-arrow-left fa-2x cursor-pointer" onclick="navigate('E1')" style="color:#ef4444;"></i><img src="icons/libreta.svg" class="header-icon-img cursor-pointer" onclick="navigate('ED2')" style="height:40px;"></div></div>
-        <div class="form-container"><div class="input-group"><input type="text" id="ed1-nip" class="form-input" placeholder=""></div>
-        <div style="margin-top: 20px;"><button class="btn-save" onclick="submitProveedorNIP()">Validar</button><button class="btn-clean" onclick="resetForm('ed1')"><i class="fas fa-eraser"></i> Limpiar</button></div></div></div>`,
+        <div class="screen form-page">
+            <div class="form-title-section"><h2 class="form-title">Proveedor NIP</h2><div class="header-icons"><i class="fas fa-arrow-left fa-2x cursor-pointer" onclick="navigate('E1')" style="color:#ef4444;"></i><img src="icons/libreta.svg" class="header-icon-img cursor-pointer" onclick="navigate('ED2')" style="height:40px;"></div></div>
+            <div class="form-container"><div class="input-group"><input type="text" id="ed1-nip" class="form-input" placeholder=""></div>
+            <div style="margin-top: 20px;"><button class="btn-save" onclick="submitProveedorNIP()">Validar</button><button class="btn-clean" onclick="resetForm('ed1')"><i class="fas fa-eraser"></i> Limpiar</button></div></div></div>`,
     'ED2': `<div class="screen form-page">
             ${getHeaderLibreta('Historial NIP', "loadHistory('NIP_PROVEEDOR', 'gal-ed2')", 'ED1')}
             <div class="form-container"><div id="gal-ed2" class="gallery-container"></div></div></div>`,
 
     // --- PERSONAL INTERNO ---
     'F1': `
-        <div class="screen form-page"><div class="form-title-section"><h2 class="form-title">Personal Interno</h2><div class="header-icons"><img src="icons/home.svg" class="header-icon-img cursor-pointer" onclick="navigate('INICIO')" style="height:40px;"><img src="icons/libreta.svg" class="header-icon-img cursor-pointer" onclick="navigate('F2')" style="height:40px;"></div></div>
-        <div class="form-container"><div class="input-group"><label>ID Personal *</label><input type="text" id="f1-id" class="form-input" placeholder="Escanea gafete"></div>
-        <button class="btn-primary" style="background:#333" onclick="startScan('f1-id')"><i class="fas fa-camera"></i> Escanear Gafete</button>
-        <div style="display:flex; gap:10px; margin-top:20px;"><button class="btn-save" onclick="submitPersonalInterno('Entrada')">Entrada</button><button class="btn-secondary" style="background:#3860B2" onclick="submitPersonalInterno('Salida')">Salida</button></div><button class="btn-clean" onclick="resetForm('f1')"><i class="fas fa-eraser"></i> Limpiar</button></div></div>`,
+        <div class="screen form-page">
+            <div class="form-title-section"><h2 class="form-title">Personal Interno</h2><div class="header-icons"><img src="icons/home.svg" class="header-icon-img cursor-pointer" onclick="navigate('INICIO')" style="height:40px;"><img src="icons/libreta.svg" class="header-icon-img cursor-pointer" onclick="navigate('F2')" style="height:40px;"></div></div>
+            <div class="form-container"><div class="input-group"><label>ID Personal *</label><input type="text" id="f1-id" class="form-input" placeholder=""></div>
+            <button class="btn-primary" style="background:#333" onclick="startScan('f1-id')"><i class="fas fa-camera"></i> Escanear Gafete</button>
+            <div style="display:flex; gap:10px; margin-top:20px;"><button class="btn-save" onclick="submitPersonalInterno('Entrada')">Entrada</button><button class="btn-secondary" style="background:#3860B2" onclick="submitPersonalInterno('Salida')">Salida</button></div><button class="btn-clean" onclick="resetForm('f1')"><i class="fas fa-eraser"></i> Limpiar</button></div></div>`,
     'F2': `<div class="screen form-page">
             ${getHeaderLibreta('Bitácora Interna', "loadHistory('PERSONAL_INTERNO', 'gal-f2')", 'F1')}
             <div class="form-container"><div id="gal-f2" class="gallery-container"></div></div></div>`,
@@ -377,7 +381,7 @@ function renderRemoteGallery(data, elementId) {
     container.innerHTML = data.map((item, index) => {
         let fechaLegible = formatearFechaBonita(item.Fecha || item.Created);
         let titulo = item.Nombre || item.Title || item.Visitante || 'Registro';
-        if (item.Nombre0) titulo = item.Nombre0; // NIP
+        if (item.Nombre0) titulo = item.Nombre0;
         if (item.Recibio) titulo = item.Recibio; 
         if (item.Residente && !item.Nombre && !item.Recibio && !item.Nombre0) titulo = item.Residente; 
 
@@ -409,8 +413,8 @@ function showDetails(index) {
         'Recibio': 'Quien Recibió', 'Residente': 'Destinatario/Residente', 'Nombre': 'Nombre', 'Nombre0': 'Nombre',
         'Fechayhora': 'Fecha y Hora', 'Estatus': 'Estatus', 'Paqueteria': 'Paquetería', 'Empresa': 'Empresa',
         'Asunto': 'Asunto', 'Torre': 'Torre', 'Departamento': 'Departamento', 'Cargo': 'Cargo', 'Placa': 'Placa',
-        'D_x00ed_asdeTrabajo': 'Días de Trabajo', 'HoraEntrada': 'Hora de Entrada', 'HoraSalida': 'Hora de Salida',
-        'RequiereRevisi_x00f3_n': 'Requiere Revisión', 'TipoMarca': 'Tipo de Marca', 'PuedeSalirCon': 'Puede Salir Con'
+        'DiasTrabajo': 'Días de Trabajo', 'HoraEntrada': 'Hora de Entrada', 'HoraSalida': 'Hora de Salida',
+        'RequiereRevision': 'Requiere Revisión', 'TipoMarca': 'Tipo de Marca', 'PuedeSalirCon': 'Puede Salir Con', 'D_x00ed_asdeTrabajo': 'Días de Trabajo', 'RequiereRevisi_x00f3_n': 'Requiere Revisión'
     };
 
     let content = '<div style="text-align:left;">';
@@ -418,7 +422,7 @@ function showDetails(index) {
         if(key !== 'odata.type' && key !== 'Foto' && key !== 'FotoBase64' && key !== 'FirmaBase64' && value) {
              let displayValue = value;
              if(key === 'Fecha' || key === 'Fechayhora' || key === 'Created') { displayValue = formatearFechaBonita(value); }
-             if(key === 'RequiereRevisi_x00f3_n') { displayValue = value ? 'SÍ' : 'NO'; } 
+             if(key === 'RequiereRevision' || key === 'RequiereRevisi_x00f3_n') { displayValue = (value === true || value === 'true') ? 'SÍ' : 'NO'; } 
              const label = labelMap[key] || key;
              content += `<p style="margin:8px 0; font-size:1rem; border-bottom:1px solid #f0f0f0; padding-bottom:5px;"><strong style="color:#555;">${label}:</strong> <span style="color:#000;">${displayValue}</span></p>`;
         }
