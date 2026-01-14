@@ -30,8 +30,25 @@ const STATE = {
 /* =========================================
    2. MOTOR DE PANTALLAS (UI COMPLETA)
    ========================================= */
+
+// --- UTILIDAD DE FECHA (Para usar en Lista y Detalles) ---
+function formatearFechaBonita(fechaRaw) {
+    if (!fechaRaw) return "Pendiente";
+    const dateObj = new Date(fechaRaw);
+    if (isNaN(dateObj)) return fechaRaw;
+    
+    return dateObj.toLocaleString('es-MX', {
+        day: '2-digit', 
+        month: '2-digit', 
+        year: 'numeric',
+        hour: '2-digit', 
+        minute: '2-digit', 
+        hour12: true
+    }).replace(',', ''); // Quita la coma para que se vea más limpio
+}
+
 // --- CABECERA DE LIBRETA (REUTILIZABLE) ---
-// Cambios: Botón Recargar grande, Flecha de regreso en ROJO (#ef4444)
+// CAMBIOS: Flecha roja (#ef4444) y botón recargar grande
 const getHeaderLibreta = (titulo, funcionRecarga, pantallaRegreso) => `
     <div class="form-title-section" style="display:flex; justify-content:space-between; align-items:center; padding: 10px 0;">
         <h2 class="form-title" style="margin:0; font-size:1.4rem;">${titulo}</h2>
@@ -502,31 +519,21 @@ function renderRemoteGallery(data, elementId) {
     STATE.tempHistory = data;
 
     container.innerHTML = data.map((item, index) => {
-        // 1. Formatear Fecha (Modo: dd/mm/aaaa hh:mm a.m.)
-        let fechaLegible = "Reciente";
-        if (item.Fecha || item.Created) {
-            const dateObj = new Date(item.Fecha || item.Created);
-            if (!isNaN(dateObj)) {
-                fechaLegible = dateObj.toLocaleString('es-MX', {
-                    day: '2-digit', month: '2-digit', year: 'numeric',
-                    hour: '2-digit', minute: '2-digit', hour12: true
-                });
-            }
-        }
+        // 1. Formatear Fecha (Uso de la función auxiliar)
+        let fechaLegible = formatearFechaBonita(item.Fecha || item.Created);
 
         // 2. Definir Título y Subtítulo
         let titulo = item.Nombre || item.Title || item.Visitante || 'Registro';
-        if (item.Recibio) titulo = item.Recibio; // Para Paquetería Entrega
+        if (item.Recibio) titulo = item.Recibio; 
         if (item.Residente && !item.Nombre && !item.Recibio) titulo = item.Residente; 
 
         // DETALLE MEJORADO PARA PROVEEDORES
         let detalle = item.Detalle || item.Torre ? `Torre ${item.Torre} - ${item.Departamento}` : '';
         if (item.Empresa) {
-            // Si es proveedor, mostramos Empresa y Asunto si existen
             detalle = item.Empresa + (item.Asunto ? ` (${item.Asunto})` : '');
         }
         
-        // 3. Manejo de Estatus / TipoMarca
+        // 3. Manejo de Estatus
         const rawStatus = item.Estatus || item.TipoMarca;
         const statusColor = getStatusColor(rawStatus);
         const estatusHtml = rawStatus ? `<span style="font-weight:bold; color:${statusColor}"> • ${rawStatus}</span>` : '';
@@ -547,7 +554,7 @@ function renderRemoteGallery(data, elementId) {
     }).join('');
 }
 
-// --- FUNCIÓN NUEVA: MOSTRAR DETALLES EN MODAL (SOPORTA MÚLTIPLES FOTOS) ---
+// --- FUNCIÓN NUEVA: MOSTRAR DETALLES EN MODAL ---
 function showDetails(index) {
     const item = STATE.tempHistory[index];
     if(!item) return;
@@ -555,19 +562,23 @@ function showDetails(index) {
     // Generar contenido dinámico de texto
     let content = '<div style="text-align:left;">';
     for (const [key, value] of Object.entries(item)) {
-        // Filtros para no mostrar las cadenas Base64 o campos técnicos
         if(key !== 'odata.type' && key !== 'Foto' && key !== 'FotoBase64' && key !== 'FirmaBase64' && value) {
+             // CORRECCIÓN DE FECHA EN MODAL
+             let displayValue = value;
+             if(key === 'Fecha' || key === 'Fechayhora' || key === 'Created') {
+                 displayValue = formatearFechaBonita(value);
+             }
+
              content += `<p style="margin:8px 0; font-size:1rem; border-bottom:1px solid #f0f0f0; padding-bottom:5px;">
-                            <strong style="color:#555;">${key}:</strong> <span style="color:#000;">${value}</span>
+                            <strong style="color:#555;">${key}:</strong> <span style="color:#000;">${displayValue}</span>
                          </p>`;
         }
     }
     content += '</div>';
 
-    // Sección de Imágenes (Firma y Foto)
+    // Sección de Imágenes
     let imagesHtml = '';
     
-    // 1. Firma (Si existe)
     if(item.FirmaBase64) {
          const firmaSrc = item.FirmaBase64.startsWith('http') || item.FirmaBase64.startsWith('data:') ? item.FirmaBase64 : 'data:image/png;base64,'+item.FirmaBase64;
          imagesHtml += `<div style="text-align:center; margin-top:15px; padding-top:10px;">
@@ -576,7 +587,6 @@ function showDetails(index) {
                      </div>`;
     }
 
-    // 2. Foto / Evidencia (Si existe)
     const fotoUrl = item.Foto || item.FotoBase64;
     if(fotoUrl) {
          const fotoSrc = fotoUrl.startsWith('http') || fotoUrl.startsWith('data:') ? fotoUrl : 'data:image/png;base64,'+fotoUrl;
@@ -602,7 +612,6 @@ function showDetails(index) {
         <style>@keyframes slideUp { from { transform: translateY(100%); } to { transform: translateY(0); } }</style>
     `;
     
-    // Inyectar en el body
     document.body.insertAdjacentHTML('beforeend', modalHtml);
 }
 
@@ -611,13 +620,12 @@ function showDetails(index) {
 async function submitAviso(p) {
     const nom = document.getElementById(p+'-nombre').value;
     const motivo = document.getElementById(p+'-motivo')?.value;
-    const cargo = document.getElementById(p+'-cargo')?.value; // Capturamos el cargo
+    const cargo = document.getElementById(p+'-cargo')?.value; 
     
     if(!nom || !STATE[p]?.residente) { return alert("Faltan datos obligatorios."); }
     
-    // Validaciones específicas
     if(p === 'aa1' && !motivo) { return alert("El motivo es obligatorio."); }
-    if(p === 'ac1' && !cargo) { return alert("El cargo es obligatorio."); } // Validación nueva
+    if(p === 'ac1' && !cargo) { return alert("El cargo es obligatorio."); } 
 
     const data = {
         Nombre: nom,
@@ -709,29 +717,20 @@ function submitProveedorNIP() { validarAccesoQR('NIP_PROVEEDOR', 'ed1-nip', 'ed1
 // --- F. UTILIDADES UI (MODALES, ORDENAMIENTO Y CÁMARA) ---
 
 function resetForm(prefix) {
-    // 1. Limpiar inputs de texto
     document.querySelectorAll(`[id^="${prefix}-"]`).forEach(i => i.value = '');
-    
-    // 2. Limpiar estado
     STATE[prefix] = {};
-    
-    // 3. Limpiar fotos y estado UI
     if(STATE.photos[prefix] !== undefined) {
         delete STATE.photos[prefix];
     }
-    
     const prev = document.getElementById('prev-' + prefix);
     if(prev) {
         prev.style.backgroundImage = '';
         prev.classList.add('hidden');
         if (prev.nextElementSibling) {
-            // RESTAURAR ÍCONO DE CÁMARA
             prev.nextElementSibling.style.display = 'block'; 
             prev.nextElementSibling.innerHTML = '<i class="fas fa-camera"></i> Cámara';
         }
     }
-    
-    // 4. Limpiar Firma (solo si es entrega de paquete)
     if(prefix === 'bb1') clearSignature();
 }
 
@@ -803,11 +802,8 @@ function previewImg(input, id) {
             STATE.photos[id] = e.target.result;
             const prev = document.getElementById('prev-'+id);
             if(prev) { 
-                // Mostrar imagen de fondo
                 prev.style.backgroundImage = `url(${e.target.result})`; 
                 prev.classList.remove('hidden'); 
-                
-                // MOSTRAR PALOMITA VERDE Y TEXTO DE ÉXITO
                 if (prev.nextElementSibling) {
                     prev.nextElementSibling.style.display = 'block';
                     prev.nextElementSibling.innerHTML = '<i class="fas fa-check-circle" style="color:#2ecc71; font-size:1.5em;"></i><br><span style="color:#2ecc71; font-weight:bold;">¡Foto Lista!</span>';
