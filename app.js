@@ -379,17 +379,33 @@ function renderRemoteGallery(data, elementId) {
     if (!data || data.length === 0) { container.innerHTML = `<div style="padding:20px; text-align:center; color:#555">Sin registros recientes.</div>`; return; }
     STATE.tempHistory = data;
     container.innerHTML = data.map((item, index) => {
-        let fechaLegible = formatearFechaBonita(item.Fecha || item.Created);
-        let titulo = item.Nombre || item.Title || item.Visitante || 'Registro';
-        if (item.Nombre0) titulo = item.Nombre0;
+        let fechaLegible = formatearFechaBonita(item.Fecha || item.Created || item.Fechayhora);
+        
+        // CORRECCIÓN: Detectar Nombre o Nombre0 (para proveedores)
+        let titulo = item.Nombre || item.Nombre0 || item.Title || item.Visitante || 'Registro';
         if (item.Recibio) titulo = item.Recibio; 
         if (item.Residente && !item.Nombre && !item.Recibio && !item.Nombre0) titulo = item.Residente; 
 
-        let detalle = item.Detalle || item.Torre ? `Torre ${item.Torre} - ${item.Departamento}` : '';
-        if(item.Paqueteria) { detalle = `Paq: ${item.Paqueteria} - Para: ${item.Residente}`; } 
-        else if (item.Recibio) { detalle = `Recibió: ${item.Recibio} - De: ${item.Residente}`; }
-        else if (item.Empresa) { detalle = item.Empresa + (item.Asunto ? ` (${item.Asunto})` : ''); }
-        else if (item.Cargo) { detalle = `${item.Cargo} - ${detalle}`; }
+        // CORRECCIÓN: Mostrar Empresa en subtítulo si existe (Para ED2)
+        let detalle = '';
+        if (item.Empresa) {
+            detalle = `Empresa: ${item.Empresa}`;
+            if(item.Asunto) detalle += ` - ${item.Asunto}`;
+        } else if(item.Paqueteria) { 
+            detalle = `Paq: ${item.Paqueteria} - Para: ${item.Residente}`; 
+        } else if (item.Recibio) { 
+            detalle = `Recibió: ${item.Recibio} - De: ${item.Residente}`; 
+        } else if (item.Cargo) { 
+            detalle = `${item.Cargo}`; 
+        }
+
+        // Agregar Torre y Depto si existen
+        if (item.Torre || item.Departamento) {
+            let loc = [];
+            if(item.Torre) loc.push(`T: ${item.Torre}`);
+            if(item.Departamento) loc.push(`D: ${item.Departamento}`);
+            detalle += (detalle ? ' | ' : '') + loc.join(' ');
+        }
         
         const rawStatus = item.Estatus || item.TipoMarca;
         const statusColor = getStatusColor(rawStatus);
@@ -409,20 +425,53 @@ function renderRemoteGallery(data, elementId) {
 function showDetails(index) {
     const item = STATE.tempHistory[index];
     if(!item) return;
+    
+    // MAPEO EXTENDIDO PARA CUBRIR FALTANTES
     const labelMap = {
-        'Recibio': 'Quien Recibió', 'Residente': 'Destinatario/Residente', 'Nombre': 'Nombre', 'Nombre0': 'Nombre',
-        'Fechayhora': 'Fecha y Hora', 'Estatus': 'Estatus', 'Paqueteria': 'Paquetería', 'Empresa': 'Empresa',
-        'Asunto': 'Asunto', 'Torre': 'Torre', 'Departamento': 'Departamento', 'Cargo': 'Cargo', 'Placa': 'Placa',
-        'DiasTrabajo': 'Días de Trabajo', 'HoraEntrada': 'Hora de Entrada', 'HoraSalida': 'Hora de Salida',
-        'RequiereRevision': 'Requiere Revisión', 'TipoMarca': 'Tipo de Marca', 'PuedeSalirCon': 'Puede Salir Con', 'D_x00ed_asdeTrabajo': 'Días de Trabajo', 'RequiereRevisi_x00f3_n': 'Requiere Revisión'
+        'Nombre0': 'Nombre', // Para proveedores
+        'Recibio': 'Quien Recibió', 
+        'Residente': 'Destinatario/Residente', 
+        'Nombre': 'Nombre', 
+        'Fechayhora': 'Fecha y Hora', 
+        'Fecha': 'Fecha y Hora',
+        'Estatus': 'Estatus', 
+        'Paqueteria': 'Paquetería', 
+        'Empresa': 'Empresa',
+        'Asunto': 'Asunto', 
+        'Torre': 'Torre', 
+        'Departamento': 'Departamento', 
+        'Cargo': 'Cargo', 
+        'Placa': 'Placa',
+        'DiasTrabajo': 'Días de Trabajo', 
+        'HoraEntrada': 'Hora de Entrada', 
+        'HoraSalida': 'Hora de Salida',
+        'RequiereRevision': 'Requiere Revisión', 
+        'TipoMarca': 'Tipo de Marca', 
+        'PuedeSalirCon': 'Puede Salir Con', 
+        'D_x00ed_asdeTrabajo': 'Días de Trabajo', 
+        'RequiereRevisi_x00f3_n': 'Requiere Revisión'
     };
 
     let content = '<div style="text-align:left;">';
     for (const [key, value] of Object.entries(item)) {
+        // Filtramos campos técnicos
         if(key !== 'odata.type' && key !== 'Foto' && key !== 'FotoBase64' && key !== 'FirmaBase64' && value) {
              let displayValue = value;
-             if(key === 'Fecha' || key === 'Fechayhora' || key === 'Created') { displayValue = formatearFechaBonita(value); }
-             if(key === 'RequiereRevisi_x00f3_n') { displayValue = (value === true || value === 'true') ? 'SÍ' : 'NO'; } 
+             
+             // Formatear Fechas
+             if(key === 'Fecha' || key === 'Fechayhora' || key === 'Created') { 
+                 displayValue = formatearFechaBonita(value); 
+             }
+             // Formatear Booleanos
+             if(key === 'RequiereRevisi_x00f3_n') { 
+                 displayValue = (value === true || value === 'true') ? 'SÍ' : 'NO'; 
+             }
+             // Formatear Estatus con Color
+             if(key === 'Estatus' || key === 'TipoMarca') {
+                 const color = getStatusColor(value);
+                 displayValue = `<span style="color:${color}; font-weight:bold;">${value}</span>`;
+             }
+
              const label = labelMap[key] || key;
              content += `<p style="margin:8px 0; font-size:1rem; border-bottom:1px solid #f0f0f0; padding-bottom:5px;"><strong style="color:#555;">${label}:</strong> <span style="color:#000;">${displayValue}</span></p>`;
         }
