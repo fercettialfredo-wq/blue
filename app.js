@@ -31,14 +31,14 @@ const STATE = {
    2. MOTOR DE PANTALLAS (UI COMPLETA)
    ========================================= */
 // --- CABECERA DE LIBRETA (REUTILIZABLE) ---
-// Genera: Título a la izq | Recargar (Grande) | Home | Regresar a la derecha
+// Cambios: Botón Recargar grande, Flecha de regreso en ROJO (#ef4444)
 const getHeaderLibreta = (titulo, funcionRecarga, pantallaRegreso) => `
-    <div class="form-title-section" style="display:flex; justify-content:space-between; align-items:center;">
-        <h2 class="form-title" style="margin:0;">${titulo}</h2>
-        <div class="header-icons" style="display:flex; align-items:center; gap:15px;">
+    <div class="form-title-section" style="display:flex; justify-content:space-between; align-items:center; padding: 10px 0;">
+        <h2 class="form-title" style="margin:0; font-size:1.4rem;">${titulo}</h2>
+        <div class="header-icons" style="display:flex; align-items:center; gap:20px;">
             <i class="fas fa-sync-alt fa-2x cursor-pointer" style="color:#3860B2;" onclick="${funcionRecarga}"></i>
-            <img src="icons/home.svg" class="header-icon-img cursor-pointer" onclick="navigate('INICIO')" style="height:30px;">
-            <i class="fas fa-arrow-left fa-lg cursor-pointer" onclick="navigate('${pantallaRegreso}')" style="color:#333; font-size:1.5rem;"></i>
+            <img src="icons/home.svg" class="header-icon-img cursor-pointer" onclick="navigate('INICIO')" style="height:32px;">
+            <i class="fas fa-arrow-left fa-2x cursor-pointer" onclick="navigate('${pantallaRegreso}')" style="color:#ef4444;"></i>
         </div>
     </div>
 `;
@@ -502,32 +502,36 @@ function renderRemoteGallery(data, elementId) {
     STATE.tempHistory = data;
 
     container.innerHTML = data.map((item, index) => {
-        // 1. Formatear Fecha
+        // 1. Formatear Fecha (Modo: dd/mm/aaaa hh:mm a.m.)
         let fechaLegible = "Reciente";
         if (item.Fecha || item.Created) {
             const dateObj = new Date(item.Fecha || item.Created);
             if (!isNaN(dateObj)) {
                 fechaLegible = dateObj.toLocaleString('es-MX', {
-                    day: '2-digit', month: '2-digit', year: '2-digit',
+                    day: '2-digit', month: '2-digit', year: 'numeric',
                     hour: '2-digit', minute: '2-digit', hour12: true
                 });
             }
         }
 
         // 2. Definir Título y Subtítulo
-        // Prioridad de nombres según el módulo para que coincida con Power Apps
         let titulo = item.Nombre || item.Title || item.Visitante || 'Registro';
         if (item.Recibio) titulo = item.Recibio; // Para Paquetería Entrega
-        if (item.Residente && !item.Nombre && !item.Recibio) titulo = item.Residente; // Fallback
+        if (item.Residente && !item.Nombre && !item.Recibio) titulo = item.Residente; 
 
-        const detalle = item.Detalle || item.Torre ? `Torre ${item.Torre} - ${item.Departamento}` : '';
+        // DETALLE MEJORADO PARA PROVEEDORES
+        let detalle = item.Detalle || item.Torre ? `Torre ${item.Torre} - ${item.Departamento}` : '';
+        if (item.Empresa) {
+            // Si es proveedor, mostramos Empresa y Asunto si existen
+            detalle = item.Empresa + (item.Asunto ? ` (${item.Asunto})` : '');
+        }
         
         // 3. Manejo de Estatus / TipoMarca
         const rawStatus = item.Estatus || item.TipoMarca;
         const statusColor = getStatusColor(rawStatus);
         const estatusHtml = rawStatus ? `<span style="font-weight:bold; color:${statusColor}"> • ${rawStatus}</span>` : '';
 
-        // 4. Crear el HTML clicable
+        // 4. Crear el HTML
         return `
         <div class="gallery-item" onclick="showDetails(${index})" style="border-bottom:1px solid #eee; padding: 15px 0; cursor:pointer; display:flex; justify-content:space-between; align-items:center;">
             <div class="gallery-text">
