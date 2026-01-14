@@ -48,13 +48,13 @@ function formatearFechaBonita(fechaRaw) {
 }
 
 // --- CABECERA DE LIBRETA (REUTILIZABLE) ---
-// CAMBIOS: Flecha roja (#ef4444) y botón recargar grande
+// CAMBIOS: Icono home aumentado a 40px para igualar tamaño
 const getHeaderLibreta = (titulo, funcionRecarga, pantallaRegreso) => `
     <div class="form-title-section" style="display:flex; justify-content:space-between; align-items:center; padding: 10px 0;">
         <h2 class="form-title" style="margin:0; font-size:1.4rem;">${titulo}</h2>
         <div class="header-icons" style="display:flex; align-items:center; gap:20px;">
             <i class="fas fa-sync-alt fa-2x cursor-pointer" style="color:#3860B2;" onclick="${funcionRecarga}"></i>
-            <img src="icons/home.svg" class="header-icon-img cursor-pointer" onclick="navigate('INICIO')" style="height:32px;">
+            <img src="icons/home.svg" class="header-icon-img cursor-pointer" onclick="navigate('INICIO')" style="height:40px;">
             <i class="fas fa-arrow-left fa-2x cursor-pointer" onclick="navigate('${pantallaRegreso}')" style="color:#ef4444;"></i>
         </div>
     </div>
@@ -252,25 +252,25 @@ const SCREENS = {
     `,
     'EA1': `
         <div class="screen form-page"><div class="form-title-section"><h2 class="form-title">QR Residente</h2><div class="header-icons"><i class="fas fa-arrow-left fa-lg cursor-pointer" onclick="navigate('E1')"></i><img src="icons/libreta.svg" class="header-icon-img cursor-pointer" onclick="navigate('EA2')"></div></div>
-        <div class="form-container"><div class="input-group"><label>DNI / Código *</label><input type="text" id="ea1-dni" class="form-input"></div><button class="btn-primary" onclick="startScan('ea1-dni')"><i class="fas fa-camera"></i> Escanear Código</button>
+        <div class="form-container"><div class="input-group"><input type="text" id="ea1-dni" class="form-input" placeholder="DNI / Código *"></div><button class="btn-primary" onclick="startScan('ea1-dni')"><i class="fas fa-camera"></i> Escanear Código</button>
         <div style="margin-top: 20px;"><button class="btn-save" onclick="submitQRResidente()">Asignar</button><button class="btn-clean" onclick="resetForm('ea1')"><i class="fas fa-eraser"></i> Limpiar</button></div></div></div>`,
     'EA2': `<div class="screen form-page">
             ${getHeaderLibreta('Historial QR', "loadHistory('QR_RESIDENTE', 'gal-ea2')", 'EA1')}
             <div class="form-container"><div id="gal-ea2" class="gallery-container"></div></div></div>`,
     'EB1': `
         <div class="screen form-page"><div class="form-title-section"><h2 class="form-title">QR Visita</h2><div class="header-icons"><i class="fas fa-arrow-left fa-lg cursor-pointer" onclick="navigate('E1')"></i><img src="icons/libreta.svg" class="header-icon-img cursor-pointer" onclick="navigate('EB2')"></div></div>
-        <div class="form-container"><div class="input-group"><label>Código VFS *</label><input type="text" id="eb1-code" class="form-input"></div><button class="btn-primary" onclick="startScan('eb1-code')"><i class="fas fa-camera"></i> Escanear Código</button>
+        <div class="form-container"><div class="input-group"><input type="text" id="eb1-code" class="form-input" placeholder="Código VFS *"></div><button class="btn-primary" onclick="startScan('eb1-code')"><i class="fas fa-camera"></i> Escanear Código</button>
         <div style="margin-top: 20px;"><button class="btn-save" onclick="submitQRVisita()">Asignar</button><button class="btn-clean" onclick="resetForm('eb1')"><i class="fas fa-eraser"></i> Limpiar</button></div></div></div>`,
     'EB2': `<div class="screen form-page">
             ${getHeaderLibreta('Historial VFS', "loadHistory('QR_VISITA', 'gal-eb2')", 'EB1')}
             <div class="form-container"><div id="gal-eb2" class="gallery-container"></div></div></div>`,
     'EC1': `
         <div class="screen form-page"><div class="form-title-section"><h2 class="form-title">Validar Evento</h2><div class="cursor-pointer" onclick="navigate('E1')"><img src="icons/home.svg" class="header-icon-img"></div></div>
-        <div class="form-container"><div class="input-group"><label>Código Evento *</label><input type="text" id="ec1-code" class="form-input"></div><button class="btn-primary" onclick="startScan('ec1-code')"><i class="fas fa-camera"></i> Escanear QR</button>
+        <div class="form-container"><div class="input-group"><input type="text" id="ec1-code" class="form-input" placeholder="Código Evento *"></div><button class="btn-primary" onclick="startScan('ec1-code')"><i class="fas fa-camera"></i> Escanear QR</button>
         <div style="margin-top: 20px;"><button class="btn-save" onclick="submitEvento()">Validar Acceso</button><button class="btn-clean" onclick="resetForm('ec1')"><i class="fas fa-eraser"></i> Limpiar</button></div></div></div>`,
     'ED1': `
         <div class="screen form-page"><div class="form-title-section"><h2 class="form-title">Proveedor NIP</h2><div class="header-icons"><i class="fas fa-arrow-left fa-lg cursor-pointer" onclick="navigate('E1')"></i><img src="icons/libreta.svg" class="header-icon-img cursor-pointer" onclick="navigate('ED2')"></div></div>
-        <div class="form-container"><div class="input-group"><label>NIP / DNI *</label><input type="text" id="ed1-nip" class="form-input"></div>
+        <div class="form-container"><div class="input-group"><input type="text" id="ed1-nip" class="form-input" placeholder="NIP / DNI *"></div>
         <div style="margin-top: 20px;"><button class="btn-save" onclick="submitProveedorNIP()">Validar</button><button class="btn-clean" onclick="resetForm('ed1')"><i class="fas fa-eraser"></i> Limpiar</button></div></div></div>`,
     'ED2': `<div class="screen form-page">
             ${getHeaderLibreta('Historial NIP', "loadHistory('NIP_PROVEEDOR', 'gal-ed2')", 'ED1')}
