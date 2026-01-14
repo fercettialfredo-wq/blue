@@ -2,6 +2,7 @@
    1. CONFIGURACIÓN Y ESTADO GLOBAL
    ========================================= */
 const CONFIG = {
+    // URL de tu Proxy en Azure
     API_PROXY_URL: 'https://proxyoperador.azurewebsites.net/api/ravens-proxy'
 };
 
@@ -29,6 +30,19 @@ const STATE = {
 /* =========================================
    2. MOTOR DE PANTALLAS (UI COMPLETA)
    ========================================= */
+// --- CABECERA DE LIBRETA (REUTILIZABLE) ---
+// Genera: Título a la izq | Recargar (Grande) | Home | Regresar a la derecha
+const getHeaderLibreta = (titulo, funcionRecarga, pantallaRegreso) => `
+    <div class="form-title-section" style="display:flex; justify-content:space-between; align-items:center;">
+        <h2 class="form-title" style="margin:0;">${titulo}</h2>
+        <div class="header-icons" style="display:flex; align-items:center; gap:15px;">
+            <i class="fas fa-sync-alt fa-2x cursor-pointer" style="color:#3860B2;" onclick="${funcionRecarga}"></i>
+            <img src="icons/home.svg" class="header-icon-img cursor-pointer" onclick="navigate('INICIO')" style="height:30px;">
+            <i class="fas fa-arrow-left fa-lg cursor-pointer" onclick="navigate('${pantallaRegreso}')" style="color:#333; font-size:1.5rem;"></i>
+        </div>
+    </div>
+`;
+
 const SCREENS = {
     // --- LOGIN SCREEN ---
     'LOGIN': `
@@ -112,7 +126,9 @@ const SCREENS = {
             </div>
         </div>
     `,
-    'AA2': `<div class="screen form-page"><div class="form-title-section"><h2 class="form-title">Libreta Visitas</h2><div class="header-icons"><i class="fas fa-sync-alt cursor-pointer" style="margin-right:15px; color:#3860B2;" onclick="loadHistory('VISITA', 'gal-aa2')"></i><div class="cursor-pointer" onclick="navigate('AA1')"><img src="icons/home.svg" class="header-icon-img"></div></div></div><div class="form-container"><div id="gal-aa2" class="gallery-container"></div></div></div>`,
+    'AA2': `<div class="screen form-page">
+            ${getHeaderLibreta('Libreta Visitas', "loadHistory('VISITA', 'gal-aa2')", 'AA1')}
+            <div class="form-container"><div id="gal-aa2" class="gallery-container"></div></div></div>`,
     
     'AC1': `
         <div class="screen form-page">
@@ -128,7 +144,9 @@ const SCREENS = {
             </div>
         </div>
     `,
-    'AC2': `<div class="screen form-page"><div class="form-title-section"><h2 class="form-title">Libreta Personal</h2><div class="header-icons"><i class="fas fa-sync-alt cursor-pointer" style="margin-right:15px; color:#3860B2;" onclick="loadHistory('PERSONAL_DE_SERVICIO', 'gal-ac2')"></i><div class="cursor-pointer" onclick="navigate('AC1')"><img src="icons/home.svg" class="header-icon-img"></div></div></div><div class="form-container"><div id="gal-ac2" class="gallery-container"></div></div></div>`,
+    'AC2': `<div class="screen form-page">
+            ${getHeaderLibreta('Libreta Personal', "loadHistory('PERSONAL_DE_SERVICIO', 'gal-ac2')", 'AC1')}
+            <div class="form-container"><div id="gal-ac2" class="gallery-container"></div></div></div>`,
 
     // --- MÓDULO B: PAQUETERÍA ---
     'B1': `
@@ -159,7 +177,9 @@ const SCREENS = {
             </div>
         </div>
     `,
-    'BA2': `<div class="screen form-page"><div class="form-title-section"><h2 class="form-title">Libreta Recepción</h2><div class="header-icons"><i class="fas fa-sync-alt cursor-pointer" style="margin-right:15px; color:#3860B2;" onclick="loadHistory('PAQUETERIA_RECEPCION', 'gal-ba2')"></i><div class="cursor-pointer" onclick="navigate('BA1')"><img src="icons/home.svg" class="header-icon-img"></div></div></div><div class="form-container"><div id="gal-ba2" class="gallery-container"></div></div></div>`,
+    'BA2': `<div class="screen form-page">
+            ${getHeaderLibreta('Libreta Recepción', "loadHistory('PAQUETERIA_RECEPCION', 'gal-ba2')", 'BA1')}
+            <div class="form-container"><div id="gal-ba2" class="gallery-container"></div></div></div>`,
     
     'BB1': `
         <div class="screen form-page">
@@ -178,7 +198,9 @@ const SCREENS = {
             </div>
         </div>
     `,
-    'BB2': `<div class="screen form-page"><div class="form-title-section"><h2 class="form-title">Libreta Entregas</h2><div class="header-icons"><i class="fas fa-sync-alt cursor-pointer" style="margin-right:15px; color:#3860B2;" onclick="loadHistory('PAQUETERIA_ENTREGA', 'gal-bb2')"></i><div class="cursor-pointer" onclick="navigate('BB1')"><img src="icons/home.svg" class="header-icon-img"></div></div></div><div class="form-container"><div id="gal-bb2" class="gallery-container"></div></div></div>`,
+    'BB2': `<div class="screen form-page">
+            ${getHeaderLibreta('Libreta Entregas', "loadHistory('PAQUETERIA_ENTREGA', 'gal-bb2')", 'BB1')}
+            <div class="form-container"><div id="gal-bb2" class="gallery-container"></div></div></div>`,
 
     // --- MÓDULO D: PROVEEDOR ---
     'D1': `
@@ -196,7 +218,9 @@ const SCREENS = {
             </div>
         </div>
     `,
-    'D2': `<div class="screen form-page"><div class="form-title-section"><h2 class="form-title">Libreta Proveedor</h2><div class="header-icons"><i class="fas fa-sync-alt cursor-pointer" style="margin-right:15px; color:#3860B2;" onclick="loadHistory('PROVEEDOR', 'gal-d2')"></i><div class="cursor-pointer" onclick="navigate('D1')"><img src="icons/home.svg" class="header-icon-img"></div></div></div><div class="form-container"><div id="gal-d2" class="gallery-container"></div></div></div>`,
+    'D2': `<div class="screen form-page">
+            ${getHeaderLibreta('Libreta Proveedor', "loadHistory('PROVEEDOR', 'gal-d2')", 'D1')}
+            <div class="form-container"><div id="gal-d2" class="gallery-container"></div></div></div>`,
 
     // --- MÓDULO E: QR ---
     'E1': `
@@ -213,12 +237,16 @@ const SCREENS = {
         <div class="screen form-page"><div class="form-title-section"><h2 class="form-title">QR Residente</h2><div class="header-icons"><i class="fas fa-arrow-left fa-lg cursor-pointer" onclick="navigate('E1')"></i><img src="icons/libreta.svg" class="header-icon-img cursor-pointer" onclick="navigate('EA2')"></div></div>
         <div class="form-container"><div class="input-group"><label>DNI / Código *</label><input type="text" id="ea1-dni" class="form-input"></div><button class="btn-primary" onclick="startScan('ea1-dni')"><i class="fas fa-camera"></i> Escanear Código</button>
         <div style="margin-top: 20px;"><button class="btn-save" onclick="submitQRResidente()">Asignar</button><button class="btn-clean" onclick="resetForm('ea1')"><i class="fas fa-eraser"></i> Limpiar</button></div></div></div>`,
-    'EA2': `<div class="screen form-page"><div class="form-title-section"><h2 class="form-title">Historial QR</h2><div class="header-icons"><i class="fas fa-sync-alt cursor-pointer" style="margin-right:15px; color:#3860B2;" onclick="loadHistory('QR_RESIDENTE', 'gal-ea2')"></i><div class="cursor-pointer" onclick="navigate('EA1')"><img src="icons/home.svg" class="header-icon-img"></div></div></div><div class="form-container"><div id="gal-ea2" class="gallery-container"></div></div></div>`,
+    'EA2': `<div class="screen form-page">
+            ${getHeaderLibreta('Historial QR', "loadHistory('QR_RESIDENTE', 'gal-ea2')", 'EA1')}
+            <div class="form-container"><div id="gal-ea2" class="gallery-container"></div></div></div>`,
     'EB1': `
         <div class="screen form-page"><div class="form-title-section"><h2 class="form-title">QR Visita</h2><div class="header-icons"><i class="fas fa-arrow-left fa-lg cursor-pointer" onclick="navigate('E1')"></i><img src="icons/libreta.svg" class="header-icon-img cursor-pointer" onclick="navigate('EB2')"></div></div>
         <div class="form-container"><div class="input-group"><label>Código VFS *</label><input type="text" id="eb1-code" class="form-input"></div><button class="btn-primary" onclick="startScan('eb1-code')"><i class="fas fa-camera"></i> Escanear Código</button>
         <div style="margin-top: 20px;"><button class="btn-save" onclick="submitQRVisita()">Asignar</button><button class="btn-clean" onclick="resetForm('eb1')"><i class="fas fa-eraser"></i> Limpiar</button></div></div></div>`,
-    'EB2': `<div class="screen form-page"><div class="form-title-section"><h2 class="form-title">Historial VFS</h2><div class="header-icons"><i class="fas fa-sync-alt cursor-pointer" style="margin-right:15px; color:#3860B2;" onclick="loadHistory('QR_VISITA', 'gal-eb2')"></i><div class="cursor-pointer" onclick="navigate('EB1')"><img src="icons/home.svg" class="header-icon-img"></div></div></div><div class="form-container"><div id="gal-eb2" class="gallery-container"></div></div></div>`,
+    'EB2': `<div class="screen form-page">
+            ${getHeaderLibreta('Historial VFS', "loadHistory('QR_VISITA', 'gal-eb2')", 'EB1')}
+            <div class="form-container"><div id="gal-eb2" class="gallery-container"></div></div></div>`,
     'EC1': `
         <div class="screen form-page"><div class="form-title-section"><h2 class="form-title">Validar Evento</h2><div class="cursor-pointer" onclick="navigate('E1')"><img src="icons/home.svg" class="header-icon-img"></div></div>
         <div class="form-container"><div class="input-group"><label>Código Evento *</label><input type="text" id="ec1-code" class="form-input"></div><button class="btn-primary" onclick="startScan('ec1-code')"><i class="fas fa-camera"></i> Escanear QR</button>
@@ -227,7 +255,9 @@ const SCREENS = {
         <div class="screen form-page"><div class="form-title-section"><h2 class="form-title">Proveedor NIP</h2><div class="header-icons"><i class="fas fa-arrow-left fa-lg cursor-pointer" onclick="navigate('E1')"></i><img src="icons/libreta.svg" class="header-icon-img cursor-pointer" onclick="navigate('ED2')"></div></div>
         <div class="form-container"><div class="input-group"><label>NIP / DNI *</label><input type="text" id="ed1-nip" class="form-input"></div>
         <div style="margin-top: 20px;"><button class="btn-save" onclick="submitProveedorNIP()">Validar</button><button class="btn-clean" onclick="resetForm('ed1')"><i class="fas fa-eraser"></i> Limpiar</button></div></div></div>`,
-    'ED2': `<div class="screen form-page"><div class="form-title-section"><h2 class="form-title">Historial NIP</h2><div class="header-icons"><i class="fas fa-sync-alt cursor-pointer" style="margin-right:15px; color:#3860B2;" onclick="loadHistory('NIP_PROVEEDOR', 'gal-ed2')"></i><div class="cursor-pointer" onclick="navigate('ED1')"><img src="icons/home.svg" class="header-icon-img"></div></div></div><div class="form-container"><div id="gal-ed2" class="gallery-container"></div></div></div>`,
+    'ED2': `<div class="screen form-page">
+            ${getHeaderLibreta('Historial NIP', "loadHistory('NIP_PROVEEDOR', 'gal-ed2')", 'ED1')}
+            <div class="form-container"><div id="gal-ed2" class="gallery-container"></div></div></div>`,
 
     // --- PERSONAL INTERNO ---
     'F1': `
@@ -235,7 +265,9 @@ const SCREENS = {
         <div class="form-container"><div class="input-group"><label>ID Personal *</label><input type="text" id="f1-id" class="form-input" placeholder="Escanea gafete"></div>
         <button class="btn-primary" style="background:#333" onclick="startScan('f1-id')"><i class="fas fa-camera"></i> Escanear Gafete</button>
         <div style="display:flex; gap:10px; margin-top:20px;"><button class="btn-save" onclick="submitPersonalInterno('Entrada')">Entrada</button><button class="btn-secondary" style="background:#3860B2" onclick="submitPersonalInterno('Salida')">Salida</button></div><button class="btn-clean" onclick="resetForm('f1')"><i class="fas fa-eraser"></i> Limpiar</button></div></div>`,
-    'F2': `<div class="screen form-page"><div class="form-title-section"><h2 class="form-title">Bitácora Interna</h2><div class="header-icons"><i class="fas fa-sync-alt cursor-pointer" style="margin-right:15px; color:#3860B2;" onclick="loadHistory('PERSONAL_INTERNO', 'gal-f2')"></i><div class="cursor-pointer" onclick="navigate('F1')"><img src="icons/home.svg" class="header-icon-img"></div></div></div><div class="form-container"><div id="gal-f2" class="gallery-container"></div></div></div>`,
+    'F2': `<div class="screen form-page">
+            ${getHeaderLibreta('Bitácora Interna', "loadHistory('PERSONAL_INTERNO', 'gal-f2')", 'F1')}
+            <div class="form-container"><div id="gal-f2" class="gallery-container"></div></div></div>`,
 
     'SUCCESS': `<div class="screen" style="display:flex; justify-content:center; align-items:center; height:100vh; flex-direction:column"><i class="fas fa-check-circle fa-5x status-success"></i><h2 class="form-title" style="margin-top:20px">ÉXITO</h2></div>`,
     'FAILURE': `<div class="screen" style="display:flex; justify-content:center; align-items:center; height:100vh; flex-direction:column"><i class="fas fa-times-circle fa-5x status-error"></i><h2 class="form-title" style="margin-top:20px">DENEGADO</h2></div>`
@@ -483,7 +515,11 @@ function renderRemoteGallery(data, elementId) {
         }
 
         // 2. Definir Título y Subtítulo
-        const titulo = item.Nombre || item.Title || item.Visitante || 'Registro';
+        // Prioridad de nombres según el módulo para que coincida con Power Apps
+        let titulo = item.Nombre || item.Title || item.Visitante || 'Registro';
+        if (item.Recibio) titulo = item.Recibio; // Para Paquetería Entrega
+        if (item.Residente && !item.Nombre && !item.Recibio) titulo = item.Residente; // Fallback
+
         const detalle = item.Detalle || item.Torre ? `Torre ${item.Torre} - ${item.Departamento}` : '';
         
         // 3. Manejo de Estatus / TipoMarca
@@ -491,17 +527,17 @@ function renderRemoteGallery(data, elementId) {
         const statusColor = getStatusColor(rawStatus);
         const estatusHtml = rawStatus ? `<span style="font-weight:bold; color:${statusColor}"> • ${rawStatus}</span>` : '';
 
-        // 3. Crear el HTML clicable
+        // 4. Crear el HTML clicable
         return `
-        <div class="gallery-item" onclick="showDetails(${index})" style="border-bottom:1px solid #eee; padding: 10px 0; cursor:pointer;">
+        <div class="gallery-item" onclick="showDetails(${index})" style="border-bottom:1px solid #eee; padding: 15px 0; cursor:pointer; display:flex; justify-content:space-between; align-items:center;">
             <div class="gallery-text">
-                <h4 style="margin:0; font-size:1rem; color:#333;">${titulo}</h4>
-                <p style="margin:4px 0 0; font-size:0.85rem; color:#666;">
+                <h4 style="margin:0; font-size:1.1rem; color:#333;">${titulo}</h4>
+                <p style="margin:4px 0 0; font-size:0.9rem; color:#666;">
                     ${detalle} ${estatusHtml}
                 </p>
-                <p style="margin:2px 0 0; font-size:0.75rem; color:#999;">${fechaLegible}</p>
+                <p style="margin:4px 0 0; font-size:0.85rem; color:#000; font-weight:bold;">${fechaLegible}</p>
             </div>
-            <div style="color:#ccc;"><i class="fas fa-chevron-right"></i></div>
+            <div style="color:#3860B2;"><i class="fas fa-chevron-right fa-lg"></i></div>
         </div>
     `;
     }).join('');
@@ -517,7 +553,9 @@ function showDetails(index) {
     for (const [key, value] of Object.entries(item)) {
         // Filtros para no mostrar las cadenas Base64 o campos técnicos
         if(key !== 'odata.type' && key !== 'Foto' && key !== 'FotoBase64' && key !== 'FirmaBase64' && value) {
-             content += `<p style="margin:5px 0; font-size:0.9rem;"><strong>${key}:</strong> ${value}</p>`;
+             content += `<p style="margin:8px 0; font-size:1rem; border-bottom:1px solid #f0f0f0; padding-bottom:5px;">
+                            <strong style="color:#555;">${key}:</strong> <span style="color:#000;">${value}</span>
+                         </p>`;
         }
     }
     content += '</div>';
@@ -528,9 +566,9 @@ function showDetails(index) {
     // 1. Firma (Si existe)
     if(item.FirmaBase64) {
          const firmaSrc = item.FirmaBase64.startsWith('http') || item.FirmaBase64.startsWith('data:') ? item.FirmaBase64 : 'data:image/png;base64,'+item.FirmaBase64;
-         imagesHtml += `<div style="text-align:center; margin-top:15px; border-top:1px solid #eee; padding-top:10px;">
-                        <p style="font-weight:bold; margin-bottom:5px;">Firma:</p>
-                        <img src="${firmaSrc}" style="max-width:100%; border:1px solid #ccc; border-radius:8px;">
+         imagesHtml += `<div style="text-align:center; margin-top:15px; padding-top:10px;">
+                        <p style="font-weight:bold; margin-bottom:5px; color:#333;">Firma:</p>
+                        <img src="${firmaSrc}" style="max-width:100%; border:1px solid #ccc; border-radius:8px; padding:5px;">
                      </div>`;
     }
 
@@ -538,8 +576,8 @@ function showDetails(index) {
     const fotoUrl = item.Foto || item.FotoBase64;
     if(fotoUrl) {
          const fotoSrc = fotoUrl.startsWith('http') || fotoUrl.startsWith('data:') ? fotoUrl : 'data:image/png;base64,'+fotoUrl;
-         imagesHtml += `<div style="text-align:center; margin-top:15px; border-top:1px solid #eee; padding-top:10px;">
-                        <p style="font-weight:bold; margin-bottom:5px;">Evidencia:</p>
+         imagesHtml += `<div style="text-align:center; margin-top:15px; padding-top:10px;">
+                        <p style="font-weight:bold; margin-bottom:5px; color:#333;">Evidencia:</p>
                         <img src="${fotoSrc}" style="max-width:100%; border-radius:8px; box-shadow:0 2px 5px rgba(0,0,0,0.1);">
                      </div>`;
     }
@@ -547,14 +585,14 @@ function showDetails(index) {
     // HTML del Modal
     const modalHtml = `
         <div id="detail-modal" style="position:fixed; top:0; left:0; width:100%; height:100%; background:rgba(0,0,0,0.6); z-index:99999; display:flex; justify-content:center; align-items:flex-end;">
-            <div style="background:white; width:100%; max-width:500px; max-height:85vh; overflow-y:auto; padding:25px; border-radius:20px 20px 0 0; position:relative; animation: slideUp 0.3s ease-out;">
-                <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:15px; border-bottom:1px solid #eee; padding-bottom:10px;">
-                    <h3 style="margin:0; color:#333;">Detalles</h3>
-                    <i class="fas fa-times" onclick="document.getElementById('detail-modal').remove()" style="font-size:1.5rem; color:#666; cursor:pointer;"></i>
+            <div style="background:white; width:100%; max-width:500px; max-height:90vh; overflow-y:auto; padding:25px; border-radius:20px 20px 0 0; position:relative; animation: slideUp 0.3s ease-out;">
+                <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:20px; border-bottom:1px solid #eee; padding-bottom:15px;">
+                    <h2 style="margin:0; color:#333; font-size:1.5rem;">Detalles</h2>
+                    <i class="fas fa-times" onclick="document.getElementById('detail-modal').remove()" style="font-size:1.8rem; color:#666; cursor:pointer;"></i>
                 </div>
                 <div style="color:#444;">${content}</div>
                 ${imagesHtml}
-                <button onclick="document.getElementById('detail-modal').remove()" style="margin-top:20px; width:100%; padding:15px; background:#111; color:white; border:none; border-radius:12px; font-weight:bold; font-size:1rem;">Cerrar</button>
+                <button onclick="document.getElementById('detail-modal').remove()" style="margin-top:25px; width:100%; padding:15px; background:#2ecc71; color:white; border:none; border-radius:12px; font-weight:bold; font-size:1.1rem; cursor:pointer; box-shadow: 0 4px 6px rgba(46, 204, 113, 0.3);">Cerrar</button>
             </div>
         </div>
         <style>@keyframes slideUp { from { transform: translateY(100%); } to { transform: translateY(0); } }</style>
