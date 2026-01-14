@@ -381,31 +381,34 @@ function renderRemoteGallery(data, elementId) {
     container.innerHTML = data.map((item, index) => {
         let fechaLegible = formatearFechaBonita(item.Fecha || item.Created || item.Fechayhora);
         
-        // CORRECCIÓN: Detectar Nombre o Nombre0 (para proveedores)
+        // --- CORRECCIÓN 1: Detección inteligente de Nombre ---
         let titulo = item.Nombre || item.Nombre0 || item.Title || item.Visitante || 'Registro';
         if (item.Recibio) titulo = item.Recibio; 
         if (item.Residente && !item.Nombre && !item.Recibio && !item.Nombre0) titulo = item.Residente; 
 
-        // CORRECCIÓN: Mostrar Empresa en subtítulo si existe (Para ED2)
-        let detalle = '';
-        if (item.Empresa) {
-            detalle = `Empresa: ${item.Empresa}`;
-            if(item.Asunto) detalle += ` - ${item.Asunto}`;
-        } else if(item.Paqueteria) { 
-            detalle = `Paq: ${item.Paqueteria} - Para: ${item.Residente}`; 
-        } else if (item.Recibio) { 
-            detalle = `Recibió: ${item.Recibio} - De: ${item.Residente}`; 
-        } else if (item.Cargo) { 
-            detalle = `${item.Cargo}`; 
-        }
+        // --- CORRECCIÓN 2: Construcción Robusta del Detalle (Empresa, Torre, Depto) ---
+        let lineasDetalle = [];
 
-        // Agregar Torre y Depto si existen
+        // Prioridad: Empresa (para D2 y ED2)
+        if (item.Empresa) {
+            let txtEmpresa = item.Empresa;
+            if(item.Asunto) txtEmpresa += ` - ${item.Asunto}`;
+            lineasDetalle.push(txtEmpresa);
+        } 
+        else if (item.Paqueteria) { lineasDetalle.push(`Paq: ${item.Paqueteria}`); }
+        else if (item.Recibio) { lineasDetalle.push(`Recibió: ${item.Recibio}`); }
+        else if (item.Cargo) { lineasDetalle.push(item.Cargo); }
+        else if (item.Motivo) { lineasDetalle.push(item.Motivo); } // Para QR Visita si no tiene empresa
+
+        // Agregar Ubicación (Torre/Depto) si existe (para EB2 y todos)
         if (item.Torre || item.Departamento) {
             let loc = [];
             if(item.Torre) loc.push(`T: ${item.Torre}`);
             if(item.Departamento) loc.push(`D: ${item.Departamento}`);
-            detalle += (detalle ? ' | ' : '') + loc.join(' ');
+            lineasDetalle.push(loc.join(' '));
         }
+
+        let detalle = lineasDetalle.join(' | ');
         
         const rawStatus = item.Estatus || item.TipoMarca;
         const statusColor = getStatusColor(rawStatus);
@@ -426,9 +429,9 @@ function showDetails(index) {
     const item = STATE.tempHistory[index];
     if(!item) return;
     
-    // MAPEO EXTENDIDO PARA CUBRIR FALTANTES
+    // MAPEO EXTENDIDO
     const labelMap = {
-        'Nombre0': 'Nombre', // Para proveedores
+        'Nombre0': 'Nombre',
         'Recibio': 'Quien Recibió', 
         'Residente': 'Destinatario/Residente', 
         'Nombre': 'Nombre', 
@@ -454,19 +457,15 @@ function showDetails(index) {
 
     let content = '<div style="text-align:left;">';
     for (const [key, value] of Object.entries(item)) {
-        // Filtramos campos técnicos
         if(key !== 'odata.type' && key !== 'Foto' && key !== 'FotoBase64' && key !== 'FirmaBase64' && value) {
              let displayValue = value;
              
-             // Formatear Fechas
              if(key === 'Fecha' || key === 'Fechayhora' || key === 'Created') { 
                  displayValue = formatearFechaBonita(value); 
              }
-             // Formatear Booleanos
              if(key === 'RequiereRevisi_x00f3_n') { 
                  displayValue = (value === true || value === 'true') ? 'SÍ' : 'NO'; 
              }
-             // Formatear Estatus con Color
              if(key === 'Estatus' || key === 'TipoMarca') {
                  const color = getStatusColor(value);
                  displayValue = `<span style="color:${color}; font-weight:bold;">${value}</span>`;
