@@ -302,26 +302,20 @@ async function callBackend(action, extraData = {}) {
         const payload = { action, condominio: STATE.session.condominioId, usuario: STATE.session.usuario || "guardia_web", ...extraData };
         const response = await fetch(CONFIG.API_PROXY_URL, { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(payload) });
         
-        // Intentamos leer JSON siempre, incluso si es error (400, 404, 500)
-        let result;
-        try {
-            result = await response.json();
-        } catch (e) {
-            // Si falla el parseo, es un error fatal de servidor (HTML)
-            throw new Error(`Error Fatal (${response.status})`);
+        // Manejo de errores HTTP
+        if (!response.ok) {
+            const errorText = await response.text();
+            throw new Error(`HTTP ${response.status}: ${errorText || response.statusText}`);
         }
 
+        // Intento de parseo JSON
+        const result = await response.json();
+        
         if(loadingBtn) { loadingBtn.disabled = false; loadingBtn.innerText = loadingBtn.dataset.originalText || "Guardar"; }
-
-        // Si la Logic App devolvió success: false (ej. código no encontrado o ya usado)
-        // Devolvemos el objeto tal cual para que el frontend decida qué mensaje mostrar
+        
+        // Si el backend responde con success: false pero sin error HTTP
         if (result && result.success === false) {
             return result;
-        }
-
-        // Si es otro error HTTP no controlado por Logic App
-        if (!response.ok) {
-            throw new Error(result.message || `HTTP ${response.status}`);
         }
 
         return result;
@@ -557,7 +551,8 @@ async function submitPersonalInterno(accion) {
 // param: failScreen -> Pantalla de Escáner si falla (ej. 'EB1')
 async function validarAccesoQR(tipo, inputId, formId, nextScreen, failScreen) {
     const codigo = document.getElementById(inputId).value;
-    if(!codigo) return alert("Código vacío.");
+    // CORRECCIÓN 1: Ventana emergente (Alert) cuando el campo está vacío
+    if(!codigo) return alert("⚠️ No hay un código para validar."); 
     
     // Llamada al Backend
     const res = await callBackend('validate_qr', { tipo_validacion: tipo, codigo_leido: codigo });
@@ -569,7 +564,7 @@ async function validarAccesoQR(tipo, inputId, formId, nextScreen, failScreen) {
         const movimiento = res.data?.tipo || "ACCESO";
         let mensaje = res.message || "Acceso Permitido";
 
-        // --- CAMBIO SOLICITADO PARA QR RESIDENTE ---
+        // CAMBIO: Mensaje específico para QR Residente
         if (tipo === 'QR_RESIDENTE') {
             mensaje = "Código Validado";
         }
@@ -580,12 +575,10 @@ async function validarAccesoQR(tipo, inputId, formId, nextScreen, failScreen) {
         let errorMsg = res ? res.message : "Código no válido";
         const msgLower = (errorMsg || "").toLowerCase();
 
-        // --- FILTROS DE MENSAJES DE ERROR LIMPIOS ---
-        // 1. Caso 404 / No Encontrado
+        // CORRECCIÓN 2: Revertir el mensaje de 404 "como estaba"
         if (msgLower.includes("404") || msgLower.includes("not found") || msgLower.includes("no existe") || msgLower.includes("no encontrado")) {
-             errorMsg = "🚫 No hay un código para validar"; // CAMBIO SOLICITADO
+             errorMsg = "🚫 Código no encontrado - Acceso Denegado"; 
         }
-        // 2. Caso Ya Usado / Vencido
         else if (msgLower.includes("ya usado") || msgLower.includes("vencido") || msgLower.includes("salida")) {
              errorMsg = "⚠️ Este código ya fue validado anteriormente.";
         }
