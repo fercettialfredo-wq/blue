@@ -2,25 +2,21 @@
    1. CONFIGURACIÓN Y ESTADO GLOBAL
    ========================================= */
 const CONFIG = {
-    // URL de tu Proxy en Azure (Asegúrate que sea la correcta)
+    // URL de tu Proxy en Azure
     API_PROXY_URL: 'https://proxyoperador.azurewebsites.net/api/ravens-proxy'
 };
 
 const STATE = {
-    // Sesión de Usuario
     session: {
         isLoggedIn: false,
         condominioId: null,
         usuario: null
     },
-    // Datos locales
     colBaserFiltrada: [], 
-    // Estado temporal para UI
     photos: {}, 
     signature: null,
     currentContext: "",
     targetInputForQR: "",
-    // Historial temporal
     tempHistory: [] 
 };
 
@@ -40,22 +36,21 @@ function formatearFechaBonita(fechaRaw) {
 }
 
 // --- CABECERA DE LIBRETA (REUTILIZABLE) ---
-// Nuevo parámetro 'showSync' para ocultar el botón de recarga donde no se necesita
 const getHeaderLibreta = (titulo, funcionRecarga, pantallaRegreso, showSync = true) => `
     <div class="form-title-section">
         <h2 class="form-title">${titulo}</h2>
         <div class="header-icons">
             ${showSync ? `<i class="fas fa-sync-alt fa-2x cursor-pointer sync-btn" onclick="${funcionRecarga}"></i>` : ''}
-            <img src="icons/home.svg" class="header-icon-img cursor-pointer" onclick="navigate('INICIO')">
+            <img src="icons/home.svg" class="header-icon-img" onclick="navigate('INICIO')">
             <i class="fas fa-arrow-left fa-2x cursor-pointer back-btn" onclick="navigate('${pantallaRegreso}')"></i>
         </div>
     </div>
 `;
 
 const SCREENS = {
-    // --- LOGIN SCREEN ---
+    // --- LOGIN SCREEN (Tema Oscuro) ---
     'LOGIN': `
-        <div class="screen login-screen-container">
+        <div class="screen dark-theme login-screen-container">
             <div class="login-box">
                 <div style="text-align:center; margin-bottom:40px;">
                     <img src="icons/logo.png" style="width:100px; margin-bottom:20px;">
@@ -75,9 +70,9 @@ const SCREENS = {
         </div>
     `,
 
-    // --- MENÚ PRINCIPAL ---
+    // --- MENÚ PRINCIPAL (Tema Oscuro) ---
     'INICIO': `
-        <div class="screen">
+        <div class="screen dark-theme">
             <header class="header-app">
                 <div class="header-logo">
                     <img src="icons/logo.png" alt="Logo" style="height: 40px; margin-right: 15px;">
@@ -109,7 +104,7 @@ const SCREENS = {
 
     // --- MÓDULO A: VISITAS ---
     'A1': `
-        <div class="screen">
+        <div class="screen dark-theme">
             <header class="header-app"><div class="header-logo"><span class="header-logo-text">VISITAS</span></div><div class="cursor-pointer" onclick="navigate('INICIO')"><img src="icons/home.svg" class="header-icon-img"></div></header>
             <main class="main-menu-grid">
                 <div class="menu-item" onclick="navigate('AA1')"><img src="icons/visita.svg" class="custom-icon"><div>Registrar Visita</div></div>
@@ -118,8 +113,8 @@ const SCREENS = {
         </div>
     `,
     'AA1': `
-        <div class="screen form-page">
-            <div class="form-title-section"><h2 class="form-title">Nueva Visita</h2><div class="header-icons"><i class="fas fa-arrow-left fa-2x cursor-pointer back-btn" onclick="navigate('A1')"></i><img src="icons/libreta.svg" class="header-icon-img cursor-pointer" onclick="navigate('AA2')"></div></div>
+        <div class="screen">
+            <div class="form-title-section"><h2 class="form-title">Nueva Visita</h2><div class="header-icons"><i class="fas fa-arrow-left fa-2x cursor-pointer back-btn" onclick="navigate('A1')"></i><img src="icons/libreta.svg" class="header-icon-img" onclick="navigate('AA2')"></div></div>
             <div class="form-container">
                 <div class="input-group"><label>Nombre Visitante *</label><input type="text" id="aa1-nombre" class="form-input"></div>
                 <div class="input-group"><label>Torre</label><input type="text" id="aa1-torre" class="form-input" readonly></div>
@@ -135,13 +130,13 @@ const SCREENS = {
             </div>
         </div>
     `,
-    'AA2': `<div class="screen form-page">
+    'AA2': `<div class="screen">
             ${getHeaderLibreta('Libreta Visitas', "loadHistory('VISITA', 'gal-aa2')", 'AA1', true)}
             <div class="form-container"><div id="gal-aa2" class="gallery-list"></div></div></div>`,
     
     'AC1': `
-        <div class="screen form-page">
-            <div class="form-title-section"><h2 class="form-title">Personal Servicio</h2><div class="header-icons"><i class="fas fa-arrow-left fa-2x cursor-pointer back-btn" onclick="navigate('A1')"></i><img src="icons/libreta.svg" class="header-icon-img cursor-pointer" onclick="navigate('AC2')"></div></div>
+        <div class="screen">
+            <div class="form-title-section"><h2 class="form-title">Personal Servicio</h2><div class="header-icons"><i class="fas fa-arrow-left fa-2x cursor-pointer back-btn" onclick="navigate('A1')"></i><img src="icons/libreta.svg" class="header-icon-img" onclick="navigate('AC2')"></div></div>
             <div class="form-container">
                 <div class="input-group"><label>Nombre *</label><input type="text" id="ac1-nombre" class="form-input"></div>
                 <div class="input-group"><label>Torre</label><input type="text" id="ac1-torre" class="form-input" readonly></div>
@@ -153,13 +148,13 @@ const SCREENS = {
             </div>
         </div>
     `,
-    'AC2': `<div class="screen form-page">
+    'AC2': `<div class="screen">
             ${getHeaderLibreta('Libreta Personal', "loadHistory('PERSONAL_DE_SERVICIO', 'gal-ac2')", 'AC1', true)}
             <div class="form-container"><div id="gal-ac2" class="gallery-list"></div></div></div>`,
 
     // --- MÓDULO B: PAQUETERÍA ---
     'B1': `
-        <div class="screen"><header class="header-app"><div class="header-logo"><span class="header-logo-text">PAQUETERÍA</span></div><div class="cursor-pointer" onclick="navigate('INICIO')"><img src="icons/home.svg" class="header-icon-img"></div></header>
+        <div class="screen dark-theme"><header class="header-app"><div class="header-logo"><span class="header-logo-text">PAQUETERÍA</span></div><div class="cursor-pointer" onclick="navigate('INICIO')"><img src="icons/home.svg" class="header-icon-img"></div></header>
             <main class="main-menu-grid">
                 <div class="menu-item" onclick="navigate('BA1')"><img src="icons/paquete2.svg" class="custom-icon"><div>Recibir</div></div>
                 <div class="menu-item" onclick="navigate('BB1')"><img src="icons/paquete3.svg" class="custom-icon"><div>Entregar</div></div>
@@ -167,8 +162,8 @@ const SCREENS = {
         </div>
     `,
     'BA1': `
-        <div class="screen form-page">
-            <div class="form-title-section"><h2 class="form-title">Recibir Paquete</h2><div class="header-icons"><i class="fas fa-arrow-left fa-2x cursor-pointer back-btn" onclick="navigate('B1')"></i><img src="icons/libreta.svg" class="header-icon-img cursor-pointer" onclick="navigate('BA2')"></div></div>
+        <div class="screen">
+            <div class="form-title-section"><h2 class="form-title">Recibir Paquete</h2><div class="header-icons"><i class="fas fa-arrow-left fa-2x cursor-pointer back-btn" onclick="navigate('B1')"></i><img src="icons/libreta.svg" class="header-icon-img" onclick="navigate('BA2')"></div></div>
             <div class="form-container">
                 <div class="input-group"><label>Torre</label><input type="text" id="ba1-torre" class="form-input" readonly></div>
                 <div class="input-group"><label>Departamento</label><input type="text" id="ba1-depto" class="form-input" readonly></div>
@@ -186,13 +181,13 @@ const SCREENS = {
             </div>
         </div>
     `,
-    'BA2': `<div class="screen form-page">
+    'BA2': `<div class="screen">
             ${getHeaderLibreta('Libreta Recepción', "loadHistory('PAQUETERIA_RECEPCION', 'gal-ba2')", 'BA1', true)}
             <div class="form-container"><div id="gal-ba2" class="gallery-list"></div></div></div>`,
     
     'BB1': `
-        <div class="screen form-page">
-            <div class="form-title-section"><h2 class="form-title">Entregar Paquete</h2><div class="header-icons"><i class="fas fa-arrow-left fa-2x cursor-pointer back-btn" onclick="navigate('B1')"></i><img src="icons/libreta.svg" class="header-icon-img cursor-pointer" onclick="navigate('BB2')"></div></div>
+        <div class="screen">
+            <div class="form-title-section"><h2 class="form-title">Entregar Paquete</h2><div class="header-icons"><i class="fas fa-arrow-left fa-2x cursor-pointer back-btn" onclick="navigate('B1')"></i><img src="icons/libreta.svg" class="header-icon-img" onclick="navigate('BB2')"></div></div>
             <div class="form-container">
                 <div class="input-group"><label>Quien Recibe *</label><input type="text" id="bb1-nombre" class="form-input"></div>
                 <div class="input-group"><label>Torre</label><input type="text" id="bb1-torre" class="form-input" readonly></div>
@@ -207,14 +202,14 @@ const SCREENS = {
             </div>
         </div>
     `,
-    'BB2': `<div class="screen form-page">
+    'BB2': `<div class="screen">
             ${getHeaderLibreta('Libreta Entregas', "loadHistory('PAQUETERIA_ENTREGA', 'gal-bb2')", 'BB1', true)}
             <div class="form-container"><div id="gal-bb2" class="gallery-list"></div></div></div>`,
 
     // --- MÓDULO D: PROVEEDOR ---
     'D1': `
-        <div class="screen form-page">
-            <div class="form-title-section"><h2 class="form-title">Proveedor</h2><div class="header-icons"><img src="icons/home.svg" class="header-icon-img cursor-pointer" onclick="navigate('INICIO')"><img src="icons/libreta.svg" class="header-icon-img cursor-pointer" onclick="navigate('D2')"></div></div>
+        <div class="screen">
+            <div class="form-title-section"><h2 class="form-title">Proveedor</h2><div class="header-icons"><img src="icons/home.svg" class="header-icon-img" onclick="navigate('INICIO')"><img src="icons/libreta.svg" class="header-icon-img" onclick="navigate('D2')"></div></div>
             <div class="form-container">
                 <div class="input-group"><label>Nombre Proveedor *</label><input type="text" id="d1-nombre" class="form-input"></div>
                 <div class="input-group"><label>Empresa *</label><input type="text" id="d1-empresa" class="form-input"></div>
@@ -227,13 +222,13 @@ const SCREENS = {
             </div>
         </div>
     `,
-    'D2': `<div class="screen form-page">
+    'D2': `<div class="screen">
             ${getHeaderLibreta('Libreta Proveedor', "loadHistory('PROVEEDOR', 'gal-d2')", 'D1', true)}
             <div class="form-container"><div id="gal-d2" class="gallery-list"></div></div></div>`,
 
     // --- MÓDULO E: QR ---
     'E1': `
-        <div class="screen"><header class="header-app"><div class="header-logo"><span class="header-logo-text">MÓDULOS QR</span></div><div class="cursor-pointer" onclick="navigate('INICIO')"><img src="icons/home.svg" class="header-icon-img"></div></header>
+        <div class="screen dark-theme"><header class="header-app"><div class="header-logo"><span class="header-logo-text">MÓDULOS QR</span></div><div class="cursor-pointer" onclick="navigate('INICIO')"><img src="icons/home.svg" class="header-icon-img"></div></header>
             <main class="main-menu-grid">
                 <div class="menu-item" onclick="navigate('EA1')"><img src="icons/residente.svg" class="custom-icon"><div>QR Residente</div></div>
                 <div class="menu-item" onclick="navigate('EB1')"><img src="icons/visita.svg" class="custom-icon"><div>QR Visita</div></div>
@@ -243,8 +238,8 @@ const SCREENS = {
         </div>
     `,
     'EA1': `
-        <div class="screen form-page">
-            <div class="form-title-section"><h2 class="form-title">QR Residente</h2><div class="header-icons"><i class="fas fa-arrow-left fa-2x cursor-pointer back-btn" onclick="navigate('E1')"></i><img src="icons/libreta.svg" class="header-icon-img cursor-pointer" onclick="navigate('EA2')"></div></div>
+        <div class="screen">
+            <div class="form-title-section"><h2 class="form-title">QR Residente</h2><div class="header-icons"><i class="fas fa-arrow-left fa-2x cursor-pointer back-btn" onclick="navigate('E1')"></i><img src="icons/libreta.svg" class="header-icon-img" onclick="navigate('EA2')"></div></div>
             <div class="form-container">
                 <div class="input-group"><input type="text" id="ea1-dni" class="form-input" placeholder=""></div>
                 <button class="btn-primary" onclick="startScan('ea1-dni')"><i class="fas fa-camera"></i> Escanear</button>
@@ -252,14 +247,13 @@ const SCREENS = {
             </div>
         </div>`,
     
-    // EA2: BOTON DE RECARGA ELIMINADO (false)
-    'EA2': `<div class="screen form-page">
+    'EA2': `<div class="screen">
             ${getHeaderLibreta('Historial QR', "loadHistory('QR_RESIDENTE', 'gal-ea2')", 'EA1', false)}
             <div class="form-container"><div id="gal-ea2" class="gallery-list"></div></div></div>`,
     
     'EB1': `
-        <div class="screen form-page">
-            <div class="form-title-section"><h2 class="form-title">QR Visita</h2><div class="header-icons"><i class="fas fa-arrow-left fa-2x cursor-pointer back-btn" onclick="navigate('E1')"></i><img src="icons/libreta.svg" class="header-icon-img cursor-pointer" onclick="navigate('EB2')"></div></div>
+        <div class="screen">
+            <div class="form-title-section"><h2 class="form-title">QR Visita</h2><div class="header-icons"><i class="fas fa-arrow-left fa-2x cursor-pointer back-btn" onclick="navigate('E1')"></i><img src="icons/libreta.svg" class="header-icon-img" onclick="navigate('EB2')"></div></div>
             <div class="form-container">
                 <div class="input-group"><input type="text" id="eb1-code" class="form-input" placeholder=""></div>
                 <button class="btn-primary" onclick="startScan('eb1-code')"><i class="fas fa-camera"></i> Escanear</button>
@@ -267,13 +261,12 @@ const SCREENS = {
             </div>
         </div>`,
     
-    // EB2: BOTON DE RECARGA ELIMINADO (false)
-    'EB2': `<div class="screen form-page">
+    'EB2': `<div class="screen">
             ${getHeaderLibreta('Historial QR Visita', "loadHistory('QR_VISITA', 'gal-eb2')", 'EB1', false)}
             <div class="form-container"><div id="gal-eb2" class="gallery-list"></div></div></div>`,
     
     'EC1': `
-        <div class="screen form-page">
+        <div class="screen">
             <div class="form-title-section"><h2 class="form-title">Validar Evento</h2><div class="cursor-pointer" onclick="navigate('E1')"><img src="icons/home.svg" class="header-icon-img"></div></div>
             <div class="form-container">
                 <div class="input-group"><input type="text" id="ec1-code" class="form-input" placeholder=""></div>
@@ -283,23 +276,22 @@ const SCREENS = {
         </div>`,
     
     'ED1': `
-        <div class="screen form-page">
-            <div class="form-title-section"><h2 class="form-title">Proveedor NIP</h2><div class="header-icons"><i class="fas fa-arrow-left fa-2x cursor-pointer back-btn" onclick="navigate('E1')"></i><img src="icons/libreta.svg" class="header-icon-img cursor-pointer" onclick="navigate('ED2')"></div></div>
+        <div class="screen">
+            <div class="form-title-section"><h2 class="form-title">Proveedor NIP</h2><div class="header-icons"><i class="fas fa-arrow-left fa-2x cursor-pointer back-btn" onclick="navigate('E1')"></i><img src="icons/libreta.svg" class="header-icon-img" onclick="navigate('ED2')"></div></div>
             <div class="form-container">
                 <div class="input-group"><input type="text" id="ed1-nip" class="form-input" placeholder=""></div>
                 <div style="margin-top: 20px;"><button class="btn-save" onclick="submitProveedorNIP()">Validar</button><button class="btn-clean" onclick="resetForm('ed1')">Limpiar</button></div>
             </div>
         </div>`,
     
-    // ED2: BOTON DE RECARGA ELIMINADO (false)
-    'ED2': `<div class="screen form-page">
+    'ED2': `<div class="screen">
             ${getHeaderLibreta('Historial NIP', "loadHistory('NIP_PROVEEDOR', 'gal-ed2')", 'ED1', false)}
             <div class="form-container"><div id="gal-ed2" class="gallery-list"></div></div></div>`,
 
     // --- PERSONAL INTERNO ---
     'F1': `
-        <div class="screen form-page">
-            <div class="form-title-section"><h2 class="form-title">Personal Interno</h2><div class="header-icons"><img src="icons/home.svg" class="header-icon-img cursor-pointer" onclick="navigate('INICIO')"><img src="icons/libreta.svg" class="header-icon-img cursor-pointer" onclick="navigate('F2')"></div></div>
+        <div class="screen">
+            <div class="form-title-section"><h2 class="form-title">Personal Interno</h2><div class="header-icons"><img src="icons/home.svg" class="header-icon-img" onclick="navigate('INICIO')"><img src="icons/libreta.svg" class="header-icon-img" onclick="navigate('F2')"></div></div>
             <div class="form-container">
                 <div class="input-group"><input type="text" id="f1-id" class="form-input" placeholder=""></div>
                 <button class="btn-primary" style="background:#333" onclick="startScan('f1-id')"><i class="fas fa-camera"></i> Escanear</button>
@@ -311,8 +303,7 @@ const SCREENS = {
             </div>
         </div>`,
     
-    // F2: BOTON DE RECARGA ELIMINADO (false)
-    'F2': `<div class="screen form-page">
+    'F2': `<div class="screen">
             ${getHeaderLibreta('Bitácora Interna', "loadHistory('PERSONAL_INTERNO', 'gal-f2')", 'F1', false)}
             <div class="form-container"><div id="gal-f2" class="gallery-list"></div></div></div>`
 };
@@ -415,8 +406,7 @@ function renderRemoteGallery(data, elementId) {
     const container = document.getElementById(elementId);
     if (!data || data.length === 0) { container.innerHTML = `<div class="no-data">Sin registros recientes.</div>`; return; }
     
-    // --- FILTRO: QR RESIDENTE (gal-ea2) muestra TODO.
-    // --- LOS DEMÁS filtran "Nuevo" y Vacíos. ---
+    // --- FILTROS ---
     const filteredData = data.filter(item => {
         if (elementId === 'gal-ea2') return true; 
         const estatus = (item.Estatus || item.TipoMarca || "").toString().toLowerCase().trim();
@@ -459,7 +449,7 @@ function renderRemoteGallery(data, elementId) {
                 </div>
                 <div class="card-side">
                     ${estatusHtml}
-                    <i class="fas fa-chevron-right"></i>
+                    <i class="fas fa-chevron-right" style="color:#ccc; margin-top:5px;"></i>
                 </div>
             </div>
         </div>`;
@@ -578,13 +568,13 @@ function submitProveedorNIP() { validarAccesoQR('NIP_PROVEEDOR', 'ed1-nip', 'ed1
 
 function showSuccessScreen(titulo, subtitulo, nextScreen) {
     const old = document.getElementById('status-modal'); if(old) old.remove();
-    const html = `<div id="status-modal" class="screen modal-status"><div class="status-box success-bg"><div class="icon-circle success-icon"><i class="fas fa-check fa-3x"></i></div><h1>${titulo}</h1><p>${subtitulo}</p><button class="btn-status" onclick="document.getElementById('status-modal').remove(); navigate('${nextScreen}')">Continuar</button></div></div>`;
+    const html = `<div id="status-modal" class="modal-status"><div class="status-box"><div class="icon-circle success-icon"><i class="fas fa-check fa-3x"></i></div><h1>${titulo}</h1><p>${subtitulo}</p><button class="btn-status" onclick="document.getElementById('status-modal').remove(); navigate('${nextScreen}')">Continuar</button></div></div>`;
     document.body.insertAdjacentHTML('beforeend', html);
 }
 
 function showFailureScreen(motivo, retryScreen) {
     const old = document.getElementById('status-modal'); if(old) old.remove();
-    const html = `<div id="status-modal" class="screen modal-status"><div class="status-box error-bg"><div class="icon-circle error-icon"><i class="fas fa-times fa-3x"></i></div><h1>DENEGADO</h1><p>${motivo}</p><button class="btn-status retry-btn" onclick="document.getElementById('status-modal').remove(); navigate('${retryScreen}')">Intentar de nuevo</button></div></div>`;
+    const html = `<div id="status-modal" class="modal-status"><div class="status-box"><div class="icon-circle error-icon"><i class="fas fa-times fa-3x"></i></div><h1>DENEGADO</h1><p>${motivo}</p><button class="btn-status retry-btn" onclick="document.getElementById('status-modal').remove(); navigate('${retryScreen}')">Intentar de nuevo</button></div></div>`;
     document.body.insertAdjacentHTML('beforeend', html);
 }
 
@@ -595,6 +585,35 @@ function resetForm(prefix) {
     const prev = document.getElementById('prev-' + prefix);
     if(prev) { prev.style.backgroundImage = ''; prev.classList.add('hidden'); if (prev.nextElementSibling) { prev.nextElementSibling.style.display = 'block'; prev.nextElementSibling.innerHTML = '<i class="fas fa-camera"></i> Cámara'; } }
     if(prefix === 'bb1') clearSignature();
+}
+
+// --- MODALES Y SELECTORES ---
+// Deben existir en el HTML base para funcionar o crearse dinámicamente.
+// Aquí asumimos que el selector modal ya existe en tu index.html o se inyecta.
+// Si no existe, lo inyectamos:
+if (!document.getElementById('modal-selector')) {
+    const selectorHtml = `
+    <div id="modal-selector" class="selector-modal">
+        <div class="selector-box">
+            <h3 style="margin-top:0">Seleccionar Residente</h3>
+            <label>Torre</label>
+            <select id="sel-torre" class="sel-select" onchange="updateDeptos()"></select>
+            <label>Departamento</label>
+            <select id="sel-depto" class="sel-select" onchange="updateResidentes()"></select>
+            <label>Residente</label>
+            <select id="sel-nombre" class="sel-select"></select>
+            <div style="display:flex; gap:10px; margin-top:15px;">
+                <button class="btn-primary" onclick="confirmResidente()">Confirmar</button>
+                <button class="btn-clean" onclick="document.getElementById('modal-selector').classList.remove('active')">Cancelar</button>
+            </div>
+        </div>
+    </div>
+    <div id="qr-modal">
+        <div id="qr-reader-view"></div>
+        <div class="qr-close-btn" onclick="closeQRScanner()">CANCELAR ESCANEO</div>
+    </div>
+    `;
+    document.body.insertAdjacentHTML('beforeend', selectorHtml);
 }
 
 function openResidenteModal(ctx) {
@@ -657,4 +676,3 @@ function startScan(targetInputId) {
 function closeQRScanner() { if(html5QrCode) html5QrCode.stop().then(() => html5QrCode.clear()).catch(()=>{}); document.getElementById('qr-modal').classList.remove('active'); }
 
 window.onload = () => { checkSession(); };
-// --- FIN DEL ARCHIVO ---
