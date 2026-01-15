@@ -2,7 +2,7 @@
    1. CONFIGURACIÓN Y ESTADO GLOBAL
    ========================================= */
 const CONFIG = {
-    // URL de tu Proxy en Azure
+    // Asegúrate de que esta sea la URL correcta de tu Azure Function
     API_PROXY_URL: 'https://proxyoperador.azurewebsites.net/api/ravens-proxy'
 };
 
@@ -284,7 +284,20 @@ function renderRemoteGallery(data, elementId) {
     const container = document.getElementById(elementId);
     if (!data || data.length === 0) { container.innerHTML = `<div style="padding:20px; text-align:center; color:#555">Sin registros recientes.</div>`; return; }
     STATE.tempHistory = data;
-    container.innerHTML = data.map((item, index) => {
+    
+    // --- FILTRO APLICADO AQUÍ ---
+    // Oculta items donde Estatus sea "nuevo" o esté vacío
+    const filteredData = data.filter(item => {
+        const s = (item.Estatus || item.TipoMarca || "").toString().toLowerCase().trim();
+        return s !== "" && s !== "nuevo";
+    });
+
+    if (filteredData.length === 0) { 
+        container.innerHTML = `<div style="padding:20px; text-align:center; color:#555">Sin registros procesados.</div>`; 
+        return; 
+    }
+
+    container.innerHTML = filteredData.map((item, index) => {
         let fechaLegible = formatearFechaBonita(item.Fecha || item.Created || item.Fechayhora);
         let titulo = item.Nombre || item.Nombre0 || item.Title || item.Visitante || 'Registro';
         if (item.Recibio) titulo = item.Recibio; 
@@ -302,6 +315,13 @@ function renderRemoteGallery(data, elementId) {
         const rawStatus = item.Estatus || item.TipoMarca;
         const statusColor = getStatusColor(rawStatus);
         const estatusHtml = rawStatus ? `<span style="font-weight:bold; color:${statusColor}"> • ${rawStatus}</span>` : '';
+
+        // Nota: El índice 'index' ahora refiere a la data original filtrada para que el click funcione
+        // Necesitamos encontrar el índice real en tempHistory, pero para simplicidad 
+        // actualizaremos tempHistory con lo filtrado si queremos que el detalle abra lo correcto
+        // O mejor, pasamos el objeto directamente.
+        // Solución rápida: Reemplazamos tempHistory por filteredData para esta vista
+        STATE.tempHistory = filteredData;
 
         return `<div class="gallery-item" onclick="showDetails(${index})" style="border-bottom:1px solid #eee; padding: 15px 0; cursor:pointer; display:flex; justify-content:space-between; align-items:center;">
             <div class="gallery-text"><h4 style="margin:0; font-size:1.1rem; color:#333;">${titulo}</h4><p style="margin:4px 0 0; font-size:0.9rem; color:#666;">${detalle} ${estatusHtml}</p><p style="margin:4px 0 0; font-size:0.85rem; color:#000; font-weight:bold;">${fechaLegible}</p></div>
@@ -454,12 +474,17 @@ async function validarAccesoQR(tipo, inputId, formId, nextScreen, failScreen) {
     } else {
         // Fallo: Mostramos pantalla roja y el botón regresa al escáner
         let errorMsg = res ? res.message : "Código no válido";
-        
-        // --- AQUÍ ESTÁ EL CAMBIO PARA EL MENSAJE FEO ---
-        // Si el mensaje contiene palabras clave de "ya usado", lo reemplazamos por el bonito
         const msgLower = errorMsg.toLowerCase();
-        if (msgLower.includes("ya usado") || msgLower.includes("vencido") || msgLower.includes("salida")) {
-            errorMsg = "⚠️ Este código ya fue validado anteriormente.";
+
+        // --- FILTROS DE MENSAJES DE ERROR PARA QR VISITA ---
+        
+        // Caso 1: Código no encontrado (404)
+        if (msgLower.includes("404") || msgLower.includes("not found") || msgLower.includes("no existe") || msgLower.includes("no encontrado")) {
+             errorMsg = "🚫 Código no encontrado - Acceso Denegado";
+        }
+        // Caso 2: Código ya usado (400)
+        else if (msgLower.includes("ya usado") || msgLower.includes("vencido") || msgLower.includes("salida")) {
+             errorMsg = "⚠️ Este código ya fue validado anteriormente.";
         }
 
         showFailureScreen(errorMsg, failScreen);
