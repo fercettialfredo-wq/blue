@@ -2,17 +2,25 @@
    1. CONFIGURACIÓN Y ESTADO GLOBAL
    ========================================= */
 const CONFIG = {
-    // URL de tu Proxy en Azure
+    // URL de tu Proxy en Azure (Asegúrate que sea la correcta)
     API_PROXY_URL: 'https://proxyoperador.azurewebsites.net/api/ravens-proxy'
 };
 
 const STATE = {
-    session: { isLoggedIn: false, condominioId: null, usuario: null },
+    // Sesión de Usuario
+    session: {
+        isLoggedIn: false,
+        condominioId: null,
+        usuario: null
+    },
+    // Datos locales
     colBaserFiltrada: [], 
+    // Estado temporal para UI
     photos: {}, 
     signature: null,
     currentContext: "",
     targetInputForQR: "",
+    // Historial temporal
     tempHistory: [] 
 };
 
@@ -20,6 +28,7 @@ const STATE = {
    2. MOTOR DE PANTALLAS (UI COMPLETA)
    ========================================= */
 
+// --- UTILIDAD DE FECHA ---
 function formatearFechaBonita(fechaRaw) {
     if (!fechaRaw) return "Pendiente";
     const dateObj = new Date(fechaRaw);
@@ -30,7 +39,8 @@ function formatearFechaBonita(fechaRaw) {
     }).replace(',', ''); 
 }
 
-// CABECERA: El último parámetro 'showSync' decide si se muestra el botón de recarga
+// --- CABECERA DE LIBRETA (REUTILIZABLE) ---
+// Nuevo parámetro 'showSync' para ocultar el botón de recarga donde no se necesita
 const getHeaderLibreta = (titulo, funcionRecarga, pantallaRegreso, showSync = true) => `
     <div class="form-title-section">
         <h2 class="form-title">${titulo}</h2>
@@ -43,6 +53,7 @@ const getHeaderLibreta = (titulo, funcionRecarga, pantallaRegreso, showSync = tr
 `;
 
 const SCREENS = {
+    // --- LOGIN SCREEN ---
     'LOGIN': `
         <div class="screen login-screen-container">
             <div class="login-box">
@@ -50,30 +61,62 @@ const SCREENS = {
                     <img src="icons/logo.png" style="width:100px; margin-bottom:20px;">
                     <h1 style="color:white; font-size:1.5rem; margin:0;">RAVENS ACCESS</h1>
                 </div>
-                <div class="input-group"><label class="login-label">Usuario</label><input type="text" id="login-user" class="form-input" placeholder="Ej. guardia1"></div>
-                <div class="input-group"><label class="login-label">Contraseña</label><input type="password" id="login-pass" class="form-input" placeholder="••••••"></div>
+                <div class="input-group">
+                    <label class="login-label">Usuario</label>
+                    <input type="text" id="login-user" class="form-input" placeholder="Ej. guardia1">
+                </div>
+                <div class="input-group">
+                    <label class="login-label">Contraseña</label>
+                    <input type="password" id="login-pass" class="form-input" placeholder="••••••">
+                </div>
                 <button class="btn-primary" onclick="doLogin()">INICIAR SESIÓN</button>
                 <p id="login-error" style="color:#ef4444; text-align:center; margin-top:20px; display:none; font-weight:bold;"></p>
             </div>
-        </div>`,
-    
+        </div>
+    `,
+
+    // --- MENÚ PRINCIPAL ---
     'INICIO': `
         <div class="screen">
             <header class="header-app">
-                <div class="header-logo"><img src="icons/logo.png" alt="Logo" style="height: 40px; margin-right: 15px;"><span class="header-logo-text">RAVENS ACCESS</span></div>
-                <div onclick="doLogout()" style="cursor:pointer; color:#ef4444;"><i class="fas fa-sign-out-alt fa-lg"></i></div>
+                <div class="header-logo">
+                    <img src="icons/logo.png" alt="Logo" style="height: 40px; margin-right: 15px;">
+                    <span class="header-logo-text">RAVENS ACCESS</span>
+                </div>
+                <div onclick="doLogout()" style="cursor:pointer; color:#ef4444;">
+                    <i class="fas fa-sign-out-alt fa-lg"></i>
+                </div>
             </header>
             <main class="main-menu-grid">
-                <div class="menu-item" onclick="navigate('A1')"><img src="icons/visita.svg" class="custom-icon"><div>Visitas</div></div>
-                <div class="menu-item" onclick="navigate('B1')"><img src="icons/paquete1.svg" class="custom-icon"><div>Paquetería</div></div>
-                <div class="menu-item" onclick="navigate('D1')"><img src="icons/proveedor.svg" class="custom-icon"><div>Proveedor</div></div>
-                <div class="menu-item" onclick="navigate('E1')"><img src="icons/qr.svg" class="custom-icon"><div>Módulos QR</div></div>
-                <div class="menu-item full" onclick="navigate('F1')"><img src="icons/servicio.svg" class="custom-icon"><div>Personal Interno</div></div>
+                <div class="menu-item" onclick="navigate('A1')">
+                    <img src="icons/visita.svg" class="custom-icon"><div>Visitas</div>
+                </div>
+                <div class="menu-item" onclick="navigate('B1')">
+                    <img src="icons/paquete1.svg" class="custom-icon"><div>Paquetería</div>
+                </div>
+                <div class="menu-item" onclick="navigate('D1')">
+                    <img src="icons/proveedor.svg" class="custom-icon"><div>Proveedor</div>
+                </div>
+                <div class="menu-item" onclick="navigate('E1')">
+                    <img src="icons/qr.svg" class="custom-icon"><div>Módulos QR</div>
+                </div>
+                <div class="menu-item full" onclick="navigate('F1')">
+                    <img src="icons/servicio.svg" class="custom-icon"><div>Personal Interno</div>
+                </div>
             </main>
-        </div>`,
+        </div>
+    `,
 
-    // VISITAS
-    'A1': `<div class="screen"><header class="header-app"><div class="header-logo"><span class="header-logo-text">VISITAS</span></div><div class="cursor-pointer" onclick="navigate('INICIO')"><img src="icons/home.svg" class="header-icon-img"></div></header><main class="main-menu-grid"><div class="menu-item" onclick="navigate('AA1')"><img src="icons/visita.svg" class="custom-icon"><div>Registrar Visita</div></div><div class="menu-item" onclick="navigate('AC1')"><img src="icons/servicio2.svg" class="custom-icon"><div>Personal Servicio</div></div></main></div>`,
+    // --- MÓDULO A: VISITAS ---
+    'A1': `
+        <div class="screen">
+            <header class="header-app"><div class="header-logo"><span class="header-logo-text">VISITAS</span></div><div class="cursor-pointer" onclick="navigate('INICIO')"><img src="icons/home.svg" class="header-icon-img"></div></header>
+            <main class="main-menu-grid">
+                <div class="menu-item" onclick="navigate('AA1')"><img src="icons/visita.svg" class="custom-icon"><div>Registrar Visita</div></div>
+                <div class="menu-item" onclick="navigate('AC1')"><img src="icons/servicio2.svg" class="custom-icon"><div>Personal Servicio</div></div>
+            </main>
+        </div>
+    `,
     'AA1': `
         <div class="screen form-page">
             <div class="form-title-section"><h2 class="form-title">Nueva Visita</h2><div class="header-icons"><i class="fas fa-arrow-left fa-2x cursor-pointer back-btn" onclick="navigate('A1')"></i><img src="icons/libreta.svg" class="header-icon-img cursor-pointer" onclick="navigate('AA2')"></div></div>
@@ -85,10 +128,16 @@ const SCREENS = {
                 <button class="btn-primary" onclick="openResidenteModal('aa1')"><i class="fas fa-search"></i> Seleccionar Residente</button>
                 <div class="input-group" style="margin-top:15px"><label>Placa</label><input type="text" id="aa1-placa" class="form-input"></div>
                 <div class="input-group"><label>Motivo *</label><input type="text" id="aa1-motivo" class="form-input"></div>
-                <div style="margin-top: 20px;"><button class="btn-save" onclick="submitAviso('aa1')">Guardar</button><button class="btn-clean" onclick="resetForm('aa1')">Limpiar</button></div>
+                <div style="margin-top: 20px;">
+                    <button class="btn-save" onclick="submitAviso('aa1')">Guardar</button>
+                    <button class="btn-clean" onclick="resetForm('aa1')">Limpiar</button>
+                </div>
             </div>
-        </div>`,
-    'AA2': `<div class="screen form-page">${getHeaderLibreta('Libreta Visitas', "loadHistory('VISITA', 'gal-aa2')", 'AA1', true)}<div class="form-container"><div id="gal-aa2" class="gallery-container"></div></div></div>`,
+        </div>
+    `,
+    'AA2': `<div class="screen form-page">
+            ${getHeaderLibreta('Libreta Visitas', "loadHistory('VISITA', 'gal-aa2')", 'AA1', true)}
+            <div class="form-container"><div id="gal-aa2" class="gallery-list"></div></div></div>`,
     
     'AC1': `
         <div class="screen form-page">
@@ -102,11 +151,21 @@ const SCREENS = {
                 <div class="input-group" style="margin-top:15px"><label>Cargo *</label><input type="text" id="ac1-cargo" class="form-input"></div>
                 <div style="margin-top: 20px;"><button class="btn-save" onclick="submitAviso('ac1')">Guardar</button><button class="btn-clean" onclick="resetForm('ac1')">Limpiar</button></div>
             </div>
-        </div>`,
-    'AC2': `<div class="screen form-page">${getHeaderLibreta('Libreta Personal', "loadHistory('PERSONAL_DE_SERVICIO', 'gal-ac2')", 'AC1', true)}<div class="form-container"><div id="gal-ac2" class="gallery-container"></div></div></div>`,
+        </div>
+    `,
+    'AC2': `<div class="screen form-page">
+            ${getHeaderLibreta('Libreta Personal', "loadHistory('PERSONAL_DE_SERVICIO', 'gal-ac2')", 'AC1', true)}
+            <div class="form-container"><div id="gal-ac2" class="gallery-list"></div></div></div>`,
 
-    // PAQUETERIA
-    'B1': `<div class="screen"><header class="header-app"><div class="header-logo"><span class="header-logo-text">PAQUETERÍA</span></div><div class="cursor-pointer" onclick="navigate('INICIO')"><img src="icons/home.svg" class="header-icon-img"></div></header><main class="main-menu-grid"><div class="menu-item" onclick="navigate('BA1')"><img src="icons/paquete2.svg" class="custom-icon"><div>Recibir</div></div><div class="menu-item" onclick="navigate('BB1')"><img src="icons/paquete3.svg" class="custom-icon"><div>Entregar</div></div></main></div>`,
+    // --- MÓDULO B: PAQUETERÍA ---
+    'B1': `
+        <div class="screen"><header class="header-app"><div class="header-logo"><span class="header-logo-text">PAQUETERÍA</span></div><div class="cursor-pointer" onclick="navigate('INICIO')"><img src="icons/home.svg" class="header-icon-img"></div></header>
+            <main class="main-menu-grid">
+                <div class="menu-item" onclick="navigate('BA1')"><img src="icons/paquete2.svg" class="custom-icon"><div>Recibir</div></div>
+                <div class="menu-item" onclick="navigate('BB1')"><img src="icons/paquete3.svg" class="custom-icon"><div>Entregar</div></div>
+            </main>
+        </div>
+    `,
     'BA1': `
         <div class="screen form-page">
             <div class="form-title-section"><h2 class="form-title">Recibir Paquete</h2><div class="header-icons"><i class="fas fa-arrow-left fa-2x cursor-pointer back-btn" onclick="navigate('B1')"></i><img src="icons/libreta.svg" class="header-icon-img cursor-pointer" onclick="navigate('BA2')"></div></div>
@@ -117,11 +176,20 @@ const SCREENS = {
                 <button class="btn-primary" onclick="openResidenteModal('ba1')"><i class="fas fa-search"></i> Seleccionar Residente</button>
                 <div class="input-group" style="margin-top:15px"><label>Paquetería *</label><input type="text" id="ba1-paqueteria" class="form-input"></div>
                 <div class="input-group"><label>Estatus</label><select id="ba1-estatus" class="form-input"><option>Aceptado</option><option>Dañado</option></select></div>
-                <div class="input-group"><label>Foto</label><div class="photo-placeholder" onclick="document.getElementById('cam-ba1').click()"><input type="file" id="cam-ba1" hidden accept="image/*" capture="environment" onchange="previewImg(this, 'ba1')"><div id="prev-ba1" class="photo-preview hidden"></div><span><i class="fas fa-camera"></i> Cámara</span></div></div>
+                <div class="input-group"><label>Foto</label>
+                    <div class="photo-placeholder" onclick="document.getElementById('cam-ba1').click()">
+                        <input type="file" id="cam-ba1" hidden accept="image/*" capture="environment" onchange="previewImg(this, 'ba1')">
+                        <div id="prev-ba1" class="photo-preview hidden"></div><span><i class="fas fa-camera"></i> Cámara</span>
+                    </div>
+                </div>
                 <div style="margin-top: 20px;"><button class="btn-save" onclick="submitRecepcionPaquete()">Guardar</button><button class="btn-clean" onclick="resetForm('ba1')">Limpiar</button></div>
             </div>
-        </div>`,
-    'BA2': `<div class="screen form-page">${getHeaderLibreta('Libreta Recepción', "loadHistory('PAQUETERIA_RECEPCION', 'gal-ba2')", 'BA1', true)}<div class="form-container"><div id="gal-ba2" class="gallery-container"></div></div></div>`,
+        </div>
+    `,
+    'BA2': `<div class="screen form-page">
+            ${getHeaderLibreta('Libreta Recepción', "loadHistory('PAQUETERIA_RECEPCION', 'gal-ba2')", 'BA1', true)}
+            <div class="form-container"><div id="gal-ba2" class="gallery-list"></div></div></div>`,
+    
     'BB1': `
         <div class="screen form-page">
             <div class="form-title-section"><h2 class="form-title">Entregar Paquete</h2><div class="header-icons"><i class="fas fa-arrow-left fa-2x cursor-pointer back-btn" onclick="navigate('B1')"></i><img src="icons/libreta.svg" class="header-icon-img cursor-pointer" onclick="navigate('BB2')"></div></div>
@@ -131,14 +199,19 @@ const SCREENS = {
                 <div class="input-group"><label>Depto</label><input type="text" id="bb1-depto" class="form-input" readonly></div>
                 <div class="input-group"><label>Dueño (Residente)</label><input type="text" id="bb1-res-name" class="form-input" readonly></div>
                 <button class="btn-primary" onclick="openResidenteModal('bb1')"><i class="fas fa-search"></i> Seleccionar Dueño</button>
-                <div class="input-group" style="margin-top:15px"><label>Foto Evidencia</label><div class="photo-placeholder" onclick="document.getElementById('cam-bb1').click()"><input type="file" id="cam-bb1" hidden accept="image/*" capture="environment" onchange="previewImg(this, 'bb1')"><div id="prev-bb1" class="photo-preview hidden"></div><span><i class="fas fa-camera"></i> Cámara</span></div></div>
+                <div class="input-group" style="margin-top:15px"><label>Foto Evidencia</label>
+                    <div class="photo-placeholder" onclick="document.getElementById('cam-bb1').click()"><input type="file" id="cam-bb1" hidden accept="image/*" capture="environment" onchange="previewImg(this, 'bb1')"><div id="prev-bb1" class="photo-preview hidden"></div><span><i class="fas fa-camera"></i> Cámara</span></div>
+                </div>
                 <div class="input-group"><label>Firma</label><div class="signature-wrapper"><canvas id="sig-canvas"></canvas><i class="fas fa-times-circle clear-sig" onclick="clearSignature()"></i></div></div>
                 <div style="margin-top: 20px;"><button class="btn-save" onclick="submitEntregaPaquete()">Guardar</button><button class="btn-clean" onclick="resetForm('bb1')">Limpiar</button></div>
             </div>
-        </div>`,
-    'BB2': `<div class="screen form-page">${getHeaderLibreta('Libreta Entregas', "loadHistory('PAQUETERIA_ENTREGA', 'gal-bb2')", 'BB1', true)}<div class="form-container"><div id="gal-bb2" class="gallery-container"></div></div></div>`,
+        </div>
+    `,
+    'BB2': `<div class="screen form-page">
+            ${getHeaderLibreta('Libreta Entregas', "loadHistory('PAQUETERIA_ENTREGA', 'gal-bb2')", 'BB1', true)}
+            <div class="form-container"><div id="gal-bb2" class="gallery-list"></div></div></div>`,
 
-    // PROVEEDOR
+    // --- MÓDULO D: PROVEEDOR ---
     'D1': `
         <div class="screen form-page">
             <div class="form-title-section"><h2 class="form-title">Proveedor</h2><div class="header-icons"><img src="icons/home.svg" class="header-icon-img cursor-pointer" onclick="navigate('INICIO')"><img src="icons/libreta.svg" class="header-icon-img cursor-pointer" onclick="navigate('D2')"></div></div>
@@ -152,22 +225,96 @@ const SCREENS = {
                 <button class="btn-primary" onclick="openResidenteModal('d1')"><i class="fas fa-search"></i> Seleccionar Residente</button>
                 <div style="margin-top: 20px;"><button class="btn-save" onclick="submitProveedor()">Guardar</button><button class="btn-clean" onclick="resetForm('d1')">Limpiar</button></div>
             </div>
+        </div>
+    `,
+    'D2': `<div class="screen form-page">
+            ${getHeaderLibreta('Libreta Proveedor', "loadHistory('PROVEEDOR', 'gal-d2')", 'D1', true)}
+            <div class="form-container"><div id="gal-d2" class="gallery-list"></div></div></div>`,
+
+    // --- MÓDULO E: QR ---
+    'E1': `
+        <div class="screen"><header class="header-app"><div class="header-logo"><span class="header-logo-text">MÓDULOS QR</span></div><div class="cursor-pointer" onclick="navigate('INICIO')"><img src="icons/home.svg" class="header-icon-img"></div></header>
+            <main class="main-menu-grid">
+                <div class="menu-item" onclick="navigate('EA1')"><img src="icons/residente.svg" class="custom-icon"><div>QR Residente</div></div>
+                <div class="menu-item" onclick="navigate('EB1')"><img src="icons/visita.svg" class="custom-icon"><div>QR Visita</div></div>
+                <div class="menu-item" onclick="navigate('EC1')"><img src="icons/evento.svg" class="custom-icon"><div>Eventos</div></div>
+                <div class="menu-item" onclick="navigate('ED1')"><img src="icons/proveedor.svg" class="custom-icon"><div>Proveedor NIP</div></div>
+            </main>
+        </div>
+    `,
+    'EA1': `
+        <div class="screen form-page">
+            <div class="form-title-section"><h2 class="form-title">QR Residente</h2><div class="header-icons"><i class="fas fa-arrow-left fa-2x cursor-pointer back-btn" onclick="navigate('E1')"></i><img src="icons/libreta.svg" class="header-icon-img cursor-pointer" onclick="navigate('EA2')"></div></div>
+            <div class="form-container">
+                <div class="input-group"><input type="text" id="ea1-dni" class="form-input" placeholder=""></div>
+                <button class="btn-primary" onclick="startScan('ea1-dni')"><i class="fas fa-camera"></i> Escanear</button>
+                <div style="margin-top: 20px;"><button class="btn-save" onclick="submitQRResidente()">Validar</button><button class="btn-clean" onclick="resetForm('ea1')">Limpiar</button></div>
+            </div>
         </div>`,
-    'D2': `<div class="screen form-page">${getHeaderLibreta('Libreta Proveedor', "loadHistory('PROVEEDOR', 'gal-d2')", 'D1', true)}<div class="form-container"><div id="gal-d2" class="gallery-container"></div></div></div>`,
+    
+    // EA2: BOTON DE RECARGA ELIMINADO (false)
+    'EA2': `<div class="screen form-page">
+            ${getHeaderLibreta('Historial QR', "loadHistory('QR_RESIDENTE', 'gal-ea2')", 'EA1', false)}
+            <div class="form-container"><div id="gal-ea2" class="gallery-list"></div></div></div>`,
+    
+    'EB1': `
+        <div class="screen form-page">
+            <div class="form-title-section"><h2 class="form-title">QR Visita</h2><div class="header-icons"><i class="fas fa-arrow-left fa-2x cursor-pointer back-btn" onclick="navigate('E1')"></i><img src="icons/libreta.svg" class="header-icon-img cursor-pointer" onclick="navigate('EB2')"></div></div>
+            <div class="form-container">
+                <div class="input-group"><input type="text" id="eb1-code" class="form-input" placeholder=""></div>
+                <button class="btn-primary" onclick="startScan('eb1-code')"><i class="fas fa-camera"></i> Escanear</button>
+                <div style="margin-top: 20px;"><button class="btn-save" onclick="submitQRVisita()">Validar</button><button class="btn-clean" onclick="resetForm('eb1')">Limpiar</button></div>
+            </div>
+        </div>`,
+    
+    // EB2: BOTON DE RECARGA ELIMINADO (false)
+    'EB2': `<div class="screen form-page">
+            ${getHeaderLibreta('Historial QR Visita', "loadHistory('QR_VISITA', 'gal-eb2')", 'EB1', false)}
+            <div class="form-container"><div id="gal-eb2" class="gallery-list"></div></div></div>`,
+    
+    'EC1': `
+        <div class="screen form-page">
+            <div class="form-title-section"><h2 class="form-title">Validar Evento</h2><div class="cursor-pointer" onclick="navigate('E1')"><img src="icons/home.svg" class="header-icon-img"></div></div>
+            <div class="form-container">
+                <div class="input-group"><input type="text" id="ec1-code" class="form-input" placeholder=""></div>
+                <button class="btn-primary" onclick="startScan('ec1-code')"><i class="fas fa-camera"></i> Escanear</button>
+                <div style="margin-top: 20px;"><button class="btn-save" onclick="submitEvento()">Validar</button><button class="btn-clean" onclick="resetForm('ec1')">Limpiar</button></div>
+            </div>
+        </div>`,
+    
+    'ED1': `
+        <div class="screen form-page">
+            <div class="form-title-section"><h2 class="form-title">Proveedor NIP</h2><div class="header-icons"><i class="fas fa-arrow-left fa-2x cursor-pointer back-btn" onclick="navigate('E1')"></i><img src="icons/libreta.svg" class="header-icon-img cursor-pointer" onclick="navigate('ED2')"></div></div>
+            <div class="form-container">
+                <div class="input-group"><input type="text" id="ed1-nip" class="form-input" placeholder=""></div>
+                <div style="margin-top: 20px;"><button class="btn-save" onclick="submitProveedorNIP()">Validar</button><button class="btn-clean" onclick="resetForm('ed1')">Limpiar</button></div>
+            </div>
+        </div>`,
+    
+    // ED2: BOTON DE RECARGA ELIMINADO (false)
+    'ED2': `<div class="screen form-page">
+            ${getHeaderLibreta('Historial NIP', "loadHistory('NIP_PROVEEDOR', 'gal-ed2')", 'ED1', false)}
+            <div class="form-container"><div id="gal-ed2" class="gallery-list"></div></div></div>`,
 
-    // MODULOS QR (SIN BOTON DE RECARGA: False)
-    'E1': `<div class="screen"><header class="header-app"><div class="header-logo"><span class="header-logo-text">MÓDULOS QR</span></div><div class="cursor-pointer" onclick="navigate('INICIO')"><img src="icons/home.svg" class="header-icon-img"></div></header><main class="main-menu-grid"><div class="menu-item" onclick="navigate('EA1')"><img src="icons/residente.svg" class="custom-icon"><div>QR Residente</div></div><div class="menu-item" onclick="navigate('EB1')"><img src="icons/visita.svg" class="custom-icon"><div>QR Visita</div></div><div class="menu-item" onclick="navigate('EC1')"><img src="icons/evento.svg" class="custom-icon"><div>Eventos</div></div><div class="menu-item" onclick="navigate('ED1')"><img src="icons/proveedor.svg" class="custom-icon"><div>Proveedor NIP</div></div></main></div>`,
-    'EA1': `<div class="screen form-page"><div class="form-title-section"><h2 class="form-title">QR Residente</h2><div class="header-icons"><i class="fas fa-arrow-left fa-2x cursor-pointer back-btn" onclick="navigate('E1')"></i><img src="icons/libreta.svg" class="header-icon-img cursor-pointer" onclick="navigate('EA2')"></div></div><div class="form-container"><div class="input-group"><input type="text" id="ea1-dni" class="form-input" placeholder=""></div><button class="btn-primary" onclick="startScan('ea1-dni')"><i class="fas fa-camera"></i> Escanear</button><div style="margin-top: 20px;"><button class="btn-save" onclick="submitQRResidente()">Validar</button><button class="btn-clean" onclick="resetForm('ea1')">Limpiar</button></div></div></div>`,
-    'EA2': `<div class="screen form-page">${getHeaderLibreta('Historial QR', "loadHistory('QR_RESIDENTE', 'gal-ea2')", 'EA1', false)}<div class="form-container"><div id="gal-ea2" class="gallery-container"></div></div></div>`,
-    'EB1': `<div class="screen form-page"><div class="form-title-section"><h2 class="form-title">QR Visita</h2><div class="header-icons"><i class="fas fa-arrow-left fa-2x cursor-pointer back-btn" onclick="navigate('E1')"></i><img src="icons/libreta.svg" class="header-icon-img cursor-pointer" onclick="navigate('EB2')"></div></div><div class="form-container"><div class="input-group"><input type="text" id="eb1-code" class="form-input" placeholder=""></div><button class="btn-primary" onclick="startScan('eb1-code')"><i class="fas fa-camera"></i> Escanear</button><div style="margin-top: 20px;"><button class="btn-save" onclick="submitQRVisita()">Validar</button><button class="btn-clean" onclick="resetForm('eb1')">Limpiar</button></div></div></div>`,
-    'EB2': `<div class="screen form-page">${getHeaderLibreta('Historial QR Visita', "loadHistory('QR_VISITA', 'gal-eb2')", 'EB1', false)}<div class="form-container"><div id="gal-eb2" class="gallery-container"></div></div></div>`,
-    'EC1': `<div class="screen form-page"><div class="form-title-section"><h2 class="form-title">Validar Evento</h2><div class="cursor-pointer" onclick="navigate('E1')"><img src="icons/home.svg" class="header-icon-img"></div></div><div class="form-container"><div class="input-group"><input type="text" id="ec1-code" class="form-input" placeholder=""></div><button class="btn-primary" onclick="startScan('ec1-code')"><i class="fas fa-camera"></i> Escanear</button><div style="margin-top: 20px;"><button class="btn-save" onclick="submitEvento()">Validar</button><button class="btn-clean" onclick="resetForm('ec1')">Limpiar</button></div></div></div>`,
-    'ED1': `<div class="screen form-page"><div class="form-title-section"><h2 class="form-title">Proveedor NIP</h2><div class="header-icons"><i class="fas fa-arrow-left fa-2x cursor-pointer back-btn" onclick="navigate('E1')"></i><img src="icons/libreta.svg" class="header-icon-img cursor-pointer" onclick="navigate('ED2')"></div></div><div class="form-container"><div class="input-group"><input type="text" id="ed1-nip" class="form-input" placeholder=""></div><div style="margin-top: 20px;"><button class="btn-save" onclick="submitProveedorNIP()">Validar</button><button class="btn-clean" onclick="resetForm('ed1')">Limpiar</button></div></div></div>`,
-    'ED2': `<div class="screen form-page">${getHeaderLibreta('Historial NIP', "loadHistory('NIP_PROVEEDOR', 'gal-ed2')", 'ED1', false)}<div class="form-container"><div id="gal-ed2" class="gallery-container"></div></div></div>`,
-
-    // PERSONAL INTERNO (SIN BOTON DE RECARGA: False)
-    'F1': `<div class="screen form-page"><div class="form-title-section"><h2 class="form-title">Personal Interno</h2><div class="header-icons"><img src="icons/home.svg" class="header-icon-img cursor-pointer" onclick="navigate('INICIO')"><img src="icons/libreta.svg" class="header-icon-img cursor-pointer" onclick="navigate('F2')"></div></div><div class="form-container"><div class="input-group"><input type="text" id="f1-id" class="form-input" placeholder=""></div><button class="btn-primary" style="background:#333" onclick="startScan('f1-id')"><i class="fas fa-camera"></i> Escanear</button><div style="display:flex; gap:10px; margin-top:20px;"><button class="btn-save" onclick="submitPersonalInterno('Entrada')">Entrada</button><button class="btn-secondary" style="background:#3860B2" onclick="submitPersonalInterno('Salida')">Salida</button></div><button class="btn-clean" onclick="resetForm('f1')">Limpiar</button></div></div>`,
-    'F2': `<div class="screen form-page">${getHeaderLibreta('Bitácora Interna', "loadHistory('PERSONAL_INTERNO', 'gal-f2')", 'F1', false)}<div class="form-container"><div id="gal-f2" class="gallery-container"></div></div></div>`
+    // --- PERSONAL INTERNO ---
+    'F1': `
+        <div class="screen form-page">
+            <div class="form-title-section"><h2 class="form-title">Personal Interno</h2><div class="header-icons"><img src="icons/home.svg" class="header-icon-img cursor-pointer" onclick="navigate('INICIO')"><img src="icons/libreta.svg" class="header-icon-img cursor-pointer" onclick="navigate('F2')"></div></div>
+            <div class="form-container">
+                <div class="input-group"><input type="text" id="f1-id" class="form-input" placeholder=""></div>
+                <button class="btn-primary" style="background:#333" onclick="startScan('f1-id')"><i class="fas fa-camera"></i> Escanear</button>
+                <div style="display:flex; gap:10px; margin-top:20px;">
+                    <button class="btn-save" onclick="submitPersonalInterno('Entrada')">Entrada</button>
+                    <button class="btn-secondary" style="background:#3860B2" onclick="submitPersonalInterno('Salida')">Salida</button>
+                </div>
+                <button class="btn-clean" onclick="resetForm('f1')">Limpiar</button>
+            </div>
+        </div>`,
+    
+    // F2: BOTON DE RECARGA ELIMINADO (false)
+    'F2': `<div class="screen form-page">
+            ${getHeaderLibreta('Bitácora Interna', "loadHistory('PERSONAL_INTERNO', 'gal-f2')", 'F1', false)}
+            <div class="form-container"><div id="gal-f2" class="gallery-list"></div></div></div>`
 };
 
 /* =========================================
@@ -176,6 +323,7 @@ const SCREENS = {
 let signaturePad;
 let html5QrCode;
 
+// --- A. BACKEND CALL ---
 async function callBackend(action, extraData = {}) {
     if (!STATE.session.condominioId) {
         const saved = localStorage.getItem('ravensUser');
@@ -183,19 +331,34 @@ async function callBackend(action, extraData = {}) {
     }
     const loadingBtn = document.querySelector('.btn-save') || document.querySelector('.btn-primary');
     if(loadingBtn) { loadingBtn.dataset.originalText = loadingBtn.innerText; loadingBtn.disabled = true; loadingBtn.innerText = "Procesando..."; }
+
     try {
         const payload = { action, condominio: STATE.session.condominioId, usuario: STATE.session.usuario || "guardia_web", ...extraData };
         const response = await fetch(CONFIG.API_PROXY_URL, { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(payload) });
-        if (!response.ok) { throw new Error(`HTTP ${response.status}`); }
+        
+        if (!response.ok) {
+            const errorText = await response.text();
+            throw new Error(`HTTP ${response.status}: ${errorText || response.statusText}`);
+        }
+
         const result = await response.json();
+        
         if(loadingBtn) { loadingBtn.disabled = false; loadingBtn.innerText = loadingBtn.dataset.originalText || "Guardar"; }
+        
+        if (result && result.success === false) {
+            return result;
+        }
+
         return result;
+
     } catch (error) {
         if(loadingBtn) { loadingBtn.disabled = false; loadingBtn.innerText = "Error"; setTimeout(() => { loadingBtn.innerText = loadingBtn.dataset.originalText || "Guardar"; }, 3000); }
+        console.error("❌ Error de comunicación:", error);
         return { success: false, message: error.message || "Error de conexión" };
     }
 }
 
+// --- B. SESIÓN ---
 async function doLogin() {
     const user = document.getElementById('login-user').value;
     const pass = document.getElementById('login-pass').value;
@@ -225,6 +388,7 @@ async function loadResidentesList() {
 function doLogout() { STATE.session = { isLoggedIn: false, condominioId: null, usuario: null }; localStorage.removeItem('ravensUser'); navigate('LOGIN'); }
 function checkSession() { const saved = localStorage.getItem('ravensUser'); if (saved) { STATE.session = JSON.parse(saved); loadResidentesList(); navigate('INICIO'); } else { navigate('LOGIN'); } }
 
+// --- C. NAVEGACIÓN Y GALERÍAS ---
 function navigate(screen) {
     if(html5QrCode && html5QrCode.isScanning) { html5QrCode.stop().then(() => html5QrCode.clear()).catch(err => {}); }
     document.getElementById('viewport').innerHTML = SCREENS[screen] || SCREENS['LOGIN'];
@@ -235,9 +399,9 @@ function navigate(screen) {
 
 async function loadHistory(tipo, elementId) {
     const container = document.getElementById(elementId);
-    if(!container) return; container.innerHTML = '<div class="loader-history">Cargando...</div>';
+    if(!container) return; container.innerHTML = '<div style="padding:20px; text-align:center;">Cargando...</div>';
     const response = await callBackend('get_history', { tipo_lista: tipo });
-    if(response && response.data) { renderRemoteGallery(response.data, elementId); } else { container.innerHTML = '<div class="no-data">Sin registros.</div>'; }
+    if(response && response.data) { renderRemoteGallery(response.data, elementId); } else { container.innerHTML = '<div class="no-data">Sin datos.</div>'; }
 }
 
 function getStatusColor(status) {
@@ -249,10 +413,10 @@ function getStatusColor(status) {
 
 function renderRemoteGallery(data, elementId) {
     const container = document.getElementById(elementId);
-    if (!data || data.length === 0) { container.innerHTML = `<div class="no-data">No hay movimientos recientes.</div>`; return; }
+    if (!data || data.length === 0) { container.innerHTML = `<div class="no-data">Sin registros recientes.</div>`; return; }
     
-    // FILTROS: QR Residente (gal-ea2) muestra TODO.
-    // Los demás ocultan "Nuevo" y Vacíos.
+    // --- FILTRO: QR RESIDENTE (gal-ea2) muestra TODO.
+    // --- LOS DEMÁS filtran "Nuevo" y Vacíos. ---
     const filteredData = data.filter(item => {
         if (elementId === 'gal-ea2') return true; 
         const estatus = (item.Estatus || item.TipoMarca || "").toString().toLowerCase().trim();
@@ -260,7 +424,7 @@ function renderRemoteGallery(data, elementId) {
     });
 
     if (filteredData.length === 0) {
-        container.innerHTML = `<div class="no-data">Esperando movimientos...</div>`;
+        container.innerHTML = `<div class="no-data">Sin registros procesados.</div>`;
         return;
     }
 
@@ -338,7 +502,7 @@ async function submitAviso(p) {
     const data = { Nombre: nom, Residente: STATE[p].residente, Torre: STATE[p].torre, Departamento: STATE[p].depto, Telefono: STATE[p].telefono || "", Tipo_Lista: tipoLista, Cargo: cargo || "N/A", Motivo: motivo || "Servicio", Placa: document.getElementById(p+'-placa')?.value || "N/A" };
     const res = await callBackend('submit_form', { formulario: 'AVISOG', data: data });
     if (res && res.success) { resetForm(p); showSuccessScreen(res.message || "Registro Guardado", "Correcto", nextScreen); } 
-    else { showFailureScreen(res.message || "Error al procesar", p.toUpperCase()); }
+    else { showFailureScreen(res.message || "Error al guardar", p.toUpperCase()); }
 }
 
 async function submitProveedor() {
@@ -371,6 +535,7 @@ async function submitEntregaPaquete() {
 async function submitPersonalInterno(accion) {
     const id = document.getElementById('f1-id').value;
     if(!id) return alert("⚠️ No hay un código para validar.");
+    // NOTA: Se envia ID_Personal y Accion (Mayúscula) para que coincida con Logic App
     const res = await callBackend('submit_form', { formulario: 'PERSONAL_INTERNO', data: { ID_Personal: id, Accion: accion } });
     if (res && res.success) { 
         resetForm('f1'); 
@@ -492,3 +657,4 @@ function startScan(targetInputId) {
 function closeQRScanner() { if(html5QrCode) html5QrCode.stop().then(() => html5QrCode.clear()).catch(()=>{}); document.getElementById('qr-modal').classList.remove('active'); }
 
 window.onload = () => { checkSession(); };
+// --- FIN DEL ARCHIVO ---
