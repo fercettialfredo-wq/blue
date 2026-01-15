@@ -2,7 +2,7 @@
    1. CONFIGURACIÓN Y ESTADO GLOBAL
    ========================================= */
 const CONFIG = {
-    // Asegúrate de que esta sea la URL correcta de tu Azure Function
+    // URL de tu Proxy en Azure
     API_PROXY_URL: 'https://proxyoperador.azurewebsites.net/api/ravens-proxy'
 };
 
@@ -183,7 +183,7 @@ const SCREENS = {
 let signaturePad;
 let html5QrCode;
 
-// --- A. BACKEND CALL ---
+// --- A. BACKEND CALL (CORREGIDO PARA MANEJAR ERRORES SIN FEALDAD) ---
 async function callBackend(action, extraData = {}) {
     if (!STATE.session.condominioId) {
         const saved = localStorage.getItem('ravensUser');
@@ -196,13 +196,28 @@ async function callBackend(action, extraData = {}) {
         const payload = { action, condominio: STATE.session.condominioId, usuario: STATE.session.usuario || "guardia_web", ...extraData };
         const response = await fetch(CONFIG.API_PROXY_URL, { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(payload) });
         
-        if (!response.ok) {
-            const errorText = await response.text();
-            throw new Error(`HTTP ${response.status}: ${errorText || response.statusText}`);
+        // Intentamos leer JSON siempre, incluso si es error (400, 404, 500)
+        let result;
+        try {
+            result = await response.json();
+        } catch (e) {
+            // Si falla el parseo, es un error fatal de servidor (HTML)
+            throw new Error(`Error Fatal (${response.status})`);
         }
 
-        const result = await response.json();
         if(loadingBtn) { loadingBtn.disabled = false; loadingBtn.innerText = loadingBtn.dataset.originalText || "Guardar"; }
+
+        // Si la Logic App devolvió success: false (ej. código no encontrado o ya usado)
+        // Devolvemos el objeto tal cual para que el frontend decida qué mensaje mostrar
+        if (result && result.success === false) {
+            return result;
+        }
+
+        // Si es otro error HTTP no controlado por Logic App
+        if (!response.ok) {
+            throw new Error(result.message || `HTTP ${response.status}`);
+        }
+
         return result;
 
     } catch (error) {
@@ -261,7 +276,7 @@ async function loadHistory(tipo, elementId) {
 function getStatusColor(status) {
     if (!status) return '#2563eb'; const s = status.toString().toLowerCase().trim();
     if(['aceptado', 'entrada', 'autorizado', 'con registro', 'registrado'].includes(s)) return '#2ecc71';
-    if(['rechazado', 'salida', 'dañado', 'sin registro'].includes(s)) return '#e74c3c';
+    if(['rechazado', 'salida', 'dañado', 'sin registro', 'denegado'].includes(s)) return '#e74c3c';
     if(['nuevo'].includes(s)) return '#3498db'; return '#2563eb';
 }
 
@@ -319,7 +334,7 @@ function showDetails(index) {
     document.body.insertAdjacentHTML('beforeend', modalHtml);
 }
 
-// --- D. ENVÍO DE FORMULARIOS Y QR (LOGIC APP + NAVEGACIÓN DINÁMICA) ---
+// --- D. ENVÍO DE FORMULARIOS Y QR (LOGIC APP + PANTALLAS DINÁMICAS) ---
 
 // 1. Visitas (AA1) y Personal (AC1)
 async function submitAviso(p) {
@@ -438,7 +453,15 @@ async function validarAccesoQR(tipo, inputId, formId, nextScreen, failScreen) {
         showSuccessScreen(mensaje, `${movimiento}: ${nombre}`, nextScreen);
     } else {
         // Fallo: Mostramos pantalla roja y el botón regresa al escáner
-        const errorMsg = res ? res.message : "Código no válido";
+        let errorMsg = res ? res.message : "Código no válido";
+        
+        // --- AQUÍ ESTÁ EL CAMBIO PARA EL MENSAJE FEO ---
+        // Si el mensaje contiene palabras clave de "ya usado", lo reemplazamos por el bonito
+        const msgLower = errorMsg.toLowerCase();
+        if (msgLower.includes("ya usado") || msgLower.includes("vencido") || msgLower.includes("salida")) {
+            errorMsg = "⚠️ Este código ya fue validado anteriormente.";
+        }
+
         showFailureScreen(errorMsg, failScreen);
     }
 }
@@ -452,39 +475,45 @@ function submitProveedorNIP() { validarAccesoQR('NIP_PROVEEDOR', 'ed1-nip', 'ed1
 // --- E. PANTALLAS DINÁMICAS (Éxito / Fracaso) ---
 
 function showSuccessScreen(titulo, subtitulo, nextScreen) {
+    const old = document.getElementById('status-modal');
+    if(old) old.remove();
+
     const html = `
-        <div class="screen" style="display:flex; justify-content:center; align-items:center; height:100vh; flex-direction:column; text-align:center; background-color:#f0fdf4; animation: fadeIn 0.4s ease-out; position:fixed; top:0; left:0; width:100%; z-index:99999;">
+        <div id="status-modal" class="screen" style="display:flex; justify-content:center; align-items:center; height:100vh; flex-direction:column; text-align:center; background-color:#f0fdf4; animation: fadeIn 0.4s ease-out; position:fixed; top:0; left:0; width:100%; z-index:99999;">
             <div style="background:white; padding:40px; border-radius:20px; box-shadow:0 10px 25px rgba(0,0,0,0.1); max-width:90%; width: 400px;">
                 <div style="width:80px; height:80px; background:#dcfce7; border-radius:50%; display:flex; align-items:center; justify-content:center; margin:0 auto 20px;">
                     <i class="fas fa-check fa-3x" style="color:#2ecc71;"></i>
                 </div>
                 <h1 style="font-size:1.8rem; margin:0 0 10px; color:#166534;">${titulo}</h1>
                 <p style="font-size:1.2rem; color:#555; margin-bottom:30px;">${subtitulo}</p>
-                <button class="btn-primary" style="width:100%; font-size:1.1rem; padding:12px;" onclick="navigate('${nextScreen}')">Continuar</button>
+                <button class="btn-primary" style="width:100%; font-size:1.1rem; padding:12px;" onclick="document.getElementById('status-modal').remove(); navigate('${nextScreen}')">Continuar</button>
             </div>
         </div>
         <style>@keyframes fadeIn { from { opacity:0; transform: scale(0.9); } to { opacity:1; transform: scale(1); } }</style>
     `;
-    document.getElementById('viewport').innerHTML = html;
+    document.body.insertAdjacentHTML('beforeend', html);
 }
 
 function showFailureScreen(motivo, retryScreen) {
+    const old = document.getElementById('status-modal');
+    if(old) old.remove();
+
     const html = `
-        <div class="screen" style="display:flex; justify-content:center; align-items:center; height:100vh; flex-direction:column; text-align:center; background-color:#fef2f2; animation: shake 0.4s ease-in-out; position:fixed; top:0; left:0; width:100%; z-index:99999;">
+        <div id="status-modal" class="screen" style="display:flex; justify-content:center; align-items:center; height:100vh; flex-direction:column; text-align:center; background-color:#fef2f2; animation: shake 0.4s ease-in-out; position:fixed; top:0; left:0; width:100%; z-index:99999;">
             <div style="background:white; padding:40px; border-radius:20px; box-shadow:0 10px 25px rgba(0,0,0,0.1); max-width:90%; width: 400px;">
                 <div style="width:80px; height:80px; background:#fee2e2; border-radius:50%; display:flex; align-items:center; justify-content:center; margin:0 auto 20px;">
                     <i class="fas fa-times fa-3x" style="color:#ef4444;"></i>
                 </div>
                 <h1 style="font-size:1.8rem; margin:0 0 10px; color:#991b1b;">DENEGADO</h1>
                 <p style="font-size:1.1rem; color:#666; margin-bottom:30px; font-weight:500;">${motivo}</p>
-                <button class="btn-primary" style="width:100%; background-color:#333; font-size:1.1rem; padding:12px;" onclick="navigate('${retryScreen}')">Intentar de nuevo</button>
+                <button class="btn-primary" style="width:100%; background-color:#333; font-size:1.1rem; padding:12px;" onclick="document.getElementById('status-modal').remove(); navigate('${retryScreen}')">Intentar de nuevo</button>
             </div>
         </div>
         <style>
             @keyframes shake { 0% { transform: translate(1px, 1px) rotate(0deg); } 10% { transform: translate(-1px, -2px) rotate(-1deg); } 20% { transform: translate(-3px, 0px) rotate(1deg); } 30% { transform: translate(3px, 2px) rotate(0deg); } 40% { transform: translate(1px, -1px) rotate(1deg); } 50% { transform: translate(-1px, 2px) rotate(-1deg); } 60% { transform: translate(-3px, 1px) rotate(0deg); } 70% { transform: translate(3px, 1px) rotate(-1deg); } 80% { transform: translate(-1px, -1px) rotate(1deg); } 90% { transform: translate(1px, 2px) rotate(0deg); } 100% { transform: translate(1px, -2px) rotate(-1deg); } }
         </style>
     `;
-    document.getElementById('viewport').innerHTML = html;
+    document.body.insertAdjacentHTML('beforeend', html);
 }
 
 // --- F. UTILIDADES DEL FORMULARIO Y CÁMARA (RESTITUIDAS) ---
@@ -606,4 +635,3 @@ function closeQRScanner() {
 }
 
 window.onload = () => { console.log("🚀 Ravens Access iniciada."); checkSession(); };
-// FIN DEL CODIGO
