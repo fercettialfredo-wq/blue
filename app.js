@@ -302,17 +302,28 @@ async function callBackend(action, extraData = {}) {
         const payload = { action, condominio: STATE.session.condominioId, usuario: STATE.session.usuario || "guardia_web", ...extraData };
         const response = await fetch(CONFIG.API_PROXY_URL, { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(payload) });
         
-        // Manejo de errores HTTP
-        if (!response.ok) {
-            const errorText = await response.text();
-            throw new Error(`HTTP ${response.status}: ${errorText || response.statusText}`);
+        // Intentamos leer JSON siempre, incluso si es error (400, 404, 500)
+        let result;
+        try {
+            result = await response.json();
+        } catch (e) {
+            // Si falla el parseo, es un error fatal de servidor (HTML)
+            throw new Error(`Error Fatal (${response.status})`);
         }
 
-        // Intento de parseo JSON
-        const result = await response.json();
-        
         if(loadingBtn) { loadingBtn.disabled = false; loadingBtn.innerText = loadingBtn.dataset.originalText || "Guardar"; }
-        
+
+        // Si la Logic App devolvió success: false (ej. código no encontrado o ya usado)
+        // Devolvemos el objeto tal cual para que el frontend decida qué mensaje mostrar
+        if (result && result.success === false) {
+            return result;
+        }
+
+        // Si es otro error HTTP no controlado por Logic App
+        if (!response.ok) {
+            throw new Error(result.message || `HTTP ${response.status}`);
+        }
+
         return result;
 
     } catch (error) {
@@ -442,7 +453,7 @@ function showDetails(index) {
     document.body.insertAdjacentHTML('beforeend', modalHtml);
 }
 
-// --- D. ENVÍO DE FORMULARIOS Y QR (LOGIC APP + NAVEGACIÓN DINÁMICA) ---
+// --- D. ENVÍO DE FORMULARIOS Y QR (LOGIC APP + PANTALLAS DINÁMICAS) ---
 
 // 1. Visitas (AA1) y Personal (AC1)
 async function submitAviso(p) {
@@ -556,7 +567,12 @@ async function validarAccesoQR(tipo, inputId, formId, nextScreen, failScreen) {
         // Extraemos datos para mostrar en la pantalla verde
         const nombre = res.data?.nombre || "Autorizado";
         const movimiento = res.data?.tipo || "ACCESO";
-        const mensaje = res.message || "Acceso Permitido";
+        let mensaje = res.message || "Acceso Permitido";
+
+        // --- CAMBIO SOLICITADO PARA QR RESIDENTE ---
+        if (tipo === 'QR_RESIDENTE') {
+            mensaje = "Código Validado";
+        }
         
         showSuccessScreen(mensaje, `${movimiento}: ${nombre}`, nextScreen);
     } else {
@@ -567,7 +583,7 @@ async function validarAccesoQR(tipo, inputId, formId, nextScreen, failScreen) {
         // --- FILTROS DE MENSAJES DE ERROR LIMPIOS ---
         // 1. Caso 404 / No Encontrado
         if (msgLower.includes("404") || msgLower.includes("not found") || msgLower.includes("no existe") || msgLower.includes("no encontrado")) {
-             errorMsg = "🚫 Código no encontrado - Acceso Denegado";
+             errorMsg = "🚫 No hay un código para validar"; // CAMBIO SOLICITADO
         }
         // 2. Caso Ya Usado / Vencido
         else if (msgLower.includes("ya usado") || msgLower.includes("vencido") || msgLower.includes("salida")) {
