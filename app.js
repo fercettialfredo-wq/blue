@@ -2,7 +2,7 @@
    1. CONFIGURACIÓN Y ESTADO GLOBAL
    ========================================= */
 const CONFIG = {
-    // URL de tu Proxy en Azure
+    // URL de tu Proxy en Azure (Asegúrate que sea la correcta)
     API_PROXY_URL: 'https://proxyoperador.azurewebsites.net/api/ravens-proxy'
 };
 
@@ -281,9 +281,7 @@ const SCREENS = {
     'F2': `<div class="screen form-page">
             ${getHeaderLibreta('Bitácora Interna', "loadHistory('PERSONAL_INTERNO', 'gal-f2')", 'F1')}
             <div class="form-container"><div id="gal-f2" class="gallery-container"></div></div></div>`
-};
-
-/* =========================================
+};/* =========================================
    3. MOTOR LÓGICO Y FUNCIONES
    ========================================= */
 let signaturePad;
@@ -302,18 +300,15 @@ async function callBackend(action, extraData = {}) {
         const payload = { action, condominio: STATE.session.condominioId, usuario: STATE.session.usuario || "guardia_web", ...extraData };
         const response = await fetch(CONFIG.API_PROXY_URL, { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(payload) });
         
-        // Manejo de errores HTTP
         if (!response.ok) {
             const errorText = await response.text();
             throw new Error(`HTTP ${response.status}: ${errorText || response.statusText}`);
         }
 
-        // Intento de parseo JSON
         const result = await response.json();
         
         if(loadingBtn) { loadingBtn.disabled = false; loadingBtn.innerText = loadingBtn.dataset.originalText || "Guardar"; }
         
-        // Si el backend responde con success: false pero sin error HTTP
         if (result && result.success === false) {
             return result;
         }
@@ -384,8 +379,9 @@ function renderRemoteGallery(data, elementId) {
     const container = document.getElementById(elementId);
     if (!data || data.length === 0) { container.innerHTML = `<div style="padding:20px; text-align:center; color:#555">Sin registros recientes.</div>`; return; }
     
-    // --- FILTRO: Ocultar registros vacíos o "Nuevo" ---
+    // --- FILTRO INTELIGENTE: QR_RESIDENTE (gal-ea2) muestra todo, los demás filtran "Nuevo" ---
     const filteredData = data.filter(item => {
+        if (elementId === 'gal-ea2') return true; // Muestra todo en residentes
         const estatus = (item.Estatus || item.TipoMarca || "").toString().toLowerCase().trim();
         return estatus !== "" && estatus !== "nuevo";
     });
@@ -395,7 +391,7 @@ function renderRemoteGallery(data, elementId) {
         return;
     }
 
-    STATE.tempHistory = filteredData; // Guardamos lo filtrado para los detalles
+    STATE.tempHistory = filteredData;
 
     container.innerHTML = filteredData.map((item, index) => {
         let fechaLegible = formatearFechaBonita(item.Fecha || item.Created || item.Fechayhora);
@@ -443,139 +439,76 @@ function showDetails(index) {
     if(item.FirmaBase64) { const firmaSrc = item.FirmaBase64.startsWith('http') || item.FirmaBase64.startsWith('data:') ? item.FirmaBase64 : 'data:image/png;base64,'+item.FirmaBase64; imagesHtml += `<div style="text-align:center; margin-top:15px; padding-top:10px;"><p style="font-weight:bold; margin-bottom:5px; color:#333;">Firma:</p><img src="${firmaSrc}" style="max-width:100%; border:1px solid #ccc; border-radius:8px; padding:5px;"></div>`; }
     const fotoUrl = item.Foto || item.FotoBase64;
     if(fotoUrl && fotoUrl !== "null") { const fotoSrc = fotoUrl.startsWith('http') || fotoUrl.startsWith('data:') ? fotoUrl : 'data:image/png;base64,'+fotoUrl; imagesHtml += `<div style="text-align:center; margin-top:15px; padding-top:10px;"><p style="font-weight:bold; margin-bottom:5px; color:#333;">Evidencia:</p><img src="${fotoSrc}" style="max-width:100%; border-radius:8px; box-shadow:0 2px 5px rgba(0,0,0,0.1);"></div>`; }
-    const modalHtml = `<div id="detail-modal" style="position:fixed; top:0; left:0; width:100%; height:100%; background:rgba(0,0,0,0.6); z-index:99999; display:flex; justify-content:center; align-items:flex-end;"><div style="background:white; width:100%; max-width:500px; max-height:90vh; overflow-y:auto; padding:25px; border-radius:20px 20px 0 0; position:relative; animation: slideUp 0.3s ease-out;"><div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:20px; border-bottom:1px solid #eee; padding-bottom:15px;"><h2 style="margin:0; color:#333; font-size:1.5rem;">Detalles</h2><i class="fas fa-times" onclick="document.getElementById('detail-modal').remove()" style="font-size:1.8rem; color:#666; cursor:pointer;"></i></div><div style="color:#444;">${content}</div>${imagesHtml}<button onclick="document.getElementById('detail-modal').remove()" style="margin-top:25px; width:100%; padding:15px; background:#2ecc71; color:white; border:none; border-radius:12px; font-weight:bold; font-size:1.1rem; cursor:pointer; box-shadow: 0 4px 6px rgba(46, 204, 113, 0.3);">Cerrar</button></div></div><style>@keyframes slideUp { from { transform: translateY(100%); } to { transform: translateY(0); } }</style>`;
+    const modalHtml = `<div id="detail-modal" style="position:fixed; top:0; left:0; width:100%; height:100%; background:rgba(0,0,0,0.6); z-index:99999; display:flex; justify-content:center; align-items:flex-end;"><div style="background:white; width:100%; max-width:500px; max-height:90vh; overflow-y:auto; padding:25px; border-radius:20px 20px 0 0; position:relative; animation: slideUp 0.3s ease-out;"><div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:20px; border-bottom:1px solid #eee; padding-bottom:15px;"><h2 style="margin:0; color:#333; font-size:1.5rem;">Detalles</h2><i class="fas fa-times" onclick="document.getElementById('detail-modal').remove()" style="font-size:1.8rem; color:#666; cursor:pointer;"></i></div><div style="color:#444;">${content}</div>${imagesHtml}<button onclick="document.getElementById('detail-modal').remove()" style="margin-top:25px; width:100%; padding:15px; background:#2ecc71; color:white; border:none; border-radius:12px; font-weight:bold; font-size:1.1rem; cursor:pointer; box-shadow: 0 4px 6px rgba(46, 204, 113, 0.3);">Cerrar</button></div></div>`;
     document.body.insertAdjacentHTML('beforeend', modalHtml);
 }
 
-// --- D. ENVÍO DE FORMULARIOS Y QR (LOGIC APP + PANTALLAS DINÁMICAS) ---
+// --- D. ENVÍO DE FORMULARIOS Y QR ---
 
-// 1. Visitas (AA1) y Personal (AC1)
 async function submitAviso(p) {
     const nom = document.getElementById(p+'-nombre').value;
     const motivo = document.getElementById(p+'-motivo')?.value;
     const cargo = document.getElementById(p+'-cargo')?.value; 
-    
     if(!nom || !STATE[p]?.residente) { return alert("Faltan datos obligatorios."); }
-    if(p === 'aa1' && !motivo) { return alert("El motivo es obligatorio."); }
-    if(p === 'ac1' && !cargo) { return alert("El cargo es obligatorio."); } 
-
-    let tipoLista = '';
-    let nextScreen = '';
-    if (p === 'aa1') { tipoLista = 'VISITA'; nextScreen = 'AA2'; }
-    if (p === 'ac1') { tipoLista = 'PERSONALAVISO'; nextScreen = 'AC2'; }
-
-    const data = { 
-        Nombre: nom, Residente: STATE[p].residente, Torre: STATE[p].torre, Departamento: STATE[p].depto, 
-        Telefono: STATE[p].telefono || "", Tipo_Lista: tipoLista, Cargo: cargo || "N/A", 
-        Motivo: motivo || "Servicio", Placa: document.getElementById(p+'-placa')?.value || "N/A" 
-    };
-
+    let tipoLista = p === 'aa1' ? 'VISITA' : 'PERSONALAVISO';
+    let nextScreen = p === 'aa1' ? 'AA2' : 'AC2';
+    const data = { Nombre: nom, Residente: STATE[p].residente, Torre: STATE[p].torre, Departamento: STATE[p].depto, Telefono: STATE[p].telefono || "", Tipo_Lista: tipoLista, Cargo: cargo || "N/A", Motivo: motivo || "Servicio", Placa: document.getElementById(p+'-placa')?.value || "N/A" };
     const res = await callBackend('submit_form', { formulario: 'AVISOG', data: data });
-    if (res && res.success) { 
-        resetForm(p); 
-        showSuccessScreen(res.message || "Registro Guardado", "Correcto", nextScreen); 
-    } else {
-        showFailureScreen(res.message || "Error al guardar", p.toUpperCase());
-    }
+    if (res && res.success) { resetForm(p); showSuccessScreen(res.message || "Registro Guardado", "Correcto", nextScreen); } 
+    else { showFailureScreen(res.message || "Error al guardar", p.toUpperCase()); }
 }
 
-// 2. Proveedores (D1)
 async function submitProveedor() {
     const nom = document.getElementById('d1-nombre').value;
     const asunto = document.getElementById('d1-asunto').value;
-    const empresa = document.getElementById('d1-empresa').value;
-
     if(!nom || !STATE['d1']?.residente || !asunto) return alert("Faltan datos.");
-
-    const data = { 
-        Nombre: nom, Residente: STATE['d1'].residente, Torre: STATE['d1'].torre, Departamento: STATE['d1'].depto, 
-        Telefono: STATE['d1']?.telefono || "", Tipo_Lista: 'PROVEEDOR', Empresa: empresa || "Genérica", 
-        Asunto: asunto, Motivo: asunto 
-    };
-
+    const data = { Nombre: nom, Residente: STATE['d1'].residente, Torre: STATE['d1'].torre, Departamento: STATE['d1'].depto, Telefono: STATE['d1']?.telefono || "", Tipo_Lista: 'PROVEEDOR', Empresa: document.getElementById('d1-empresa').value || "Genérica", Asunto: asunto, Motivo: asunto };
     const res = await callBackend('submit_form', { formulario: 'AVISOG', data: data });
-    if (res && res.success) { 
-        resetForm('d1'); 
-        showSuccessScreen(res.message || "Proveedor Registrado", "Éxito", 'D2'); 
-    } else {
-        showFailureScreen(res.message, 'D1');
-    }
+    if (res && res.success) { resetForm('d1'); showSuccessScreen(res.message || "Proveedor Registrado", "Éxito", 'D2'); } 
+    else { showFailureScreen(res.message, 'D1'); }
 }
 
-// 3. Paquetería Recepción
 async function submitRecepcionPaquete() {
     if(!STATE['ba1']?.residente) return alert("Selecciona un residente.");
     const data = { Residente: STATE['ba1'].residente, Torre: STATE['ba1'].torre, Departamento: STATE['ba1'].depto, Telefono: STATE['ba1']?.telefono || "", Paqueteria: document.getElementById('ba1-paqueteria').value, Estatus: document.getElementById('ba1-estatus').value, FotoBase64: STATE.photos['ba1'] || "" };
     const res = await callBackend('submit_form', { formulario: 'PAQUETERIA_RECEPCION', data: data });
-    if (res && res.success) { 
-        resetForm('ba1'); 
-        showSuccessScreen("Paquete Recibido", "Guardado", 'BA2');
-    } else {
-        showFailureScreen(res.message, 'BA1');
-    }
+    if (res && res.success) { resetForm('ba1'); showSuccessScreen("Paquete Recibido", "Guardado", 'BA2'); } 
+    else { showFailureScreen(res.message, 'BA1'); }
 }
 
-// 4. Paquetería Entrega
 async function submitEntregaPaquete() {
     const nom = document.getElementById('bb1-nombre').value;
     if(!nom || !STATE['bb1']?.residente) return alert("Datos incompletos.");
     const data = { Recibio: nom, Residente: STATE['bb1'].residente, Torre: STATE['bb1'].torre, Departamento: STATE['bb1'].depto, FotoBase64: STATE.photos['bb1'] || "", FirmaBase64: signaturePad ? signaturePad.toDataURL() : "" };
     const res = await callBackend('submit_form', { formulario: 'PAQUETERIA_ENTREGA', data: data });
-    if (res && res.success) { 
-        resetForm('bb1'); 
-        showSuccessScreen("Paquete Entregado", "Firmado", 'BB2');
-    } else {
-        showFailureScreen(res.message, 'BB1');
-    }
+    if (res && res.success) { resetForm('bb1'); showSuccessScreen("Paquete Entregado", "Firmado", 'BB2'); } 
+    else { showFailureScreen(res.message, 'BB1'); }
 }
 
-// 5. Personal Interno
 async function submitPersonalInterno(accion) {
     const id = document.getElementById('f1-id').value;
-    if(!id) return alert("Escanea ID.");
-    
-    // NOTA: Personal Interno envía a Logic App pero la navegación es especial
+    if(!id) return alert("⚠️ No hay un código para validar.");
     const res = await callBackend('submit_form', { formulario: 'PERSONAL_INTERNO', data: { ID_Personal: id, Accion: accion } });
-    
-    if (res && res.success) { 
-        resetForm('f1'); 
-        // Si entra, va a libreta (F2), si sale también
-        showSuccessScreen(res.message || "Movimiento registrado", accion, 'F2');
-    } else {
-        showFailureScreen(res.message || "Error personal", 'F1');
-    }
+    if (res && res.success) { resetForm('f1'); showSuccessScreen(res.message || "Movimiento registrado", accion, 'F2'); } 
+    else { showFailureScreen(res.message || "Error personal", 'F1'); }
 }
 
-// 6. Validaciones QR (Core Logic con Navegación Dinámica)
-// param: nextScreen -> Pantalla de Libreta si es éxito (ej. 'EB2')
-// param: failScreen -> Pantalla de Escáner si falla (ej. 'EB1')
 async function validarAccesoQR(tipo, inputId, formId, nextScreen, failScreen) {
     const codigo = document.getElementById(inputId).value;
-    // CORRECCIÓN 1: Ventana emergente (Alert) cuando el campo está vacío
+    // --- VENTANA EMERGENTE SOLICITADA ---
     if(!codigo) return alert("⚠️ No hay un código para validar."); 
     
-    // Llamada al Backend
     const res = await callBackend('validate_qr', { tipo_validacion: tipo, codigo_leido: codigo });
     
     if (res && res.success) {
         resetForm(formId);
-        // Extraemos datos para mostrar en la pantalla verde
-        const nombre = res.data?.nombre || "Autorizado";
-        const movimiento = res.data?.tipo || "ACCESO";
-        let mensaje = res.message || "Acceso Permitido";
-
-        // CAMBIO: Mensaje específico para QR Residente
-        if (tipo === 'QR_RESIDENTE') {
-            mensaje = "Código Validado";
-        }
-        
-        showSuccessScreen(mensaje, `${movimiento}: ${nombre}`, nextScreen);
+        let mensaje = tipo === 'QR_RESIDENTE' ? "Código Validado" : (res.message || "Acceso Permitido");
+        showSuccessScreen(mensaje, `${res.data?.tipo || "ACCESO"}: ${res.data?.nombre || "Autorizado"}`, nextScreen);
     } else {
-        // Fallo: Mostramos pantalla roja y el botón regresa al escáner
         let errorMsg = res ? res.message : "Código no válido";
         const msgLower = (errorMsg || "").toLowerCase();
 
-        // CORRECCIÓN 2: Revertir el mensaje de 404 "como estaba"
+        // --- FILTROS DE MENSAJE DE ERROR SOLICITADOS ---
         if (msgLower.includes("404") || msgLower.includes("not found") || msgLower.includes("no existe") || msgLower.includes("no encontrado")) {
              errorMsg = "🚫 Código no encontrado - Acceso Denegado"; 
         }
@@ -587,53 +520,22 @@ async function validarAccesoQR(tipo, inputId, formId, nextScreen, failScreen) {
     }
 }
 
-// Wrappers para llamar a la función genérica con las rutas correctas
 function submitQRResidente() { validarAccesoQR('QR_RESIDENTE', 'ea1-dni', 'ea1', 'EA2', 'EA1'); }
-function submitQRVisita() { validarAccesoQR('QR_VISITA', 'eb1-code', 'eb1', 'EB2', 'EB1'); } // Éxito -> EB2 (Libreta), Error -> EB1 (Scanner)
-function submitEvento() { validarAccesoQR('EVENTO', 'ec1-code', 'ec1', 'EC1', 'EC1'); } // Eventos se queda en scanner si es éxito (no hay libreta definida en menú)
+function submitQRVisita() { validarAccesoQR('QR_VISITA', 'eb1-code', 'eb1', 'EB2', 'EB1'); }
+function submitEvento() { validarAccesoQR('EVENTO', 'ec1-code', 'ec1', 'EC1', 'EC1'); }
 function submitProveedorNIP() { validarAccesoQR('NIP_PROVEEDOR', 'ed1-nip', 'ed1', 'ED2', 'ED1'); }
 
 // --- E. PANTALLAS DINÁMICAS (Éxito / Fracaso) ---
 
 function showSuccessScreen(titulo, subtitulo, nextScreen) {
-    const old = document.getElementById('status-modal');
-    if(old) old.remove();
-
-    const html = `
-        <div id="status-modal" class="screen" style="display:flex; justify-content:center; align-items:center; height:100vh; flex-direction:column; text-align:center; background-color:#f0fdf4; animation: fadeIn 0.4s ease-out; position:fixed; top:0; left:0; width:100%; z-index:99999;">
-            <div style="background:white; padding:40px; border-radius:20px; box-shadow:0 10px 25px rgba(0,0,0,0.1); max-width:90%; width: 400px;">
-                <div style="width:80px; height:80px; background:#dcfce7; border-radius:50%; display:flex; align-items:center; justify-content:center; margin:0 auto 20px;">
-                    <i class="fas fa-check fa-3x" style="color:#2ecc71;"></i>
-                </div>
-                <h1 style="font-size:1.8rem; margin:0 0 10px; color:#166534;">${titulo}</h1>
-                <p style="font-size:1.2rem; color:#555; margin-bottom:30px;">${subtitulo}</p>
-                <button class="btn-primary" style="width:100%; font-size:1.1rem; padding:12px;" onclick="document.getElementById('status-modal').remove(); navigate('${nextScreen}')">Continuar</button>
-            </div>
-        </div>
-        <style>@keyframes fadeIn { from { opacity:0; transform: scale(0.9); } to { opacity:1; transform: scale(1); } }</style>
-    `;
+    const old = document.getElementById('status-modal'); if(old) old.remove();
+    const html = `<div id="status-modal" class="screen" style="display:flex; justify-content:center; align-items:center; height:100vh; flex-direction:column; text-align:center; background-color:#f0fdf4; animation: fadeIn 0.4s ease-out; position:fixed; top:0; left:0; width:100%; z-index:99999;"><div style="background:white; padding:40px; border-radius:20px; box-shadow:0 10px 25px rgba(0,0,0,0.1); max-width:90%; width: 400px;"><div style="width:80px; height:80px; background:#dcfce7; border-radius:50%; display:flex; align-items:center; justify-content:center; margin:0 auto 20px;"><i class="fas fa-check fa-3x" style="color:#2ecc71;"></i></div><h1 style="font-size:1.8rem; margin:0 0 10px; color:#166534;">${titulo}</h1><p style="font-size:1.2rem; color:#555; margin-bottom:30px;">${subtitulo}</p><button class="btn-primary" style="width:100%; font-size:1.1rem; padding:12px;" onclick="document.getElementById('status-modal').remove(); navigate('${nextScreen}')">Continuar</button></div></div>`;
     document.body.insertAdjacentHTML('beforeend', html);
 }
 
 function showFailureScreen(motivo, retryScreen) {
-    const old = document.getElementById('status-modal');
-    if(old) old.remove();
-
-    const html = `
-        <div id="status-modal" class="screen" style="display:flex; justify-content:center; align-items:center; height:100vh; flex-direction:column; text-align:center; background-color:#fef2f2; animation: shake 0.4s ease-in-out; position:fixed; top:0; left:0; width:100%; z-index:99999;">
-            <div style="background:white; padding:40px; border-radius:20px; box-shadow:0 10px 25px rgba(0,0,0,0.1); max-width:90%; width: 400px;">
-                <div style="width:80px; height:80px; background:#fee2e2; border-radius:50%; display:flex; align-items:center; justify-content:center; margin:0 auto 20px;">
-                    <i class="fas fa-times fa-3x" style="color:#ef4444;"></i>
-                </div>
-                <h1 style="font-size:1.8rem; margin:0 0 10px; color:#991b1b;">DENEGADO</h1>
-                <p style="font-size:1.1rem; color:#666; margin-bottom:30px; font-weight:500;">${motivo}</p>
-                <button class="btn-primary" style="width:100%; background-color:#333; font-size:1.1rem; padding:12px;" onclick="document.getElementById('status-modal').remove(); navigate('${retryScreen}')">Intentar de nuevo</button>
-            </div>
-        </div>
-        <style>
-            @keyframes shake { 0% { transform: translate(1px, 1px) rotate(0deg); } 10% { transform: translate(-1px, -2px) rotate(-1deg); } 20% { transform: translate(-3px, 0px) rotate(1deg); } 30% { transform: translate(3px, 2px) rotate(0deg); } 40% { transform: translate(1px, -1px) rotate(1deg); } 50% { transform: translate(-1px, 2px) rotate(-1deg); } 60% { transform: translate(-3px, 1px) rotate(0deg); } 70% { transform: translate(3px, 1px) rotate(-1deg); } 80% { transform: translate(-1px, -1px) rotate(1deg); } 90% { transform: translate(1px, 2px) rotate(0deg); } 100% { transform: translate(1px, -2px) rotate(-1deg); } }
-        </style>
-    `;
+    const old = document.getElementById('status-modal'); if(old) old.remove();
+    const html = `<div id="status-modal" class="screen" style="display:flex; justify-content:center; align-items:center; height:100vh; flex-direction:column; text-align:center; background-color:#fef2f2; animation: shake 0.4s ease-in-out; position:fixed; top:0; left:0; width:100%; z-index:99999;"><div style="background:white; padding:40px; border-radius:20px; box-shadow:0 10px 25px rgba(0,0,0,0.1); max-width:90%; width: 400px;"><div style="width:80px; height:80px; background:#fee2e2; border-radius:50%; display:flex; align-items:center; justify-content:center; margin:0 auto 20px;"><i class="fas fa-times fa-3x" style="color:#ef4444;"></i></div><h1 style="font-size:1.8rem; margin:0 0 10px; color:#991b1b;">DENEGADO</h1><p style="font-size:1.1rem; color:#666; margin-bottom:30px; font-weight:500;">${motivo}</p><button class="btn-primary" style="width:100%; background-color:#333; font-size:1.1rem; padding:12px;" onclick="document.getElementById('status-modal').remove(); navigate('${retryScreen}')">Intentar de nuevo</button></div></div>`;
     document.body.insertAdjacentHTML('beforeend', html);
 }
 
@@ -644,14 +546,7 @@ function resetForm(prefix) {
     STATE[prefix] = {};
     if(STATE.photos[prefix] !== undefined) delete STATE.photos[prefix];
     const prev = document.getElementById('prev-' + prefix);
-    if(prev) { 
-        prev.style.backgroundImage = ''; 
-        prev.classList.add('hidden'); 
-        if (prev.nextElementSibling) { 
-            prev.nextElementSibling.style.display = 'block'; 
-            prev.nextElementSibling.innerHTML = '<i class="fas fa-camera"></i> Cámara'; 
-        } 
-    }
+    if(prev) { prev.style.backgroundImage = ''; prev.classList.add('hidden'); if (prev.nextElementSibling) { prev.nextElementSibling.style.display = 'block'; prev.nextElementSibling.innerHTML = '<i class="fas fa-camera"></i> Cámara'; } }
     if(prefix === 'bb1') clearSignature();
 }
 
@@ -660,13 +555,7 @@ function openResidenteModal(ctx) {
     if(STATE.colBaserFiltrada.length === 0) { alert("Lista vacía"); return; }
     const torres = [...new Set(STATE.colBaserFiltrada.map(i => i.Torre))].sort();
     const selTorre = document.getElementById('sel-torre');
-    if (selTorre) { 
-        selTorre.innerHTML = '<option value="">Selecciona...</option>' + torres.map(t => `<option value="${t}">${t}</option>`).join(''); 
-        updateDeptos(); 
-        document.getElementById('modal-selector').classList.add('active'); 
-    } else {
-        alert("Error: Estructura del modal no encontrada.");
-    }
+    if (selTorre) { selTorre.innerHTML = '<option value="">Selecciona...</option>' + torres.map(t => `<option value="${t}">${t}</option>`).join(''); updateDeptos(); document.getElementById('modal-selector').classList.add('active'); }
 }
 
 function updateDeptos() {
@@ -696,17 +585,7 @@ function confirmResidente() {
     document.getElementById('modal-selector').classList.remove('active');
 }
 
-function initSignature() { 
-    setTimeout(() => { 
-        const canvas = document.getElementById('sig-canvas'); 
-        if(canvas) { 
-            canvas.width = canvas.parentElement.offsetWidth; 
-            canvas.height = canvas.parentElement.offsetHeight; 
-            signaturePad = new SignaturePad(canvas, { backgroundColor: 'rgb(255, 255, 255)' }); 
-        } 
-    }, 300); 
-}
-
+function initSignature() { setTimeout(() => { const canvas = document.getElementById('sig-canvas'); if(canvas) { canvas.width = canvas.parentElement.offsetWidth; canvas.height = canvas.parentElement.offsetHeight; signaturePad = new SignaturePad(canvas, { backgroundColor: 'rgb(255, 255, 255)' }); } }, 300); }
 function clearSignature() { if(signaturePad) signaturePad.clear(); }
 
 function previewImg(input, id) {
@@ -715,14 +594,7 @@ function previewImg(input, id) {
         reader.onload = e => {
             STATE.photos[id] = e.target.result;
             const prev = document.getElementById('prev-'+id);
-            if(prev) { 
-                prev.style.backgroundImage = `url(${e.target.result})`; 
-                prev.classList.remove('hidden'); 
-                if (prev.nextElementSibling) { 
-                    prev.nextElementSibling.style.display = 'block'; 
-                    prev.nextElementSibling.innerHTML = '<i class="fas fa-check-circle" style="color:#2ecc71; font-size:1.5em;"></i><br><span style="color:#2ecc71; font-weight:bold;">¡Foto Lista!</span>'; 
-                } 
-            }
+            if(prev) { prev.style.backgroundImage = `url(${e.target.result})`; prev.classList.remove('hidden'); if (prev.nextElementSibling) { prev.nextElementSibling.style.display = 'block'; prev.nextElementSibling.innerHTML = '<i class="fas fa-check-circle" style="color:#2ecc71; font-size:1.5em;"></i><br><span style="color:#2ecc71; font-weight:bold;">¡Foto Lista!</span>'; } }
         };
         reader.readAsDataURL(input.files[0]);
     }
@@ -732,24 +604,10 @@ function startScan(targetInputId) {
     STATE.targetInputForQR = targetInputId;
     document.getElementById('qr-modal').classList.add('active');
     html5QrCode = new Html5Qrcode("qr-reader-view");
-    html5QrCode.start({ facingMode: "environment" }, { fps: 10, qrbox: 250 },
-        (decodedText) => { 
-            html5QrCode.stop().then(() => html5QrCode.clear()); 
-            document.getElementById('qr-modal').classList.remove('active'); 
-            const input = document.getElementById(STATE.targetInputForQR); 
-            if(input) input.value = decodedText; 
-        }, 
-        () => {}
-    ).catch(err => { 
-        alert("Error cámara: " + err); 
-        document.getElementById('qr-modal').classList.remove('active'); 
-    });
+    html5QrCode.start({ facingMode: "environment" }, { fps: 10, qrbox: 250 }, (decodedText) => { html5QrCode.stop().then(() => html5QrCode.clear()); document.getElementById('qr-modal').classList.remove('active'); const input = document.getElementById(STATE.targetInputForQR); if(input) input.value = decodedText; }, () => {}).catch(err => { alert("Error cámara: " + err); document.getElementById('qr-modal').classList.remove('active'); });
 }
 
-function closeQRScanner() { 
-    if(html5QrCode) html5QrCode.stop().then(() => html5QrCode.clear()).catch(()=>{}); 
-    document.getElementById('qr-modal').classList.remove('active'); 
-}
+function closeQRScanner() { if(html5QrCode) html5QrCode.stop().then(() => html5QrCode.clear()).catch(()=>{}); document.getElementById('qr-modal').classList.remove('active'); }
 
-window.onload = () => { console.log("🚀 Ravens Access iniciada."); checkSession(); };
+window.onload = () => { checkSession(); };
 // --- FIN DEL ARCHIVO ---
