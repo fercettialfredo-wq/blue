@@ -181,7 +181,10 @@ const SCREENS = {
                 <div class="input-group"><label>Departamento</label><input type="text" id="ba1-depto" class="form-input" readonly></div>
                 <div class="input-group"><label>Destinatario (Residente)</label><input type="text" id="ba1-res-name" class="form-input" readonly></div>
                 <button class="btn-primary" onclick="openResidenteModal('ba1')"><i class="fas fa-search"></i> Seleccionar Residente</button>
-                <div class="input-group" style="margin-top:15px"><label>Paquetería *</label><input type="text" id="ba1-paqueteria" class="form-input"></div>
+                
+                <div class="input-group" style="margin-top:15px"><label>Nombre (Repartidor/Entregó) *</label><input type="text" id="ba1-nombre" class="form-input"></div>
+                
+                <div class="input-group"><label>Paquetería *</label><input type="text" id="ba1-paqueteria" class="form-input"></div>
                 <div class="input-group"><label>Estatus</label><select id="ba1-estatus" class="form-input"><option>Aceptado</option><option>Dañado</option></select></div>
                 <div class="input-group"><label>Foto</label>
                     <div class="photo-placeholder" onclick="document.getElementById('cam-ba1').click()">
@@ -636,9 +639,15 @@ async function submitProveedor() {
 }
 
 async function submitRecepcionPaquete() {
+    // AQUI SE CAPTURA EL NUEVO CAMPO NOMBRE
+    const nombre = document.getElementById('ba1-nombre').value;
+
     if(!STATE['ba1']?.residente) return alert("Selecciona un residente.");
+    if(!nombre) return alert("Ingresa el nombre de quien entrega/repartidor.");
     
     const data = { 
+        // AQUI SE AGREGA EL NOMBRE AL OBJETO
+        Nombre: nombre,
         Residente: STATE['ba1'].residente, 
         Torre: STATE['ba1'].torre, 
         Departamento: STATE['ba1'].depto, 
