@@ -39,7 +39,7 @@ function formatearFechaBonita(fechaRaw) {
     }).replace(',', ''); 
 }
 
-// --- CABECERA DE LIBRETA (MODIFICADA: showReload opcional) ---
+// --- CABECERA DE LIBRETA ---
 const getHeaderLibreta = (titulo, funcionRecarga, pantallaRegreso, showReload = true) => {
     const botonRecarga = showReload 
         ? `<i class="fas fa-sync-alt fa-2x cursor-pointer" style="color:#3860B2;" onclick="${funcionRecarga}"></i>` 
@@ -142,7 +142,7 @@ const SCREENS = {
     `,
     'AA2': `<div class="screen form-page">
             ${getHeaderLibreta('Libreta Visitas', "loadHistory('VISITA', 'gal-aa2')", 'AA1', true)}
-            <div class="form-container"><div id="gal-aa2" class="gallery-container"></div></div></div>`,
+            <div class="form-container" style="padding:0;"><div id="gal-aa2" class="gallery-container" style="height: calc(100vh - 150px);"></div></div></div>`,
     
     'AC1': `
         <div class="screen form-page">
@@ -160,7 +160,7 @@ const SCREENS = {
     `,
     'AC2': `<div class="screen form-page">
             ${getHeaderLibreta('Libreta Personal', "loadHistory('PERSONAL_DE_SERVICIO', 'gal-ac2')", 'AC1', true)}
-            <div class="form-container"><div id="gal-ac2" class="gallery-container"></div></div></div>`,
+            <div class="form-container" style="padding:0;"><div id="gal-ac2" class="gallery-container" style="height: calc(100vh - 150px);"></div></div></div>`,
 
     // --- MÓDULO B: PAQUETERÍA ---
     'B1': `
@@ -193,7 +193,7 @@ const SCREENS = {
     `,
     'BA2': `<div class="screen form-page">
             ${getHeaderLibreta('Libreta Recepción', "loadHistory('PAQUETERIA_RECEPCION', 'gal-ba2')", 'BA1', true)}
-            <div class="form-container"><div id="gal-ba2" class="gallery-container"></div></div></div>`,
+            <div class="form-container" style="padding:0;"><div id="gal-ba2" class="gallery-container" style="height: calc(100vh - 150px);"></div></div></div>`,
     
     'BB1': `
         <div class="screen form-page">
@@ -214,7 +214,7 @@ const SCREENS = {
     `,
     'BB2': `<div class="screen form-page">
             ${getHeaderLibreta('Libreta Entregas', "loadHistory('PAQUETERIA_ENTREGA', 'gal-bb2')", 'BB1', true)}
-            <div class="form-container"><div id="gal-bb2" class="gallery-container"></div></div></div>`,
+            <div class="form-container" style="padding:0;"><div id="gal-bb2" class="gallery-container" style="height: calc(100vh - 150px);"></div></div></div>`,
 
     // --- MÓDULO D: PROVEEDOR ---
     'D1': `
@@ -234,7 +234,7 @@ const SCREENS = {
     `,
     'D2': `<div class="screen form-page">
             ${getHeaderLibreta('Libreta Proveedor', "loadHistory('PROVEEDOR', 'gal-d2')", 'D1', true)}
-            <div class="form-container"><div id="gal-d2" class="gallery-container"></div></div></div>`,
+            <div class="form-container" style="padding:0;"><div id="gal-d2" class="gallery-container" style="height: calc(100vh - 150px);"></div></div></div>`,
 
     // --- MÓDULO E: QR (MODIFICADO: Sin botón recarga) ---
     'E1': `
@@ -254,7 +254,7 @@ const SCREENS = {
             <div style="margin-top: 20px;"><button class="btn-save" onclick="submitQRResidente()">Validar</button><button class="btn-clean" onclick="resetForm('ea1')"><i class="fas fa-eraser"></i> Limpiar</button></div></div></div>`,
     'EA2': `<div class="screen form-page">
             ${getHeaderLibreta('Historial QR', "loadHistory('QR_RESIDENTE', 'gal-ea2')", 'EA1', false)}
-            <div class="form-container"><div id="gal-ea2" class="gallery-container"></div></div></div>`,
+            <div class="form-container" style="padding:0;"><div id="gal-ea2" class="gallery-container" style="height: calc(100vh - 150px);"></div></div></div>`,
     'EB1': `
         <div class="screen form-page">
             <div class="form-title-section"><h2 class="form-title">QR Visita</h2><div class="header-icons"><i class="fas fa-arrow-left fa-2x cursor-pointer" onclick="navigate('E1')" style="color:#ef4444;"></i><img src="icons/libreta.svg" class="header-icon-img cursor-pointer" onclick="navigate('EB2')" style="height:40px;"></div></div>
@@ -262,7 +262,7 @@ const SCREENS = {
             <div style="margin-top: 20px;"><button class="btn-save" onclick="submitQRVisita()">Validar</button><button class="btn-clean" onclick="resetForm('eb1')"><i class="fas fa-eraser"></i> Limpiar</button></div></div></div>`,
     'EB2': `<div class="screen form-page">
             ${getHeaderLibreta('Historial QR Visita', "loadHistory('QR_VISITA', 'gal-eb2')", 'EB1', false)}
-            <div class="form-container"><div id="gal-eb2" class="gallery-container"></div></div></div>`,
+            <div class="form-container" style="padding:0;"><div id="gal-eb2" class="gallery-container" style="height: calc(100vh - 150px);"></div></div></div>`,
     'EC1': `
         <div class="screen form-page">
             <div class="form-title-section"><h2 class="form-title">Validar Evento</h2><div class="cursor-pointer" onclick="navigate('E1')"><img src="icons/home.svg" class="header-icon-img" style="height:40px;"></div></div>
@@ -275,7 +275,7 @@ const SCREENS = {
             <div style="margin-top: 20px;"><button class="btn-save" onclick="submitProveedorNIP()">Validar</button><button class="btn-clean" onclick="resetForm('ed1')"><i class="fas fa-eraser"></i> Limpiar</button></div></div></div>`,
     'ED2': `<div class="screen form-page">
             ${getHeaderLibreta('Historial NIP', "loadHistory('NIP_PROVEEDOR', 'gal-ed2')", 'ED1', false)}
-            <div class="form-container"><div id="gal-ed2" class="gallery-container"></div></div></div>`,
+            <div class="form-container" style="padding:0;"><div id="gal-ed2" class="gallery-container" style="height: calc(100vh - 150px);"></div></div></div>`,
 
     // --- PERSONAL INTERNO (MODIFICADO: Sin botón recarga) ---
     'F1': `
@@ -286,7 +286,7 @@ const SCREENS = {
             <div style="display:flex; gap:10px; margin-top:20px;"><button class="btn-save" onclick="submitPersonalInterno('Entrada')">Entrada</button><button class="btn-secondary" style="background:#3860B2" onclick="submitPersonalInterno('Salida')">Salida</button></div><button class="btn-clean" onclick="resetForm('f1')"><i class="fas fa-eraser"></i> Limpiar</button></div></div>`,
     'F2': `<div class="screen form-page">
             ${getHeaderLibreta('Bitácora Interna', "loadHistory('PERSONAL_INTERNO', 'gal-f2')", 'F1', false)}
-            <div class="form-container"><div id="gal-f2" class="gallery-container"></div></div></div>`
+            <div class="form-container" style="padding:0;"><div id="gal-f2" class="gallery-container" style="height: calc(100vh - 150px);"></div></div></div>`
 };
 
 /* =========================================
@@ -450,13 +450,13 @@ function renderRemoteGallery(data, elementId) {
     
     // --- LÓGICA DE FILTRADO CORREGIDA ---
     // Solo ocultamos "Nuevo" en QR VISITA (gal-eb2) y NIP PROVEEDOR (gal-ed2)
-    // En todos los demás (Visitas, Paquetería, Residentes, etc.) mostramos TODO.
+    // En todos los demás (Visitas, Paquetería, Residentes, PROVEEDOR D2, etc.) mostramos TODO.
     const filteredData = data.filter(item => {
         if (elementId === 'gal-eb2' || elementId === 'gal-ed2') {
             const estatus = (item.Estatus || item.TipoMarca || "").toString().toLowerCase().trim();
             return estatus !== "" && estatus !== "nuevo";
         }
-        return true; // Mostrar todo en las demás galerías
+        return true; // Mostrar todo en las demás galerías (INCLUIDO D2)
     });
 
     if (filteredData.length === 0) {
@@ -514,7 +514,12 @@ function showDetails(index) {
         if(key !== 'odata.type' && key !== 'Foto' && key !== 'FotoBase64' && key !== 'FirmaBase64' && value) {
              let displayValue = value;
              if(key === 'Fecha' || key === 'Fechayhora' || key === 'Created') { displayValue = formatearFechaBonita(value); }
-             if(key === 'RequiereRevisi_x00f3_n') { displayValue = (value === true || value === 'true') ? 'SÍ' : 'NO'; }
+             
+             // --- CORRECCIÓN TRUE/FALSE a SÍ/NO ---
+             if(key === 'RequiereRevisi_x00f3_n' || key === 'RequiereRevision') { 
+                 displayValue = (value === true || value === 'true' || value === 'True') ? 'SÍ' : 'NO'; 
+             }
+             
              const label = labelMap[key] || key;
              content += `<p style="margin:8px 0; font-size:1rem; border-bottom:1px solid #f0f0f0; padding-bottom:5px;"><strong style="color:#555;">${label}:</strong> <span style="color:#000;">${displayValue}</span></p>`;
         }
@@ -564,7 +569,8 @@ async function submitRecepcionPaquete() {
 async function submitEntregaPaquete() {
     const nom = document.getElementById('bb1-nombre').value;
     if(!nom || !STATE['bb1']?.residente) return alert("Datos incompletos.");
-    const data = { Recibio: nom, Residente: STATE['bb1'].residente, Torre: STATE['bb1'].torre, Departamento: STATE['bb1'].depto, FotoBase64: STATE.photos['bb1'] || "", FirmaBase64: signaturePad ? signaturePad.toDataURL() : "" };
+    // --- CORRECCIÓN: AGREGADO EL CAMPO TELEFONO ---
+    const data = { Recibio: nom, Residente: STATE['bb1'].residente, Torre: STATE['bb1'].torre, Departamento: STATE['bb1'].depto, Telefono: STATE['bb1']?.telefono || "", FotoBase64: STATE.photos['bb1'] || "", FirmaBase64: signaturePad ? signaturePad.toDataURL() : "" };
     const res = await callBackend('submit_form', { formulario: 'PAQUETERIA_ENTREGA', data: data });
     if (res && res.success) { resetForm('bb1'); showSuccessScreen("Paquete Entregado", "Firmado", 'BB2'); } 
     else { showFailureScreen(res.message, 'BB1'); }
@@ -579,14 +585,14 @@ async function submitPersonalInterno(accion) {
         resetForm('f1'); 
         showSuccessScreen(res.message || "Movimiento registrado", accion, 'F2'); 
     } else { 
-        // LÓGICA DE ERROR AMIGABLE
+        // --- CORRECCIÓN MENSAJES AMIGABLES ---
         let errorMsg = res ? res.message : "Error desconocido";
         const msgLower = (errorMsg || "").toLowerCase();
         
         if (msgLower.includes("404") || msgLower.includes("not found") || msgLower.includes("no existe")) {
-            errorMsg = "🚫 ID no registrado en el sistema."; 
+            errorMsg = "🚫 ID no registrado. Acceso denegado."; 
         } else if (msgLower.includes("ya registrado") || msgLower.includes("duplicado")) {
-            errorMsg = "⚠️ Este movimiento ya fue registrado.";
+            errorMsg = "⚠️ Movimiento ya registrado previamente.";
         }
         
         showFailureScreen(errorMsg, 'F1'); 
@@ -605,15 +611,15 @@ async function validarAccesoQR(tipo, inputId, formId, nextScreen, failScreen) {
         let mensaje = tipo === 'QR_RESIDENTE' ? "Código Validado" : (res.message || "Acceso Permitido");
         showSuccessScreen(mensaje, `${res.data?.tipo || "ACCESO"}: ${res.data?.nombre || "Autorizado"}`, nextScreen);
     } else {
-        // LÓGICA DE ERROR AMIGABLE MEJORADA
+        // --- CORRECCIÓN MENSAJES AMIGABLES ---
         let errorMsg = res ? res.message : "Código no válido";
         const msgLower = (errorMsg || "").toLowerCase();
 
         if (msgLower.includes("404") || msgLower.includes("not found") || msgLower.includes("no existe") || msgLower.includes("no encontrado")) {
-             errorMsg = "🚫 Código no encontrado - Acceso Denegado"; 
+             errorMsg = "🚫 Código no encontrado. Acceso denegado."; 
         }
         else if (msgLower.includes("ya usado") || msgLower.includes("vencido") || msgLower.includes("salida")) {
-             errorMsg = "⚠️ Código expirado o ya utilizado.";
+             errorMsg = "✅ El código ya fue validado anteriormente.";
         }
 
         showFailureScreen(errorMsg, failScreen);
