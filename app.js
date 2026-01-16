@@ -39,17 +39,23 @@ function formatearFechaBonita(fechaRaw) {
     }).replace(',', ''); 
 }
 
-// --- CABECERA DE LIBRETA (REUTILIZABLE) ---
-const getHeaderLibreta = (titulo, funcionRecarga, pantallaRegreso) => `
+// --- CABECERA DE LIBRETA (MODIFICADA: showReload opcional) ---
+const getHeaderLibreta = (titulo, funcionRecarga, pantallaRegreso, showReload = true) => {
+    const botonRecarga = showReload 
+        ? `<i class="fas fa-sync-alt fa-2x cursor-pointer" style="color:#3860B2;" onclick="${funcionRecarga}"></i>` 
+        : '';
+        
+    return `
     <div class="form-title-section" style="display:flex; justify-content:space-between; align-items:center; padding: 10px 0;">
         <h2 class="form-title" style="margin:0; font-size:1.4rem;">${titulo}</h2>
         <div class="header-icons" style="display:flex; align-items:center; gap:20px;">
-            <i class="fas fa-sync-alt fa-2x cursor-pointer" style="color:#3860B2;" onclick="${funcionRecarga}"></i>
+            ${botonRecarga}
             <img src="icons/home.svg" class="header-icon-img cursor-pointer" onclick="navigate('INICIO')" style="height:40px;">
             <i class="fas fa-arrow-left fa-2x cursor-pointer" onclick="navigate('${pantallaRegreso}')" style="color:#ef4444;"></i>
         </div>
     </div>
-`;
+    `;
+};
 
 const SCREENS = {
     // --- LOGIN SCREEN ---
@@ -135,7 +141,7 @@ const SCREENS = {
         </div>
     `,
     'AA2': `<div class="screen form-page">
-            ${getHeaderLibreta('Libreta Visitas', "loadHistory('VISITA', 'gal-aa2')", 'AA1')}
+            ${getHeaderLibreta('Libreta Visitas', "loadHistory('VISITA', 'gal-aa2')", 'AA1', true)}
             <div class="form-container"><div id="gal-aa2" class="gallery-container"></div></div></div>`,
     
     'AC1': `
@@ -153,7 +159,7 @@ const SCREENS = {
         </div>
     `,
     'AC2': `<div class="screen form-page">
-            ${getHeaderLibreta('Libreta Personal', "loadHistory('PERSONAL_DE_SERVICIO', 'gal-ac2')", 'AC1')}
+            ${getHeaderLibreta('Libreta Personal', "loadHistory('PERSONAL_DE_SERVICIO', 'gal-ac2')", 'AC1', true)}
             <div class="form-container"><div id="gal-ac2" class="gallery-container"></div></div></div>`,
 
     // --- MÓDULO B: PAQUETERÍA ---
@@ -186,7 +192,7 @@ const SCREENS = {
         </div>
     `,
     'BA2': `<div class="screen form-page">
-            ${getHeaderLibreta('Libreta Recepción', "loadHistory('PAQUETERIA_RECEPCION', 'gal-ba2')", 'BA1')}
+            ${getHeaderLibreta('Libreta Recepción', "loadHistory('PAQUETERIA_RECEPCION', 'gal-ba2')", 'BA1', true)}
             <div class="form-container"><div id="gal-ba2" class="gallery-container"></div></div></div>`,
     
     'BB1': `
@@ -207,7 +213,7 @@ const SCREENS = {
         </div>
     `,
     'BB2': `<div class="screen form-page">
-            ${getHeaderLibreta('Libreta Entregas', "loadHistory('PAQUETERIA_ENTREGA', 'gal-bb2')", 'BB1')}
+            ${getHeaderLibreta('Libreta Entregas', "loadHistory('PAQUETERIA_ENTREGA', 'gal-bb2')", 'BB1', true)}
             <div class="form-container"><div id="gal-bb2" class="gallery-container"></div></div></div>`,
 
     // --- MÓDULO D: PROVEEDOR ---
@@ -227,10 +233,10 @@ const SCREENS = {
         </div>
     `,
     'D2': `<div class="screen form-page">
-            ${getHeaderLibreta('Libreta Proveedor', "loadHistory('PROVEEDOR', 'gal-d2')", 'D1')}
+            ${getHeaderLibreta('Libreta Proveedor', "loadHistory('PROVEEDOR', 'gal-d2')", 'D1', true)}
             <div class="form-container"><div id="gal-d2" class="gallery-container"></div></div></div>`,
 
-    // --- MÓDULO E: QR ---
+    // --- MÓDULO E: QR (MODIFICADO: Sin botón recarga) ---
     'E1': `
         <div class="screen"><header class="header-app"><div class="header-logo"><span class="header-logo-text">MÓDULOS QR</span></div><div class="cursor-pointer" onclick="navigate('INICIO')"><img src="icons/home.svg" class="header-icon-img" style="height:40px;"></div></header>
             <main class="main-menu-grid">
@@ -247,7 +253,7 @@ const SCREENS = {
             <div class="form-container"><div class="input-group"><input type="text" id="ea1-dni" class="form-input" placeholder=""></div><button class="btn-primary" onclick="startScan('ea1-dni')"><i class="fas fa-camera"></i> Escanear</button>
             <div style="margin-top: 20px;"><button class="btn-save" onclick="submitQRResidente()">Validar</button><button class="btn-clean" onclick="resetForm('ea1')"><i class="fas fa-eraser"></i> Limpiar</button></div></div></div>`,
     'EA2': `<div class="screen form-page">
-            ${getHeaderLibreta('Historial QR', "loadHistory('QR_RESIDENTE', 'gal-ea2')", 'EA1')}
+            ${getHeaderLibreta('Historial QR', "loadHistory('QR_RESIDENTE', 'gal-ea2')", 'EA1', false)}
             <div class="form-container"><div id="gal-ea2" class="gallery-container"></div></div></div>`,
     'EB1': `
         <div class="screen form-page">
@@ -255,7 +261,7 @@ const SCREENS = {
             <div class="form-container"><div class="input-group"><input type="text" id="eb1-code" class="form-input" placeholder=""></div><button class="btn-primary" onclick="startScan('eb1-code')"><i class="fas fa-camera"></i> Escanear</button>
             <div style="margin-top: 20px;"><button class="btn-save" onclick="submitQRVisita()">Validar</button><button class="btn-clean" onclick="resetForm('eb1')"><i class="fas fa-eraser"></i> Limpiar</button></div></div></div>`,
     'EB2': `<div class="screen form-page">
-            ${getHeaderLibreta('Historial QR Visita', "loadHistory('QR_VISITA', 'gal-eb2')", 'EB1')}
+            ${getHeaderLibreta('Historial QR Visita', "loadHistory('QR_VISITA', 'gal-eb2')", 'EB1', false)}
             <div class="form-container"><div id="gal-eb2" class="gallery-container"></div></div></div>`,
     'EC1': `
         <div class="screen form-page">
@@ -268,10 +274,10 @@ const SCREENS = {
             <div class="form-container"><div class="input-group"><input type="text" id="ed1-nip" class="form-input" placeholder=""></div>
             <div style="margin-top: 20px;"><button class="btn-save" onclick="submitProveedorNIP()">Validar</button><button class="btn-clean" onclick="resetForm('ed1')"><i class="fas fa-eraser"></i> Limpiar</button></div></div></div>`,
     'ED2': `<div class="screen form-page">
-            ${getHeaderLibreta('Historial NIP', "loadHistory('NIP_PROVEEDOR', 'gal-ed2')", 'ED1')}
+            ${getHeaderLibreta('Historial NIP', "loadHistory('NIP_PROVEEDOR', 'gal-ed2')", 'ED1', false)}
             <div class="form-container"><div id="gal-ed2" class="gallery-container"></div></div></div>`,
 
-    // --- PERSONAL INTERNO ---
+    // --- PERSONAL INTERNO (MODIFICADO: Sin botón recarga) ---
     'F1': `
         <div class="screen form-page">
             <div class="form-title-section"><h2 class="form-title">Personal Interno</h2><div class="header-icons"><img src="icons/home.svg" class="header-icon-img cursor-pointer" onclick="navigate('INICIO')" style="height:40px;"><img src="icons/libreta.svg" class="header-icon-img cursor-pointer" onclick="navigate('F2')" style="height:40px;"></div></div>
@@ -279,7 +285,7 @@ const SCREENS = {
             <button class="btn-primary" style="background:#333" onclick="startScan('f1-id')"><i class="fas fa-camera"></i> Escanear</button>
             <div style="display:flex; gap:10px; margin-top:20px;"><button class="btn-save" onclick="submitPersonalInterno('Entrada')">Entrada</button><button class="btn-secondary" style="background:#3860B2" onclick="submitPersonalInterno('Salida')">Salida</button></div><button class="btn-clean" onclick="resetForm('f1')"><i class="fas fa-eraser"></i> Limpiar</button></div></div>`,
     'F2': `<div class="screen form-page">
-            ${getHeaderLibreta('Bitácora Interna', "loadHistory('PERSONAL_INTERNO', 'gal-f2')", 'F1')}
+            ${getHeaderLibreta('Bitácora Interna', "loadHistory('PERSONAL_INTERNO', 'gal-f2')", 'F1', false)}
             <div class="form-container"><div id="gal-f2" class="gallery-container"></div></div></div>`
 };
 
@@ -291,7 +297,6 @@ let html5QrCode;
 
 // --- A. BACKEND CALL ---
 async function callBackend(action, extraData = {}) {
-    // 1. Recuperar sesión si se perdió
     if (!STATE.session.condominioId) {
         const saved = localStorage.getItem('ravensUser');
         if (saved) { 
@@ -310,7 +315,6 @@ async function callBackend(action, extraData = {}) {
     if(loadingBtn) { loadingBtn.dataset.originalText = loadingBtn.innerText; loadingBtn.disabled = true; loadingBtn.innerText = "Procesando..."; }
 
     try {
-        // Aseguramos que se envía "condominio" que es lo que espera tu lógica
         const payload = { 
             action, 
             condominio: STATE.session.condominioId, 
@@ -342,7 +346,7 @@ async function callBackend(action, extraData = {}) {
     }
 }
 
-// --- B. SESIÓN (CORREGIDA PARA OBTENER CONDOMINIO) ---
+// --- B. SESIÓN ---
 async function doLogin() {
     const user = document.getElementById('login-user').value;
     const pass = document.getElementById('login-pass').value;
@@ -360,8 +364,7 @@ async function doLogin() {
         const data = await response.json();
         
         if (response.ok && data.success) {
-            // LÓGICA ROBUSTA PARA ENCONTRAR EL ID
-            console.log("Respuesta login:", data); // Debug
+            console.log("Respuesta login:", data);
             
             const condId = data.condominioId || data.condominio || (data.data && data.data.condominio) || (data.data && data.data.condominioId);
 
@@ -395,7 +398,6 @@ async function loadResidentesList() {
             if(cleanTel.startsWith('52') && cleanTel.length > 10) cleanTel = cleanTel.substring(2);
             return { ...item, Nombre: item.Nombre || item.OData_Nombre || item.Title || "Sin Nombre", Torre: item.Torre || "N/A", Departamento: item.Departamento || "N/A", Número: cleanTel, Condominio: item.Condominio };
         }).filter(item => {
-            // Filtro seguro aunque los tipos de dato difieran
             if (!item.Condominio || !STATE.session.condominioId) return false;
             return item.Condominio.toString().toUpperCase().trim() === STATE.session.condominioId.toString().toUpperCase().trim();
         });
@@ -408,12 +410,10 @@ function checkSession() {
     const saved = localStorage.getItem('ravensUser'); 
     if (saved) { 
         STATE.session = JSON.parse(saved); 
-        // Verificar que la sesión guardada tenga el ID
         if (STATE.session.condominioId) {
             loadResidentesList(); 
             navigate('INICIO'); 
         } else {
-            // Si no tiene ID, es una sesión corrupta, forzar login
             doLogout();
         }
     } else { 
@@ -439,18 +439,18 @@ async function loadHistory(tipo, elementId) {
 
 function getStatusColor(status) {
     if (!status) return '#2563eb'; const s = status.toString().toLowerCase().trim();
-    if(['aceptado', 'entrada', 'autorizado', 'con registro', 'registrado'].includes(s)) return '#2ecc71';
-    if(['rechazado', 'salida', 'dañado', 'sin registro', 'denegado'].includes(s)) return '#e74c3c';
-    if(['nuevo'].includes(s)) return '#3498db'; return '#2563eb';
+    if(['aceptado', 'entrada', 'autorizado', 'con registro', 'registrado'].includes(s)) return '#16a34a'; // Verde bonito
+    if(['rechazado', 'salida', 'dañado', 'sin registro', 'denegado'].includes(s)) return '#dc2626'; // Rojo bonito
+    if(['nuevo'].includes(s)) return '#2563eb'; return '#2563eb';
 }
 
 function renderRemoteGallery(data, elementId) {
     const container = document.getElementById(elementId);
     if (!data || data.length === 0) { container.innerHTML = `<div style="padding:20px; text-align:center; color:#555">Sin registros recientes.</div>`; return; }
     
-    // --- FILTRO INTELIGENTE: QR_RESIDENTE (gal-ea2) muestra todo, los demás filtran "Nuevo" ---
+    // Filtro para mostrar historial (QR Residente muestra todo, otros filtran "Nuevo")
     const filteredData = data.filter(item => {
-        if (elementId === 'gal-ea2') return true; // Muestra todo en residentes
+        if (elementId === 'gal-ea2') return true; 
         const estatus = (item.Estatus || item.TipoMarca || "").toString().toLowerCase().trim();
         return estatus !== "" && estatus !== "nuevo";
     });
@@ -462,6 +462,7 @@ function renderRemoteGallery(data, elementId) {
 
     STATE.tempHistory = filteredData;
 
+    // GALERÍA MODERNA - TARJETAS FLOTANTES
     container.innerHTML = filteredData.map((item, index) => {
         let fechaLegible = formatearFechaBonita(item.Fecha || item.Created || item.Fechayhora);
         let titulo = item.Nombre || item.Nombre0 || item.Title || item.Visitante || 'Registro';
@@ -479,11 +480,23 @@ function renderRemoteGallery(data, elementId) {
         let detalle = lineasDetalle.join(' | ');
         const rawStatus = item.Estatus || item.TipoMarca;
         const statusColor = getStatusColor(rawStatus);
-        const estatusHtml = rawStatus ? `<span style="font-weight:bold; color:${statusColor}"> • ${rawStatus}</span>` : '';
+        
+        // Badge estilo píldora
+        const estatusHtml = rawStatus 
+            ? `<span class="status-pill" style="background-color: ${statusColor}20; color: ${statusColor};">${rawStatus}</span>` 
+            : '';
 
-        return `<div class="gallery-item" onclick="showDetails(${index})" style="border-bottom:1px solid #eee; padding: 15px 0; cursor:pointer; display:flex; justify-content:space-between; align-items:center;">
-            <div class="gallery-text"><h4 style="margin:0; font-size:1.1rem; color:#333;">${titulo}</h4><p style="margin:4px 0 0; font-size:0.9rem; color:#666;">${detalle} ${estatusHtml}</p><p style="margin:4px 0 0; font-size:0.85rem; color:#000; font-weight:bold;">${fechaLegible}</p></div>
-            <div style="color:#3860B2;"><i class="fas fa-chevron-right fa-lg"></i></div>
+        return `
+        <div class="gallery-item" onclick="showDetails(${index})">
+            <div class="gallery-text">
+                <h4>${titulo}</h4>
+                <p>${detalle}</p>
+                <div style="display:flex; align-items:center; justify-content:space-between; margin-top:8px;">
+                     ${estatusHtml}
+                     <span style="font-size:0.75rem; color:#888;">${fechaLegible}</span>
+                </div>
+            </div>
+            <div style="color:#cbd5e1;"><i class="fas fa-chevron-right"></i></div>
         </div>`;
     }).join('');
 }
@@ -498,7 +511,6 @@ function showDetails(index) {
              let displayValue = value;
              if(key === 'Fecha' || key === 'Fechayhora' || key === 'Created') { displayValue = formatearFechaBonita(value); }
              if(key === 'RequiereRevisi_x00f3_n') { displayValue = (value === true || value === 'true') ? 'SÍ' : 'NO'; }
-             if(key === 'Estatus' || key === 'TipoMarca') { const color = getStatusColor(value); displayValue = `<span style="color:${color}; font-weight:bold;">${value}</span>`; }
              const label = labelMap[key] || key;
              content += `<p style="margin:8px 0; font-size:1rem; border-bottom:1px solid #f0f0f0; padding-bottom:5px;"><strong style="color:#555;">${label}:</strong> <span style="color:#000;">${displayValue}</span></p>`;
         }
@@ -558,8 +570,23 @@ async function submitPersonalInterno(accion) {
     const id = document.getElementById('f1-id').value;
     if(!id) return alert("⚠️ No hay un código para validar.");
     const res = await callBackend('submit_form', { formulario: 'PERSONAL_INTERNO', data: { ID_Personal: id, Accion: accion } });
-    if (res && res.success) { resetForm('f1'); showSuccessScreen(res.message || "Movimiento registrado", accion, 'F2'); } 
-    else { showFailureScreen(res.message || "Error personal", 'F1'); }
+    
+    if (res && res.success) { 
+        resetForm('f1'); 
+        showSuccessScreen(res.message || "Movimiento registrado", accion, 'F2'); 
+    } else { 
+        // LÓGICA DE ERROR AMIGABLE
+        let errorMsg = res ? res.message : "Error desconocido";
+        const msgLower = (errorMsg || "").toLowerCase();
+        
+        if (msgLower.includes("404") || msgLower.includes("not found") || msgLower.includes("no existe")) {
+            errorMsg = "🚫 ID no registrado en el sistema."; 
+        } else if (msgLower.includes("ya registrado") || msgLower.includes("duplicado")) {
+            errorMsg = "⚠️ Este movimiento ya fue registrado.";
+        }
+        
+        showFailureScreen(errorMsg, 'F1'); 
+    }
 }
 
 async function validarAccesoQR(tipo, inputId, formId, nextScreen, failScreen) {
@@ -574,6 +601,7 @@ async function validarAccesoQR(tipo, inputId, formId, nextScreen, failScreen) {
         let mensaje = tipo === 'QR_RESIDENTE' ? "Código Validado" : (res.message || "Acceso Permitido");
         showSuccessScreen(mensaje, `${res.data?.tipo || "ACCESO"}: ${res.data?.nombre || "Autorizado"}`, nextScreen);
     } else {
+        // LÓGICA DE ERROR AMIGABLE MEJORADA
         let errorMsg = res ? res.message : "Código no válido";
         const msgLower = (errorMsg || "").toLowerCase();
 
@@ -581,7 +609,7 @@ async function validarAccesoQR(tipo, inputId, formId, nextScreen, failScreen) {
              errorMsg = "🚫 Código no encontrado - Acceso Denegado"; 
         }
         else if (msgLower.includes("ya usado") || msgLower.includes("vencido") || msgLower.includes("salida")) {
-             errorMsg = "⚠️ Este código ya fue validado anteriormente.";
+             errorMsg = "⚠️ Código expirado o ya utilizado.";
         }
 
         showFailureScreen(errorMsg, failScreen);
