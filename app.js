@@ -2,7 +2,7 @@
    1. CONFIGURACIÓN Y ESTADO GLOBAL
    ========================================= */
 const CONFIG = {
-    // URL de tu Proxy en Azure (Asegúrate que sea la correcta)
+    // URL de tu Proxy en Azure
     API_PROXY_URL: 'https://proxyoperador.azurewebsites.net/api/ravens-proxy'
 };
 
@@ -291,15 +291,33 @@ let html5QrCode;
 
 // --- A. BACKEND CALL ---
 async function callBackend(action, extraData = {}) {
+    // 1. Recuperar sesión si se perdió
     if (!STATE.session.condominioId) {
         const saved = localStorage.getItem('ravensUser');
-        if (saved) { STATE.session = JSON.parse(saved); } else { return null; }
+        if (saved) { 
+            const parsed = JSON.parse(saved);
+            if (parsed.condominioId) {
+                STATE.session = parsed;
+            } else {
+                return { success: false, message: "Error de sesión: Falta condominio." };
+            }
+        } else { 
+            return { success: false, message: "Sesión expirada" }; 
+        }
     }
+
     const loadingBtn = document.querySelector('.btn-save') || document.querySelector('.btn-primary');
     if(loadingBtn) { loadingBtn.dataset.originalText = loadingBtn.innerText; loadingBtn.disabled = true; loadingBtn.innerText = "Procesando..."; }
 
     try {
-        const payload = { action, condominio: STATE.session.condominioId, usuario: STATE.session.usuario || "guardia_web", ...extraData };
+        // Aseguramos que se envía "condominio" que es lo que espera tu lógica
+        const payload = { 
+            action, 
+            condominio: STATE.session.condominioId, 
+            usuario: STATE.session.usuario || "guardia_web", 
+            ...extraData 
+        };
+        
         const response = await fetch(CONFIG.API_PROXY_URL, { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(payload) });
         
         if (!response.ok) {
@@ -324,20 +342,49 @@ async function callBackend(action, extraData = {}) {
     }
 }
 
-// --- B. SESIÓN ---
+// --- B. SESIÓN (CORREGIDA PARA OBTENER CONDOMINIO) ---
 async function doLogin() {
     const user = document.getElementById('login-user').value;
     const pass = document.getElementById('login-pass').value;
     const errorMsg = document.getElementById('login-error');
+    
     if(!user || !pass) return;
+    
     try {
-        const response = await fetch(CONFIG.API_PROXY_URL, { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ action: 'login', username: user, password: pass }) });
+        const response = await fetch(CONFIG.API_PROXY_URL, { 
+            method: 'POST', 
+            headers: { 'Content-Type': 'application/json' }, 
+            body: JSON.stringify({ action: 'login', username: user, password: pass }) 
+        });
+        
         const data = await response.json();
+        
         if (response.ok && data.success) {
-            STATE.session.isLoggedIn = true; STATE.session.condominioId = data.condominioId || data.data?.condominio; STATE.session.usuario = user;
-            localStorage.setItem('ravensUser', JSON.stringify(STATE.session)); await loadResidentesList(); navigate('INICIO');
-        } else { throw new Error(data.message || "Credenciales incorrectas."); }
-    } catch (error) { errorMsg.innerText = error.message; errorMsg.style.display = "block"; }
+            // LÓGICA ROBUSTA PARA ENCONTRAR EL ID
+            console.log("Respuesta login:", data); // Debug
+            
+            const condId = data.condominioId || data.condominio || (data.data && data.data.condominio) || (data.data && data.data.condominioId);
+
+            if (!condId) {
+                throw new Error("Error crítico: La API no devolvió el ID del condominio.");
+            }
+
+            STATE.session.isLoggedIn = true; 
+            STATE.session.condominioId = condId; 
+            STATE.session.usuario = user;
+            
+            localStorage.setItem('ravensUser', JSON.stringify(STATE.session)); 
+            
+            await loadResidentesList(); 
+            navigate('INICIO');
+        } else { 
+            throw new Error(data.message || "Credenciales incorrectas."); 
+        }
+    } catch (error) { 
+        console.error(error);
+        errorMsg.innerText = error.message; 
+        errorMsg.style.display = "block"; 
+    }
 }
 
 async function loadResidentesList() {
@@ -347,12 +394,32 @@ async function loadResidentesList() {
             let cleanTel = item['Número'] ? item['Número'].toString().replace(/\D/g, '') : "";
             if(cleanTel.startsWith('52') && cleanTel.length > 10) cleanTel = cleanTel.substring(2);
             return { ...item, Nombre: item.Nombre || item.OData_Nombre || item.Title || "Sin Nombre", Torre: item.Torre || "N/A", Departamento: item.Departamento || "N/A", Número: cleanTel, Condominio: item.Condominio };
-        }).filter(item => item.Condominio && item.Condominio.toString().toUpperCase().trim() === STATE.session.condominioId.toString().toUpperCase().trim());
+        }).filter(item => {
+            // Filtro seguro aunque los tipos de dato difieran
+            if (!item.Condominio || !STATE.session.condominioId) return false;
+            return item.Condominio.toString().toUpperCase().trim() === STATE.session.condominioId.toString().toUpperCase().trim();
+        });
     }
 }
 
 function doLogout() { STATE.session = { isLoggedIn: false, condominioId: null, usuario: null }; localStorage.removeItem('ravensUser'); navigate('LOGIN'); }
-function checkSession() { const saved = localStorage.getItem('ravensUser'); if (saved) { STATE.session = JSON.parse(saved); loadResidentesList(); navigate('INICIO'); } else { navigate('LOGIN'); } }
+
+function checkSession() { 
+    const saved = localStorage.getItem('ravensUser'); 
+    if (saved) { 
+        STATE.session = JSON.parse(saved); 
+        // Verificar que la sesión guardada tenga el ID
+        if (STATE.session.condominioId) {
+            loadResidentesList(); 
+            navigate('INICIO'); 
+        } else {
+            // Si no tiene ID, es una sesión corrupta, forzar login
+            doLogout();
+        }
+    } else { 
+        navigate('LOGIN'); 
+    } 
+}
 
 // --- C. NAVEGACIÓN Y GALERÍAS ---
 function navigate(screen) {
@@ -497,7 +564,7 @@ async function submitPersonalInterno(accion) {
 
 async function validarAccesoQR(tipo, inputId, formId, nextScreen, failScreen) {
     const codigo = document.getElementById(inputId).value;
-    // --- VENTANA EMERGENTE SOLICITADA ---
+    
     if(!codigo) return alert("⚠️ No hay un código para validar."); 
     
     const res = await callBackend('validate_qr', { tipo_validacion: tipo, codigo_leido: codigo });
@@ -510,7 +577,6 @@ async function validarAccesoQR(tipo, inputId, formId, nextScreen, failScreen) {
         let errorMsg = res ? res.message : "Código no válido";
         const msgLower = (errorMsg || "").toLowerCase();
 
-        // --- FILTROS DE MENSAJE DE ERROR SOLICITADOS ---
         if (msgLower.includes("404") || msgLower.includes("not found") || msgLower.includes("no existe") || msgLower.includes("no encontrado")) {
              errorMsg = "🚫 Código no encontrado - Acceso Denegado"; 
         }
@@ -612,4 +678,3 @@ function startScan(targetInputId) {
 function closeQRScanner() { if(html5QrCode) html5QrCode.stop().then(() => html5QrCode.clear()).catch(()=>{}); document.getElementById('qr-modal').classList.remove('active'); }
 
 window.onload = () => { checkSession(); };
-// --- FIN DEL ARCHIVO JS ---
