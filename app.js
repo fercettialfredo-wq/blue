@@ -57,7 +57,6 @@ const getHeaderLibreta = (titulo, funcionRecarga, pantallaRegreso, showReload = 
     `;
 };
 
-// NOTA: Se eliminó el style height calc() para que el CSS controle el scroll correctamente
 const SCREENS = {
     // --- LOGIN SCREEN ---
     'LOGIN': `
@@ -483,10 +482,11 @@ function renderRemoteGallery(data, elementId) {
 
         let detalle = lineasDetalle.join(' | ');
         
-        // --- HOMOLOGACIÓN DE ESTATUS ---
-        // Si no trae estatus, o dice "Pendiente", lo forzamos visualmente a "Nuevo" para consistencia
+        // --- HOMOLOGACIÓN DE ESTATUS (VISITAS/PROVEEDOR) ---
+        // Si no trae estatus, o es "Pendiente", forzamos visualmente a "Nuevo"
         let rawStatus = item.Estatus || item.TipoMarca;
-        if (!rawStatus || rawStatus.toString().trim() === "" || rawStatus.toString().toLowerCase() === "pendiente") {
+        const statusLower = rawStatus ? rawStatus.toString().toLowerCase().trim() : "";
+        if (!rawStatus || statusLower === "" || statusLower === "pendiente") {
             rawStatus = "Nuevo";
         }
 
@@ -524,6 +524,11 @@ function showDetails(index) {
              // CORRECCIÓN: CONVERSIÓN TRUE/FALSE A SÍ/NO
              if(key === 'RequiereRevisi_x00f3_n' || key === 'RequiereRevision') { 
                  displayValue = (value === true || value === 'true' || value === 'True') ? 'SÍ' : 'NO'; 
+             }
+             
+             // CORRECCIÓN: HOMOLOGAR PENDIENTE -> NUEVO EN DETALLE
+             if(key === 'Estatus') {
+                 if(!value || value.toString().toLowerCase() === 'pendiente') displayValue = 'Nuevo';
              }
              
              const label = labelMap[key] || key;
