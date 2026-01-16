@@ -446,7 +446,7 @@ async function loadHistory(tipo, elementId) {
 function getStatusColor(status) {
     if (!status) return '#2563eb'; 
     const s = status.toString().toLowerCase().trim();
-    if(['aceptado', 'entrada', 'autorizado', 'con registro', 'registrado'].includes(s)) return '#16a34a'; 
+    if(['aceptado', 'entrada', 'autorizado', 'con registro', 'registrado', 'entregado'].includes(s)) return '#16a34a'; 
     if(['rechazado', 'salida', 'dañado', 'sin registro', 'denegado'].includes(s)) return '#dc2626'; 
     if(['nuevo', 'pendiente'].includes(s)) return '#2563eb'; 
     return '#2563eb';
@@ -481,6 +481,12 @@ function renderRemoteGallery(serverData, elementId) {
         let fechaLegible = formatearFechaBonita(item.Fecha || item.Created || item.Fechayhora);
         
         let titulo = item.Nombre || item.Nombre0 || item.Title || item.Visitante || 'Registro';
+        
+        // --- CAMBIO SOLICITADO: Forzar el Nombre en la Libreta de Recepción (BA2) ---
+        if (elementId === 'gal-ba2' && item.Nombre) {
+            titulo = item.Nombre;
+        }
+
         if (item.Recibio) titulo = item.Recibio; 
         if (item.Residente && !item.Nombre && !item.Recibio && !item.Nombre0) titulo = item.Residente; 
 
@@ -498,6 +504,11 @@ function renderRemoteGallery(serverData, elementId) {
         const statusLower = rawStatus ? rawStatus.toString().toLowerCase().trim() : "";
         if (!rawStatus || statusLower === "" || statusLower === "pendiente") {
             rawStatus = "Nuevo";
+        }
+
+        // --- CAMBIO SOLICITADO: Si es la libreta de entrega (BB2) y dice Nuevo, cambiar a Entregado ---
+        if (elementId === 'gal-bb2' && rawStatus === 'Nuevo') {
+            rawStatus = 'Entregado';
         }
 
         const statusColor = getStatusColor(rawStatus);
