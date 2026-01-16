@@ -20,10 +20,9 @@ const STATE = {
     signature: null,
     currentContext: "",
     targetInputForQR: "",
-    // Historial temporal
-    tempHistory: [],
-    // MEMORIA TEMPORAL (COLA) PARA REGISTROS RECIENTES
-    pendingItems: []
+    // Historial temporal (Visualización)
+    tempHistory: []
+    // NOTA: Se eliminó pendingItems para forzar lectura del servidor
 };
 
 /* =========================================
@@ -453,34 +452,14 @@ function getStatusColor(status) {
     return '#2563eb';
 }
 
+// --- MODIFICACIÓN IMPORTANTE: SOLO DATOS DEL SERVIDOR ---
 function renderRemoteGallery(serverData, elementId) {
     const container = document.getElementById(elementId);
     if (!container) return; 
 
-    // --- MEZCLA DE DATOS (LOCAL + SERVIDOR) ---
-    // Determinamos qué tipo de lista es para filtrar los pendientes locales
-    let targetType = "";
-    if(elementId === 'gal-aa2') targetType = 'VISITA';
-    else if(elementId === 'gal-ac2') targetType = 'PERSONALAVISO';
-    else if(elementId === 'gal-d2') targetType = 'PROVEEDOR';
-    else if(elementId === 'gal-ba2') targetType = 'PAQUETERIA_RECEPCION';
-    else if(elementId === 'gal-bb2') targetType = 'PAQUETERIA_ENTREGA';
-
-    // Filtramos los items locales que coincidan con esta lista
-    // IMPORTANTE: Para Proveedor, asegurarse que coincida 'PROVEEDOR'
-    const localItems = STATE.pendingItems.filter(i => {
-        if(targetType === 'PROVEEDOR') return i.Tipo_Lista === 'PROVEEDOR';
-        if(targetType === 'VISITA') return i.Tipo_Lista === 'VISITA';
-        if(targetType === 'PERSONALAVISO') return i.Tipo_Lista === 'PERSONALAVISO';
-        // Para paquetería
-        if(targetType === 'PAQUETERIA_RECEPCION' && i.formulario === 'PAQUETERIA_RECEPCION') return true;
-        if(targetType === 'PAQUETERIA_ENTREGA' && i.formulario === 'PAQUETERIA_ENTREGA') return true;
-        return false;
-    });
-
-    // Unimos los nuevos (locales) al principio + los del servidor
-    // Los locales ya traen .Fecha generada en el submit
-    let allData = [...localItems, ...serverData];
+    // MODIFICADO: Ignoramos items locales (pendingItems) y usamos SOLO la respuesta del servidor
+    // Esto asegura que lo que se ve es exactamente lo que está en la base de datos.
+    let allData = serverData || [];
 
     if (allData.length === 0) { 
         container.innerHTML = `<div style="padding:20px; text-align:center; color:#555">Sin registros recientes.</div>`; 
@@ -499,7 +478,6 @@ function renderRemoteGallery(serverData, elementId) {
     STATE.tempHistory = filteredData;
 
     container.innerHTML = filteredData.map((item, index) => {
-        // AQUÍ ES CLAVE: item.Fecha debe existir. En los locales se agregó en submit.
         let fechaLegible = formatearFechaBonita(item.Fecha || item.Created || item.Fechayhora);
         
         let titulo = item.Nombre || item.Nombre0 || item.Title || item.Visitante || 'Registro';
@@ -534,8 +512,8 @@ function renderRemoteGallery(serverData, elementId) {
                 <h4>${titulo}</h4>
                 <p>${detalle}</p>
                 <div style="display:flex; align-items:center; justify-content:space-between; margin-top:8px;">
-                     ${estatusHtml}
-                     <span style="font-size:0.75rem; color:#888;">${fechaLegible}</span>
+                      ${estatusHtml}
+                      <span style="font-size:0.75rem; color:#888;">${fechaLegible}</span>
                 </div>
             </div>
             <div style="color:#cbd5e1;"><i class="fas fa-chevron-right"></i></div>
@@ -596,13 +574,12 @@ async function submitAviso(p) {
         Motivo: motivo || "Servicio", 
         Placa: document.getElementById(p+'-placa')?.value || "N/A", 
         Condominio: STATE.session.condominioId,
-        // AGREGO FECHA LOCAL
         Fecha: new Date().toISOString(),
         Estatus: "Nuevo"
     };
 
-    // GUARDAR EN COLA LOCAL
-    STATE.pendingItems.unshift(data);
+    // MODIFICADO: YA NO GUARDAMOS EN LOCAL (pendingItems)
+    // STATE.pendingItems.unshift(data);
 
     const res = await callBackend('submit_form', { formulario: 'AVISOG', data: data });
     if (res && res.success) { resetForm(p); showSuccessScreen(res.message || "Registro Guardado", "Correcto", nextScreen); } 
@@ -614,7 +591,6 @@ async function submitProveedor() {
     const asunto = document.getElementById('d1-asunto').value;
     if(!nom || !STATE['d1']?.residente || !asunto) return alert("Faltan datos.");
     
-    // FIX COMPLETO: AGREGO FECHA Y ESTATUS AL OBJETO
     const data = { 
         Nombre: nom, 
         Residente: STATE['d1'].residente, 
@@ -627,11 +603,11 @@ async function submitProveedor() {
         Motivo: asunto, 
         Condominio: STATE.session.condominioId,
         Estatus: "Nuevo",
-        Fecha: new Date().toISOString() // <<-- ESTO ARREGLA EL "PENDIENTE"
+        Fecha: new Date().toISOString() 
     };
     
-    // GUARDAR EN COLA LOCAL
-    STATE.pendingItems.unshift(data);
+    // MODIFICADO: YA NO GUARDAMOS EN LOCAL
+    // STATE.pendingItems.unshift(data);
 
     const res = await callBackend('submit_form', { formulario: 'AVISOG', data: data });
     if (res && res.success) { resetForm('d1'); showSuccessScreen(res.message || "Proveedor Registrado", "Éxito", 'D2'); } 
@@ -639,14 +615,12 @@ async function submitProveedor() {
 }
 
 async function submitRecepcionPaquete() {
-    // AQUI SE CAPTURA EL NUEVO CAMPO NOMBRE
     const nombre = document.getElementById('ba1-nombre').value;
 
     if(!STATE['ba1']?.residente) return alert("Selecciona un residente.");
     if(!nombre) return alert("Ingresa el nombre de quien entrega/repartidor.");
     
     const data = { 
-        // AQUI SE AGREGA EL NOMBRE AL OBJETO
         Nombre: nombre,
         Residente: STATE['ba1'].residente, 
         Torre: STATE['ba1'].torre, 
@@ -659,7 +633,8 @@ async function submitRecepcionPaquete() {
         Fecha: new Date().toISOString()
     };
     
-    STATE.pendingItems.unshift({ ...data, formulario: 'PAQUETERIA_RECEPCION' });
+    // MODIFICADO: YA NO GUARDAMOS EN LOCAL
+    // STATE.pendingItems.unshift({ ...data, formulario: 'PAQUETERIA_RECEPCION' });
 
     const res = await callBackend('submit_form', { formulario: 'PAQUETERIA_RECEPCION', data: data });
     if (res && res.success) { resetForm('ba1'); showSuccessScreen("Paquete Recibido", "Guardado", 'BA2'); } 
@@ -683,7 +658,7 @@ async function submitEntregaPaquete() {
         Estatus: "Entregado"
     };
 
-    // ELIMINADO PARA EVITAR DUPLICADOS (Se depende solo del servidor)
+    // MODIFICADO: YA NO GUARDAMOS EN LOCAL
     // STATE.pendingItems.unshift({ ...data, formulario: 'PAQUETERIA_ENTREGA' });
 
     const res = await callBackend('submit_form', { formulario: 'PAQUETERIA_ENTREGA', data: data });
@@ -700,7 +675,6 @@ async function submitPersonalInterno(accion) {
         resetForm('f1'); 
         showSuccessScreen(res.message || "Movimiento registrado", accion, 'F2'); 
     } else { 
-        // MENSAJES PROFESIONALES
         let errorMsg = res ? res.message : "Error desconocido";
         const msgLower = (errorMsg || "").toLowerCase();
         
@@ -725,7 +699,6 @@ async function validarAccesoQR(tipo, inputId, formId, nextScreen, failScreen) {
         let mensaje = tipo === 'QR_RESIDENTE' ? "Código Validado" : (res.message || "Acceso Permitido");
         showSuccessScreen(mensaje, `${res.data?.tipo || "ACCESO"}: ${res.data?.nombre || "Autorizado"}`, nextScreen);
     } else {
-        // MENSAJES PROFESIONALES (ELIMINA ERRORES TÉCNICOS)
         let errorMsg = res ? res.message : "Código no válido";
         const msgLower = (errorMsg || "").toLowerCase();
 
