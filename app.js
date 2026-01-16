@@ -448,11 +448,15 @@ function renderRemoteGallery(data, elementId) {
     const container = document.getElementById(elementId);
     if (!data || data.length === 0) { container.innerHTML = `<div style="padding:20px; text-align:center; color:#555">Sin registros recientes.</div>`; return; }
     
-    // Filtro para mostrar historial (QR Residente muestra todo, otros filtran "Nuevo")
+    // --- LÓGICA DE FILTRADO CORREGIDA ---
+    // Solo ocultamos "Nuevo" en QR VISITA (gal-eb2) y NIP PROVEEDOR (gal-ed2)
+    // En todos los demás (Visitas, Paquetería, Residentes, etc.) mostramos TODO.
     const filteredData = data.filter(item => {
-        if (elementId === 'gal-ea2') return true; 
-        const estatus = (item.Estatus || item.TipoMarca || "").toString().toLowerCase().trim();
-        return estatus !== "" && estatus !== "nuevo";
+        if (elementId === 'gal-eb2' || elementId === 'gal-ed2') {
+            const estatus = (item.Estatus || item.TipoMarca || "").toString().toLowerCase().trim();
+            return estatus !== "" && estatus !== "nuevo";
+        }
+        return true; // Mostrar todo en las demás galerías
     });
 
     if (filteredData.length === 0) {
