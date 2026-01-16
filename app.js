@@ -21,7 +21,9 @@ const STATE = {
     currentContext: "",
     targetInputForQR: "",
     // Historial temporal
-    tempHistory: [] 
+    tempHistory: [],
+    // MEMORIA TEMPORAL (COLA) PARA REGISTROS RECIENTES
+    pendingItems: []
 };
 
 /* =========================================
@@ -431,8 +433,12 @@ function navigate(screen) {
 async function loadHistory(tipo, elementId) {
     const container = document.getElementById(elementId);
     if(!container) return; container.innerHTML = '<div style="padding:20px; text-align:center;">Cargando...</div>';
+    
+    // FETCH SERVER DATA
     const response = await callBackend('get_history', { tipo_lista: tipo });
-    if(response && response.data) { renderRemoteGallery(response.data, elementId); } else { container.innerHTML = '<div style="padding:20px; text-align:center;">Sin datos.</div>'; }
+    let serverData = (response && response.data) ? response.data : [];
+
+    renderRemoteGallery(serverData, elementId);
 }
 
 function getStatusColor(status) {
@@ -444,14 +450,42 @@ function getStatusColor(status) {
     return '#2563eb';
 }
 
-function renderRemoteGallery(data, elementId) {
+function renderRemoteGallery(serverData, elementId) {
     const container = document.getElementById(elementId);
-    if (!container) return; // PROTECCIÓN CONTRA ERROR INNERHTML
+    if (!container) return; 
 
-    if (!data || data.length === 0) { container.innerHTML = `<div style="padding:20px; text-align:center; color:#555">Sin registros recientes.</div>`; return; }
+    // --- MEZCLA DE DATOS (LOCAL + SERVIDOR) ---
+    // Determinamos qué tipo de lista es para filtrar los pendientes locales
+    let targetType = "";
+    if(elementId === 'gal-aa2') targetType = 'VISITA';
+    else if(elementId === 'gal-ac2') targetType = 'PERSONALAVISO';
+    else if(elementId === 'gal-d2') targetType = 'PROVEEDOR';
+    else if(elementId === 'gal-ba2') targetType = 'PAQUETERIA_RECEPCION';
+    else if(elementId === 'gal-bb2') targetType = 'PAQUETERIA_ENTREGA';
+
+    // Filtramos los items locales que coincidan con esta lista
+    // IMPORTANTE: Para Proveedor, asegurarse que coincida 'PROVEEDOR'
+    const localItems = STATE.pendingItems.filter(i => {
+        if(targetType === 'PROVEEDOR') return i.Tipo_Lista === 'PROVEEDOR';
+        if(targetType === 'VISITA') return i.Tipo_Lista === 'VISITA';
+        if(targetType === 'PERSONALAVISO') return i.Tipo_Lista === 'PERSONALAVISO';
+        // Para paquetería
+        if(targetType === 'PAQUETERIA_RECEPCION' && i.formulario === 'PAQUETERIA_RECEPCION') return true;
+        if(targetType === 'PAQUETERIA_ENTREGA' && i.formulario === 'PAQUETERIA_ENTREGA') return true;
+        return false;
+    });
+
+    // Unimos los nuevos (locales) al principio + los del servidor
+    // Los locales ya traen .Fecha generada en el submit
+    let allData = [...localItems, ...serverData];
+
+    if (allData.length === 0) { 
+        container.innerHTML = `<div style="padding:20px; text-align:center; color:#555">Sin registros recientes.</div>`; 
+        return; 
+    }
     
-    // FILTRADO: Se ocultan los "Nuevos" solo en QR_VISITA y NIP_PROVEEDOR
-    const filteredData = data.filter(item => {
+    // FILTRADO: Se ocultan los "Nuevos" solo en QR_VISITA y NIP_PROVEEDOR (si aplicara)
+    const filteredData = allData.filter(item => {
         if (elementId === 'gal-eb2' || elementId === 'gal-ed2') {
             const estatus = (item.Estatus || item.TipoMarca || "").toString().toLowerCase().trim();
             return estatus !== "" && estatus !== "nuevo";
@@ -459,15 +493,12 @@ function renderRemoteGallery(data, elementId) {
         return true; 
     });
 
-    if (filteredData.length === 0) {
-        container.innerHTML = `<div style="padding:20px; text-align:center; color:#555">Sin registros procesados.</div>`;
-        return;
-    }
-
     STATE.tempHistory = filteredData;
 
     container.innerHTML = filteredData.map((item, index) => {
+        // AQUÍ ES CLAVE: item.Fecha debe existir. En los locales se agregó en submit.
         let fechaLegible = formatearFechaBonita(item.Fecha || item.Created || item.Fechayhora);
+        
         let titulo = item.Nombre || item.Nombre0 || item.Title || item.Visitante || 'Registro';
         if (item.Recibio) titulo = item.Recibio; 
         if (item.Residente && !item.Nombre && !item.Recibio && !item.Nombre0) titulo = item.Residente; 
@@ -482,8 +513,6 @@ function renderRemoteGallery(data, elementId) {
 
         let detalle = lineasDetalle.join(' | ');
         
-        // --- HOMOLOGACIÓN DE ESTATUS (VISITAS/PROVEEDOR) ---
-        // Si no trae estatus, o es "Pendiente", forzamos visualmente a "Nuevo"
         let rawStatus = item.Estatus || item.TipoMarca;
         const statusLower = rawStatus ? rawStatus.toString().toLowerCase().trim() : "";
         if (!rawStatus || statusLower === "" || statusLower === "pendiente") {
@@ -517,16 +546,14 @@ function showDetails(index) {
     const labelMap = { 'Nombre0': 'Nombre', 'Recibio': 'Quien Recibió', 'Residente': 'Destinatario/Residente', 'Nombre': 'Nombre', 'Fechayhora': 'Fecha y Hora', 'Fecha': 'Fecha y Hora', 'Estatus': 'Estatus', 'Paqueteria': 'Paquetería', 'Empresa': 'Empresa', 'Asunto': 'Asunto', 'Torre': 'Torre', 'Departamento': 'Departamento', 'Cargo': 'Cargo', 'Placa': 'Placa', 'DiasTrabajo': 'Días de Trabajo', 'HoraEntrada': 'Hora de Entrada', 'HoraSalida': 'Hora de Salida', 'RequiereRevision': 'Requiere Revisión', 'TipoMarca': 'Tipo de Marca', 'PuedeSalirCon': 'Puede Salir Con', 'D_x00ed_asdeTrabajo': 'Días de Trabajo', 'RequiereRevisi_x00f3_n': 'Requiere Revisión' };
     let content = '<div style="text-align:left;">';
     for (const [key, value] of Object.entries(item)) {
-        if(key !== 'odata.type' && key !== 'Foto' && key !== 'FotoBase64' && key !== 'FirmaBase64' && value) {
+        if(key !== 'odata.type' && key !== 'Foto' && key !== 'FotoBase64' && key !== 'FirmaBase64' && key !== '_isLocal' && key !== 'formulario' && value) {
              let displayValue = value;
              if(key === 'Fecha' || key === 'Fechayhora' || key === 'Created') { displayValue = formatearFechaBonita(value); }
              
-             // CORRECCIÓN: CONVERSIÓN TRUE/FALSE A SÍ/NO
              if(key === 'RequiereRevisi_x00f3_n' || key === 'RequiereRevision') { 
                  displayValue = (value === true || value === 'true' || value === 'True') ? 'SÍ' : 'NO'; 
              }
              
-             // CORRECCIÓN: HOMOLOGAR PENDIENTE -> NUEVO EN DETALLE
              if(key === 'Estatus') {
                  if(!value || value.toString().toLowerCase() === 'pendiente') displayValue = 'Nuevo';
              }
@@ -553,7 +580,27 @@ async function submitAviso(p) {
     if(!nom || !STATE[p]?.residente) { return alert("Faltan datos obligatorios."); }
     let tipoLista = p === 'aa1' ? 'VISITA' : 'PERSONALAVISO';
     let nextScreen = p === 'aa1' ? 'AA2' : 'AC2';
-    const data = { Nombre: nom, Residente: STATE[p].residente, Torre: STATE[p].torre, Departamento: STATE[p].depto, Telefono: STATE[p].telefono || "", Tipo_Lista: tipoLista, Cargo: cargo || "N/A", Motivo: motivo || "Servicio", Placa: document.getElementById(p+'-placa')?.value || "N/A", Condominio: STATE.session.condominioId };
+    
+    // OBJETO BASE
+    const data = { 
+        Nombre: nom, 
+        Residente: STATE[p].residente, 
+        Torre: STATE[p].torre, 
+        Departamento: STATE[p].depto, 
+        Telefono: STATE[p].telefono || "", 
+        Tipo_Lista: tipoLista, 
+        Cargo: cargo || "N/A", 
+        Motivo: motivo || "Servicio", 
+        Placa: document.getElementById(p+'-placa')?.value || "N/A", 
+        Condominio: STATE.session.condominioId,
+        // AGREGO FECHA LOCAL
+        Fecha: new Date().toISOString(),
+        Estatus: "Nuevo"
+    };
+
+    // GUARDAR EN COLA LOCAL
+    STATE.pendingItems.unshift(data);
+
     const res = await callBackend('submit_form', { formulario: 'AVISOG', data: data });
     if (res && res.success) { resetForm(p); showSuccessScreen(res.message || "Registro Guardado", "Correcto", nextScreen); } 
     else { showFailureScreen(res.message || "Error al guardar", p.toUpperCase()); }
@@ -564,7 +611,7 @@ async function submitProveedor() {
     const asunto = document.getElementById('d1-asunto').value;
     if(!nom || !STATE['d1']?.residente || !asunto) return alert("Faltan datos.");
     
-    // CORRECCIÓN: SE AÑADE ESTATUS "Nuevo" EXPLICITAMENTE PARA HOMOLOGAR
+    // FIX COMPLETO: AGREGO FECHA Y ESTATUS AL OBJETO
     const data = { 
         Nombre: nom, 
         Residente: STATE['d1'].residente, 
@@ -576,9 +623,13 @@ async function submitProveedor() {
         Asunto: asunto, 
         Motivo: asunto, 
         Condominio: STATE.session.condominioId,
-        Estatus: "Nuevo" 
+        Estatus: "Nuevo",
+        Fecha: new Date().toISOString() // <<-- ESTO ARREGLA EL "PENDIENTE"
     };
     
+    // GUARDAR EN COLA LOCAL
+    STATE.pendingItems.unshift(data);
+
     const res = await callBackend('submit_form', { formulario: 'AVISOG', data: data });
     if (res && res.success) { resetForm('d1'); showSuccessScreen(res.message || "Proveedor Registrado", "Éxito", 'D2'); } 
     else { showFailureScreen(res.message, 'D1'); }
@@ -586,7 +637,21 @@ async function submitProveedor() {
 
 async function submitRecepcionPaquete() {
     if(!STATE['ba1']?.residente) return alert("Selecciona un residente.");
-    const data = { Residente: STATE['ba1'].residente, Torre: STATE['ba1'].torre, Departamento: STATE['ba1'].depto, Telefono: STATE['ba1']?.telefono || "", Paqueteria: document.getElementById('ba1-paqueteria').value, Estatus: document.getElementById('ba1-estatus').value, FotoBase64: STATE.photos['ba1'] || "", Condominio: STATE.session.condominioId };
+    
+    const data = { 
+        Residente: STATE['ba1'].residente, 
+        Torre: STATE['ba1'].torre, 
+        Departamento: STATE['ba1'].depto, 
+        Telefono: STATE['ba1']?.telefono || "", 
+        Paqueteria: document.getElementById('ba1-paqueteria').value, 
+        Estatus: document.getElementById('ba1-estatus').value, 
+        FotoBase64: STATE.photos['ba1'] || "", 
+        Condominio: STATE.session.condominioId,
+        Fecha: new Date().toISOString()
+    };
+    
+    STATE.pendingItems.unshift({ ...data, formulario: 'PAQUETERIA_RECEPCION' });
+
     const res = await callBackend('submit_form', { formulario: 'PAQUETERIA_RECEPCION', data: data });
     if (res && res.success) { resetForm('ba1'); showSuccessScreen("Paquete Recibido", "Guardado", 'BA2'); } 
     else { showFailureScreen(res.message, 'BA1'); }
@@ -595,8 +660,22 @@ async function submitRecepcionPaquete() {
 async function submitEntregaPaquete() {
     const nom = document.getElementById('bb1-nombre').value;
     if(!nom || !STATE['bb1']?.residente) return alert("Datos incompletos.");
-    // CORRECCIÓN: SE AGREGÓ EL CAMPO TELÉFONO PARA LA LOGIC APP
-    const data = { Recibio: nom, Residente: STATE['bb1'].residente, Torre: STATE['bb1'].torre, Departamento: STATE['bb1'].depto, Telefono: STATE['bb1']?.telefono || "", FotoBase64: STATE.photos['bb1'] || "", FirmaBase64: signaturePad ? signaturePad.toDataURL() : "", Condominio: STATE.session.condominioId };
+    
+    const data = { 
+        Recibio: nom, 
+        Residente: STATE['bb1'].residente, 
+        Torre: STATE['bb1'].torre, 
+        Departamento: STATE['bb1'].depto, 
+        Telefono: STATE['bb1']?.telefono || "", 
+        FotoBase64: STATE.photos['bb1'] || "", 
+        FirmaBase64: signaturePad ? signaturePad.toDataURL() : "", 
+        Condominio: STATE.session.condominioId,
+        Fecha: new Date().toISOString(),
+        Estatus: "Entregado"
+    };
+
+    STATE.pendingItems.unshift({ ...data, formulario: 'PAQUETERIA_ENTREGA' });
+
     const res = await callBackend('submit_form', { formulario: 'PAQUETERIA_ENTREGA', data: data });
     if (res && res.success) { resetForm('bb1'); showSuccessScreen("Paquete Entregado", "Firmado", 'BB2'); } 
     else { showFailureScreen(res.message, 'BB1'); }
