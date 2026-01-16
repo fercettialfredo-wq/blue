@@ -236,7 +236,7 @@ const SCREENS = {
             ${getHeaderLibreta('Libreta Proveedor', "loadHistory('PROVEEDOR', 'gal-d2')", 'D1', true)}
             <div class="form-container" style="padding:0;"><div id="gal-d2" class="gallery-container" style="height: calc(100vh - 150px);"></div></div></div>`,
 
-    // --- MÓDULO E: QR (MODIFICADO: Sin botón recarga) ---
+    // --- MÓDULO E: QR ---
     'E1': `
         <div class="screen"><header class="header-app"><div class="header-logo"><span class="header-logo-text">MÓDULOS QR</span></div><div class="cursor-pointer" onclick="navigate('INICIO')"><img src="icons/home.svg" class="header-icon-img" style="height:40px;"></div></header>
             <main class="main-menu-grid">
@@ -277,7 +277,7 @@ const SCREENS = {
             ${getHeaderLibreta('Historial NIP', "loadHistory('NIP_PROVEEDOR', 'gal-ed2')", 'ED1', false)}
             <div class="form-container" style="padding:0;"><div id="gal-ed2" class="gallery-container" style="height: calc(100vh - 150px);"></div></div></div>`,
 
-    // --- PERSONAL INTERNO (MODIFICADO: Sin botón recarga) ---
+    // --- PERSONAL INTERNO ---
     'F1': `
         <div class="screen form-page">
             <div class="form-title-section"><h2 class="form-title">Personal Interno</h2><div class="header-icons"><img src="icons/home.svg" class="header-icon-img cursor-pointer" onclick="navigate('INICIO')" style="height:40px;"><img src="icons/libreta.svg" class="header-icon-img cursor-pointer" onclick="navigate('F2')" style="height:40px;"></div></div>
@@ -364,8 +364,6 @@ async function doLogin() {
         const data = await response.json();
         
         if (response.ok && data.success) {
-            console.log("Respuesta login:", data);
-            
             const condId = data.condominioId || data.condominio || (data.data && data.data.condominio) || (data.data && data.data.condominioId);
 
             if (!condId) {
@@ -439,24 +437,24 @@ async function loadHistory(tipo, elementId) {
 
 function getStatusColor(status) {
     if (!status) return '#2563eb'; const s = status.toString().toLowerCase().trim();
-    if(['aceptado', 'entrada', 'autorizado', 'con registro', 'registrado'].includes(s)) return '#16a34a'; // Verde bonito
-    if(['rechazado', 'salida', 'dañado', 'sin registro', 'denegado'].includes(s)) return '#dc2626'; // Rojo bonito
+    if(['aceptado', 'entrada', 'autorizado', 'con registro', 'registrado'].includes(s)) return '#16a34a'; 
+    if(['rechazado', 'salida', 'dañado', 'sin registro', 'denegado'].includes(s)) return '#dc2626'; 
     if(['nuevo'].includes(s)) return '#2563eb'; return '#2563eb';
 }
 
 function renderRemoteGallery(data, elementId) {
     const container = document.getElementById(elementId);
+    if (!container) return; // PROTECCIÓN CONTRA ERROR INNERHTML
+
     if (!data || data.length === 0) { container.innerHTML = `<div style="padding:20px; text-align:center; color:#555">Sin registros recientes.</div>`; return; }
     
-    // --- LÓGICA DE FILTRADO CORREGIDA ---
-    // Solo ocultamos "Nuevo" en QR VISITA (gal-eb2) y NIP PROVEEDOR (gal-ed2)
-    // En todos los demás (Visitas, Paquetería, Residentes, PROVEEDOR D2, etc.) mostramos TODO.
+    // FILTRADO: Se ocultan los "Nuevos" solo en QR_VISITA y NIP_PROVEEDOR
     const filteredData = data.filter(item => {
         if (elementId === 'gal-eb2' || elementId === 'gal-ed2') {
             const estatus = (item.Estatus || item.TipoMarca || "").toString().toLowerCase().trim();
             return estatus !== "" && estatus !== "nuevo";
         }
-        return true; // Mostrar todo en las demás galerías (INCLUIDO D2)
+        return true; 
     });
 
     if (filteredData.length === 0) {
@@ -466,7 +464,6 @@ function renderRemoteGallery(data, elementId) {
 
     STATE.tempHistory = filteredData;
 
-    // GALERÍA MODERNA - TARJETAS FLOTANTES
     container.innerHTML = filteredData.map((item, index) => {
         let fechaLegible = formatearFechaBonita(item.Fecha || item.Created || item.Fechayhora);
         let titulo = item.Nombre || item.Nombre0 || item.Title || item.Visitante || 'Registro';
@@ -485,7 +482,6 @@ function renderRemoteGallery(data, elementId) {
         const rawStatus = item.Estatus || item.TipoMarca;
         const statusColor = getStatusColor(rawStatus);
         
-        // Badge estilo píldora
         const estatusHtml = rawStatus 
             ? `<span class="status-pill" style="background-color: ${statusColor}20; color: ${statusColor};">${rawStatus}</span>` 
             : '';
@@ -515,7 +511,7 @@ function showDetails(index) {
              let displayValue = value;
              if(key === 'Fecha' || key === 'Fechayhora' || key === 'Created') { displayValue = formatearFechaBonita(value); }
              
-             // --- CORRECCIÓN TRUE/FALSE a SÍ/NO ---
+             // CORRECCIÓN: CONVERSIÓN TRUE/FALSE A SÍ/NO
              if(key === 'RequiereRevisi_x00f3_n' || key === 'RequiereRevision') { 
                  displayValue = (value === true || value === 'true' || value === 'True') ? 'SÍ' : 'NO'; 
              }
@@ -542,7 +538,7 @@ async function submitAviso(p) {
     if(!nom || !STATE[p]?.residente) { return alert("Faltan datos obligatorios."); }
     let tipoLista = p === 'aa1' ? 'VISITA' : 'PERSONALAVISO';
     let nextScreen = p === 'aa1' ? 'AA2' : 'AC2';
-    const data = { Nombre: nom, Residente: STATE[p].residente, Torre: STATE[p].torre, Departamento: STATE[p].depto, Telefono: STATE[p].telefono || "", Tipo_Lista: tipoLista, Cargo: cargo || "N/A", Motivo: motivo || "Servicio", Placa: document.getElementById(p+'-placa')?.value || "N/A" };
+    const data = { Nombre: nom, Residente: STATE[p].residente, Torre: STATE[p].torre, Departamento: STATE[p].depto, Telefono: STATE[p].telefono || "", Tipo_Lista: tipoLista, Cargo: cargo || "N/A", Motivo: motivo || "Servicio", Placa: document.getElementById(p+'-placa')?.value || "N/A", Condominio: STATE.session.condominioId };
     const res = await callBackend('submit_form', { formulario: 'AVISOG', data: data });
     if (res && res.success) { resetForm(p); showSuccessScreen(res.message || "Registro Guardado", "Correcto", nextScreen); } 
     else { showFailureScreen(res.message || "Error al guardar", p.toUpperCase()); }
@@ -552,7 +548,7 @@ async function submitProveedor() {
     const nom = document.getElementById('d1-nombre').value;
     const asunto = document.getElementById('d1-asunto').value;
     if(!nom || !STATE['d1']?.residente || !asunto) return alert("Faltan datos.");
-    const data = { Nombre: nom, Residente: STATE['d1'].residente, Torre: STATE['d1'].torre, Departamento: STATE['d1'].depto, Telefono: STATE['d1']?.telefono || "", Tipo_Lista: 'PROVEEDOR', Empresa: document.getElementById('d1-empresa').value || "Genérica", Asunto: asunto, Motivo: asunto };
+    const data = { Nombre: nom, Residente: STATE['d1'].residente, Torre: STATE['d1'].torre, Departamento: STATE['d1'].depto, Telefono: STATE['d1']?.telefono || "", Tipo_Lista: 'PROVEEDOR', Empresa: document.getElementById('d1-empresa').value || "Genérica", Asunto: asunto, Motivo: asunto, Condominio: STATE.session.condominioId };
     const res = await callBackend('submit_form', { formulario: 'AVISOG', data: data });
     if (res && res.success) { resetForm('d1'); showSuccessScreen(res.message || "Proveedor Registrado", "Éxito", 'D2'); } 
     else { showFailureScreen(res.message, 'D1'); }
@@ -560,7 +556,7 @@ async function submitProveedor() {
 
 async function submitRecepcionPaquete() {
     if(!STATE['ba1']?.residente) return alert("Selecciona un residente.");
-    const data = { Residente: STATE['ba1'].residente, Torre: STATE['ba1'].torre, Departamento: STATE['ba1'].depto, Telefono: STATE['ba1']?.telefono || "", Paqueteria: document.getElementById('ba1-paqueteria').value, Estatus: document.getElementById('ba1-estatus').value, FotoBase64: STATE.photos['ba1'] || "" };
+    const data = { Residente: STATE['ba1'].residente, Torre: STATE['ba1'].torre, Departamento: STATE['ba1'].depto, Telefono: STATE['ba1']?.telefono || "", Paqueteria: document.getElementById('ba1-paqueteria').value, Estatus: document.getElementById('ba1-estatus').value, FotoBase64: STATE.photos['ba1'] || "", Condominio: STATE.session.condominioId };
     const res = await callBackend('submit_form', { formulario: 'PAQUETERIA_RECEPCION', data: data });
     if (res && res.success) { resetForm('ba1'); showSuccessScreen("Paquete Recibido", "Guardado", 'BA2'); } 
     else { showFailureScreen(res.message, 'BA1'); }
@@ -569,8 +565,8 @@ async function submitRecepcionPaquete() {
 async function submitEntregaPaquete() {
     const nom = document.getElementById('bb1-nombre').value;
     if(!nom || !STATE['bb1']?.residente) return alert("Datos incompletos.");
-    // --- CORRECCIÓN: AGREGADO EL CAMPO TELEFONO ---
-    const data = { Recibio: nom, Residente: STATE['bb1'].residente, Torre: STATE['bb1'].torre, Departamento: STATE['bb1'].depto, Telefono: STATE['bb1']?.telefono || "", FotoBase64: STATE.photos['bb1'] || "", FirmaBase64: signaturePad ? signaturePad.toDataURL() : "" };
+    // CORRECCIÓN: SE AGREGÓ EL CAMPO TELÉFONO PARA LA LOGIC APP
+    const data = { Recibio: nom, Residente: STATE['bb1'].residente, Torre: STATE['bb1'].torre, Departamento: STATE['bb1'].depto, Telefono: STATE['bb1']?.telefono || "", FotoBase64: STATE.photos['bb1'] || "", FirmaBase64: signaturePad ? signaturePad.toDataURL() : "", Condominio: STATE.session.condominioId };
     const res = await callBackend('submit_form', { formulario: 'PAQUETERIA_ENTREGA', data: data });
     if (res && res.success) { resetForm('bb1'); showSuccessScreen("Paquete Entregado", "Firmado", 'BB2'); } 
     else { showFailureScreen(res.message, 'BB1'); }
@@ -579,13 +575,13 @@ async function submitEntregaPaquete() {
 async function submitPersonalInterno(accion) {
     const id = document.getElementById('f1-id').value;
     if(!id) return alert("⚠️ No hay un código para validar.");
-    const res = await callBackend('submit_form', { formulario: 'PERSONAL_INTERNO', data: { ID_Personal: id, Accion: accion } });
+    const res = await callBackend('submit_form', { formulario: 'PERSONAL_INTERNO', data: { ID_Personal: id, Accion: accion, Condominio: STATE.session.condominioId } });
     
     if (res && res.success) { 
         resetForm('f1'); 
         showSuccessScreen(res.message || "Movimiento registrado", accion, 'F2'); 
     } else { 
-        // --- CORRECCIÓN MENSAJES AMIGABLES ---
+        // MENSAJES PROFESIONALES
         let errorMsg = res ? res.message : "Error desconocido";
         const msgLower = (errorMsg || "").toLowerCase();
         
@@ -601,7 +597,6 @@ async function submitPersonalInterno(accion) {
 
 async function validarAccesoQR(tipo, inputId, formId, nextScreen, failScreen) {
     const codigo = document.getElementById(inputId).value;
-    
     if(!codigo) return alert("⚠️ No hay un código para validar."); 
     
     const res = await callBackend('validate_qr', { tipo_validacion: tipo, codigo_leido: codigo });
@@ -611,7 +606,7 @@ async function validarAccesoQR(tipo, inputId, formId, nextScreen, failScreen) {
         let mensaje = tipo === 'QR_RESIDENTE' ? "Código Validado" : (res.message || "Acceso Permitido");
         showSuccessScreen(mensaje, `${res.data?.tipo || "ACCESO"}: ${res.data?.nombre || "Autorizado"}`, nextScreen);
     } else {
-        // --- CORRECCIÓN MENSAJES AMIGABLES ---
+        // MENSAJES PROFESIONALES (ELIMINA ERRORES TÉCNICOS)
         let errorMsg = res ? res.message : "Código no válido";
         const msgLower = (errorMsg || "").toLowerCase();
 
