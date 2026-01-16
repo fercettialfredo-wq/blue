@@ -177,14 +177,14 @@ const SCREENS = {
         <div class="screen form-page">
             <div class="form-title-section"><h2 class="form-title">Recibir Paquete</h2><div class="header-icons"><i class="fas fa-arrow-left fa-2x cursor-pointer" onclick="navigate('B1')" style="color:#ef4444;"></i><img src="icons/libreta.svg" class="header-icon-img cursor-pointer" onclick="navigate('BA2')" style="height:40px;"></div></div>
             <div class="form-container">
+                <div class="input-group"><label>Nombre (Repartidor/Entregó) *</label><input type="text" id="ba1-nombre" class="form-input"></div>
+
                 <div class="input-group"><label>Torre</label><input type="text" id="ba1-torre" class="form-input" readonly></div>
                 <div class="input-group"><label>Departamento</label><input type="text" id="ba1-depto" class="form-input" readonly></div>
                 <div class="input-group"><label>Destinatario (Residente)</label><input type="text" id="ba1-res-name" class="form-input" readonly></div>
                 <button class="btn-primary" onclick="openResidenteModal('ba1')"><i class="fas fa-search"></i> Seleccionar Residente</button>
                 
-                <div class="input-group" style="margin-top:15px"><label>Nombre (Repartidor/Entregó) *</label><input type="text" id="ba1-nombre" class="form-input"></div>
-                
-                <div class="input-group"><label>Paquetería *</label><input type="text" id="ba1-paqueteria" class="form-input"></div>
+                <div class="input-group" style="margin-top:15px"><label>Paquetería *</label><input type="text" id="ba1-paqueteria" class="form-input"></div>
                 <div class="input-group"><label>Estatus</label><select id="ba1-estatus" class="form-input"><option>Aceptado</option><option>Dañado</option></select></div>
                 <div class="input-group"><label>Foto</label>
                     <div class="photo-placeholder" onclick="document.getElementById('cam-ba1').click()">
