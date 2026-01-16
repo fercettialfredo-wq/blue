@@ -57,6 +57,7 @@ const getHeaderLibreta = (titulo, funcionRecarga, pantallaRegreso, showReload = 
     `;
 };
 
+// NOTA: Se eliminó el style height calc() para que el CSS controle el scroll correctamente
 const SCREENS = {
     // --- LOGIN SCREEN ---
     'LOGIN': `
@@ -142,7 +143,7 @@ const SCREENS = {
     `,
     'AA2': `<div class="screen form-page">
             ${getHeaderLibreta('Libreta Visitas', "loadHistory('VISITA', 'gal-aa2')", 'AA1', true)}
-            <div class="form-container" style="padding:0;"><div id="gal-aa2" class="gallery-container" style="height: calc(100vh - 150px);"></div></div></div>`,
+            <div class="form-container" style="padding:0;"><div id="gal-aa2" class="gallery-container"></div></div></div>`,
     
     'AC1': `
         <div class="screen form-page">
@@ -160,7 +161,7 @@ const SCREENS = {
     `,
     'AC2': `<div class="screen form-page">
             ${getHeaderLibreta('Libreta Personal', "loadHistory('PERSONAL_DE_SERVICIO', 'gal-ac2')", 'AC1', true)}
-            <div class="form-container" style="padding:0;"><div id="gal-ac2" class="gallery-container" style="height: calc(100vh - 150px);"></div></div></div>`,
+            <div class="form-container" style="padding:0;"><div id="gal-ac2" class="gallery-container"></div></div></div>`,
 
     // --- MÓDULO B: PAQUETERÍA ---
     'B1': `
@@ -193,7 +194,7 @@ const SCREENS = {
     `,
     'BA2': `<div class="screen form-page">
             ${getHeaderLibreta('Libreta Recepción', "loadHistory('PAQUETERIA_RECEPCION', 'gal-ba2')", 'BA1', true)}
-            <div class="form-container" style="padding:0;"><div id="gal-ba2" class="gallery-container" style="height: calc(100vh - 150px);"></div></div></div>`,
+            <div class="form-container" style="padding:0;"><div id="gal-ba2" class="gallery-container"></div></div></div>`,
     
     'BB1': `
         <div class="screen form-page">
@@ -214,7 +215,7 @@ const SCREENS = {
     `,
     'BB2': `<div class="screen form-page">
             ${getHeaderLibreta('Libreta Entregas', "loadHistory('PAQUETERIA_ENTREGA', 'gal-bb2')", 'BB1', true)}
-            <div class="form-container" style="padding:0;"><div id="gal-bb2" class="gallery-container" style="height: calc(100vh - 150px);"></div></div></div>`,
+            <div class="form-container" style="padding:0;"><div id="gal-bb2" class="gallery-container"></div></div></div>`,
 
     // --- MÓDULO D: PROVEEDOR ---
     'D1': `
@@ -234,7 +235,7 @@ const SCREENS = {
     `,
     'D2': `<div class="screen form-page">
             ${getHeaderLibreta('Libreta Proveedor', "loadHistory('PROVEEDOR', 'gal-d2')", 'D1', true)}
-            <div class="form-container" style="padding:0;"><div id="gal-d2" class="gallery-container" style="height: calc(100vh - 150px);"></div></div></div>`,
+            <div class="form-container" style="padding:0;"><div id="gal-d2" class="gallery-container"></div></div></div>`,
 
     // --- MÓDULO E: QR ---
     'E1': `
@@ -254,7 +255,7 @@ const SCREENS = {
             <div style="margin-top: 20px;"><button class="btn-save" onclick="submitQRResidente()">Validar</button><button class="btn-clean" onclick="resetForm('ea1')"><i class="fas fa-eraser"></i> Limpiar</button></div></div></div>`,
     'EA2': `<div class="screen form-page">
             ${getHeaderLibreta('Historial QR', "loadHistory('QR_RESIDENTE', 'gal-ea2')", 'EA1', false)}
-            <div class="form-container" style="padding:0;"><div id="gal-ea2" class="gallery-container" style="height: calc(100vh - 150px);"></div></div></div>`,
+            <div class="form-container" style="padding:0;"><div id="gal-ea2" class="gallery-container"></div></div></div>`,
     'EB1': `
         <div class="screen form-page">
             <div class="form-title-section"><h2 class="form-title">QR Visita</h2><div class="header-icons"><i class="fas fa-arrow-left fa-2x cursor-pointer" onclick="navigate('E1')" style="color:#ef4444;"></i><img src="icons/libreta.svg" class="header-icon-img cursor-pointer" onclick="navigate('EB2')" style="height:40px;"></div></div>
@@ -262,7 +263,7 @@ const SCREENS = {
             <div style="margin-top: 20px;"><button class="btn-save" onclick="submitQRVisita()">Validar</button><button class="btn-clean" onclick="resetForm('eb1')"><i class="fas fa-eraser"></i> Limpiar</button></div></div></div>`,
     'EB2': `<div class="screen form-page">
             ${getHeaderLibreta('Historial QR Visita', "loadHistory('QR_VISITA', 'gal-eb2')", 'EB1', false)}
-            <div class="form-container" style="padding:0;"><div id="gal-eb2" class="gallery-container" style="height: calc(100vh - 150px);"></div></div></div>`,
+            <div class="form-container" style="padding:0;"><div id="gal-eb2" class="gallery-container"></div></div></div>`,
     'EC1': `
         <div class="screen form-page">
             <div class="form-title-section"><h2 class="form-title">Validar Evento</h2><div class="cursor-pointer" onclick="navigate('E1')"><img src="icons/home.svg" class="header-icon-img" style="height:40px;"></div></div>
@@ -275,7 +276,7 @@ const SCREENS = {
             <div style="margin-top: 20px;"><button class="btn-save" onclick="submitProveedorNIP()">Validar</button><button class="btn-clean" onclick="resetForm('ed1')"><i class="fas fa-eraser"></i> Limpiar</button></div></div></div>`,
     'ED2': `<div class="screen form-page">
             ${getHeaderLibreta('Historial NIP', "loadHistory('NIP_PROVEEDOR', 'gal-ed2')", 'ED1', false)}
-            <div class="form-container" style="padding:0;"><div id="gal-ed2" class="gallery-container" style="height: calc(100vh - 150px);"></div></div></div>`,
+            <div class="form-container" style="padding:0;"><div id="gal-ed2" class="gallery-container"></div></div></div>`,
 
     // --- PERSONAL INTERNO ---
     'F1': `
@@ -286,7 +287,7 @@ const SCREENS = {
             <div style="display:flex; gap:10px; margin-top:20px;"><button class="btn-save" onclick="submitPersonalInterno('Entrada')">Entrada</button><button class="btn-secondary" style="background:#3860B2" onclick="submitPersonalInterno('Salida')">Salida</button></div><button class="btn-clean" onclick="resetForm('f1')"><i class="fas fa-eraser"></i> Limpiar</button></div></div>`,
     'F2': `<div class="screen form-page">
             ${getHeaderLibreta('Bitácora Interna', "loadHistory('PERSONAL_INTERNO', 'gal-f2')", 'F1', false)}
-            <div class="form-container" style="padding:0;"><div id="gal-f2" class="gallery-container" style="height: calc(100vh - 150px);"></div></div></div>`
+            <div class="form-container" style="padding:0;"><div id="gal-f2" class="gallery-container"></div></div></div>`
 };
 
 /* =========================================
@@ -436,10 +437,12 @@ async function loadHistory(tipo, elementId) {
 }
 
 function getStatusColor(status) {
-    if (!status) return '#2563eb'; const s = status.toString().toLowerCase().trim();
+    if (!status) return '#2563eb'; 
+    const s = status.toString().toLowerCase().trim();
     if(['aceptado', 'entrada', 'autorizado', 'con registro', 'registrado'].includes(s)) return '#16a34a'; 
     if(['rechazado', 'salida', 'dañado', 'sin registro', 'denegado'].includes(s)) return '#dc2626'; 
-    if(['nuevo'].includes(s)) return '#2563eb'; return '#2563eb';
+    if(['nuevo', 'pendiente'].includes(s)) return '#2563eb'; 
+    return '#2563eb';
 }
 
 function renderRemoteGallery(data, elementId) {
@@ -479,7 +482,14 @@ function renderRemoteGallery(data, elementId) {
         if (item.Torre || item.Departamento) { lineasDetalle.push(`T: ${item.Torre || '?'} D: ${item.Departamento || '?'}`); }
 
         let detalle = lineasDetalle.join(' | ');
-        const rawStatus = item.Estatus || item.TipoMarca;
+        
+        // --- HOMOLOGACIÓN DE ESTATUS ---
+        // Si no trae estatus, o dice "Pendiente", lo forzamos visualmente a "Nuevo" para consistencia
+        let rawStatus = item.Estatus || item.TipoMarca;
+        if (!rawStatus || rawStatus.toString().trim() === "" || rawStatus.toString().toLowerCase() === "pendiente") {
+            rawStatus = "Nuevo";
+        }
+
         const statusColor = getStatusColor(rawStatus);
         
         const estatusHtml = rawStatus 
@@ -548,7 +558,22 @@ async function submitProveedor() {
     const nom = document.getElementById('d1-nombre').value;
     const asunto = document.getElementById('d1-asunto').value;
     if(!nom || !STATE['d1']?.residente || !asunto) return alert("Faltan datos.");
-    const data = { Nombre: nom, Residente: STATE['d1'].residente, Torre: STATE['d1'].torre, Departamento: STATE['d1'].depto, Telefono: STATE['d1']?.telefono || "", Tipo_Lista: 'PROVEEDOR', Empresa: document.getElementById('d1-empresa').value || "Genérica", Asunto: asunto, Motivo: asunto, Condominio: STATE.session.condominioId };
+    
+    // CORRECCIÓN: SE AÑADE ESTATUS "Nuevo" EXPLICITAMENTE PARA HOMOLOGAR
+    const data = { 
+        Nombre: nom, 
+        Residente: STATE['d1'].residente, 
+        Torre: STATE['d1'].torre, 
+        Departamento: STATE['d1'].depto, 
+        Telefono: STATE['d1']?.telefono || "", 
+        Tipo_Lista: 'PROVEEDOR', 
+        Empresa: document.getElementById('d1-empresa').value || "Genérica", 
+        Asunto: asunto, 
+        Motivo: asunto, 
+        Condominio: STATE.session.condominioId,
+        Estatus: "Nuevo" 
+    };
+    
     const res = await callBackend('submit_form', { formulario: 'AVISOG', data: data });
     if (res && res.success) { resetForm('d1'); showSuccessScreen(res.message || "Proveedor Registrado", "Éxito", 'D2'); } 
     else { showFailureScreen(res.message, 'D1'); }
