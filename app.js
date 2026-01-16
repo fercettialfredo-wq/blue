@@ -452,13 +452,11 @@ function getStatusColor(status) {
     return '#2563eb';
 }
 
-// --- MODIFICACIÓN IMPORTANTE: SOLO DATOS DEL SERVIDOR ---
+// --- MODIFICACIÓN: CORRECCIÓN DE TÍTULOS Y DETALLES ---
 function renderRemoteGallery(serverData, elementId) {
     const container = document.getElementById(elementId);
     if (!container) return; 
 
-    // MODIFICADO: Ignoramos items locales (pendingItems) y usamos SOLO la respuesta del servidor
-    // Esto asegura que lo que se ve es exactamente lo que está en la base de datos.
     let allData = serverData || [];
 
     if (allData.length === 0) { 
@@ -466,7 +464,6 @@ function renderRemoteGallery(serverData, elementId) {
         return; 
     }
     
-    // FILTRADO: Se ocultan los "Nuevos" solo en QR_VISITA y NIP_PROVEEDOR (si aplicara)
     const filteredData = allData.filter(item => {
         if (elementId === 'gal-eb2' || elementId === 'gal-ed2') {
             const estatus = (item.Estatus || item.TipoMarca || "").toString().toLowerCase().trim();
@@ -480,15 +477,22 @@ function renderRemoteGallery(serverData, elementId) {
     container.innerHTML = filteredData.map((item, index) => {
         let fechaLegible = formatearFechaBonita(item.Fecha || item.Created || item.Fechayhora);
         
-        let titulo = item.Nombre || item.Nombre0 || item.Title || item.Visitante || 'Registro';
+        // --- LOGICA DE TÍTULO PRINCIPAL ---
+        // Por defecto intentamos mostrar el Nombre
+        let titulo = item.Nombre || item.Nombre0 || item.Title || 'Registro';
         
-        // --- CAMBIO SOLICITADO: Forzar el Nombre en la Libreta de Recepción (BA2) ---
-        if (elementId === 'gal-ba2' && item.Nombre) {
-            titulo = item.Nombre;
+        // CORRECCIÓN CRÍTICA PARA PAQUETERIA RECEPCION (BA2)
+        // Forzamos que se muestre el "Nombre" (Repartidor) aunque exista Residente
+        if (elementId === 'gal-ba2') {
+            if (item.Nombre) titulo = item.Nombre;
+            else if (item.Title) titulo = item.Title; // A veces llega como Title
+            else titulo = "Repartidor sin nombre";
         }
-
-        if (item.Recibio) titulo = item.Recibio; 
-        if (item.Residente && !item.Nombre && !item.Recibio && !item.Nombre0) titulo = item.Residente; 
+        else {
+            // Lógica normal para otros módulos
+            if (item.Recibio) titulo = item.Recibio; 
+            else if (item.Residente && !item.Nombre && !item.Nombre0) titulo = item.Residente; 
+        }
 
         let lineasDetalle = [];
         if (item.Empresa) { let txt = `Empresa: ${item.Empresa}`; if(item.Asunto) txt += ` (${item.Asunto})`; lineasDetalle.push(txt); }
@@ -506,7 +510,7 @@ function renderRemoteGallery(serverData, elementId) {
             rawStatus = "Nuevo";
         }
 
-        // --- CAMBIO SOLICITADO: Si es la libreta de entrega (BB2) y dice Nuevo, cambiar a Entregado ---
+        // CAMBIO VISUAL: Si es entrega y dice Nuevo, mostrar Entregado
         if (elementId === 'gal-bb2' && rawStatus === 'Nuevo') {
             rawStatus = 'Entregado';
         }
@@ -535,9 +539,31 @@ function renderRemoteGallery(serverData, elementId) {
 function showDetails(index) {
     const item = STATE.tempHistory[index];
     if(!item) return;
-    const labelMap = { 'Nombre0': 'Nombre', 'Recibio': 'Quien Recibió', 'Residente': 'Destinatario/Residente', 'Nombre': 'Nombre', 'Fechayhora': 'Fecha y Hora', 'Fecha': 'Fecha y Hora', 'Estatus': 'Estatus', 'Paqueteria': 'Paquetería', 'Empresa': 'Empresa', 'Asunto': 'Asunto', 'Torre': 'Torre', 'Departamento': 'Departamento', 'Cargo': 'Cargo', 'Placa': 'Placa', 'DiasTrabajo': 'Días de Trabajo', 'HoraEntrada': 'Hora de Entrada', 'HoraSalida': 'Hora de Salida', 'RequiereRevision': 'Requiere Revisión', 'TipoMarca': 'Tipo de Marca', 'PuedeSalirCon': 'Puede Salir Con', 'D_x00ed_asdeTrabajo': 'Días de Trabajo', 'RequiereRevisi_x00f3_n': 'Requiere Revisión' };
+    
+    // Mapeo exhaustivo para asegurar que Nombre aparezca
+    const labelMap = { 
+        'Nombre': 'Nombre (Repartidor/Visita)', 
+        'Nombre0': 'Nombre', 
+        'Title': 'Nombre/Título',
+        'Recibio': 'Quien Recibió', 
+        'Residente': 'Destinatario/Residente', 
+        'Fechayhora': 'Fecha y Hora', 
+        'Fecha': 'Fecha y Hora', 
+        'Estatus': 'Estatus', 
+        'Paqueteria': 'Paquetería', 
+        'Empresa': 'Empresa', 
+        'Asunto': 'Asunto', 
+        'Torre': 'Torre', 
+        'Departamento': 'Departamento', 
+        'Cargo': 'Cargo', 
+        'Placa': 'Placa'
+    };
+    
     let content = '<div style="text-align:left;">';
+    
+    // Iteramos sobre las claves para pintar todo lo que tenga valor
     for (const [key, value] of Object.entries(item)) {
+        // Filtramos campos técnicos o internos
         if(key !== 'odata.type' && key !== 'Foto' && key !== 'FotoBase64' && key !== 'FirmaBase64' && key !== '_isLocal' && key !== 'formulario' && key !== 'Telefono' && key !== 'Número' && value) {
              let displayValue = value;
              if(key === 'Fecha' || key === 'Fechayhora' || key === 'Created') { displayValue = formatearFechaBonita(value); }
@@ -555,10 +581,12 @@ function showDetails(index) {
         }
     }
     content += '</div>';
+    
     let imagesHtml = '';
     if(item.FirmaBase64) { const firmaSrc = item.FirmaBase64.startsWith('http') || item.FirmaBase64.startsWith('data:') ? item.FirmaBase64 : 'data:image/png;base64,'+item.FirmaBase64; imagesHtml += `<div style="text-align:center; margin-top:15px; padding-top:10px;"><p style="font-weight:bold; margin-bottom:5px; color:#333;">Firma:</p><img src="${firmaSrc}" style="max-width:100%; border:1px solid #ccc; border-radius:8px; padding:5px;"></div>`; }
     const fotoUrl = item.Foto || item.FotoBase64;
     if(fotoUrl && fotoUrl !== "null") { const fotoSrc = fotoUrl.startsWith('http') || fotoUrl.startsWith('data:') ? fotoUrl : 'data:image/png;base64,'+fotoUrl; imagesHtml += `<div style="text-align:center; margin-top:15px; padding-top:10px;"><p style="font-weight:bold; margin-bottom:5px; color:#333;">Evidencia:</p><img src="${fotoSrc}" style="max-width:100%; border-radius:8px; box-shadow:0 2px 5px rgba(0,0,0,0.1);"></div>`; }
+    
     const modalHtml = `<div id="detail-modal" style="position:fixed; top:0; left:0; width:100%; height:100%; background:rgba(0,0,0,0.6); z-index:99999; display:flex; justify-content:center; align-items:flex-end;"><div style="background:white; width:100%; max-width:500px; max-height:90vh; overflow-y:auto; padding:25px; border-radius:20px 20px 0 0; position:relative; animation: slideUp 0.3s ease-out;"><div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:20px; border-bottom:1px solid #eee; padding-bottom:15px;"><h2 style="margin:0; color:#333; font-size:1.5rem;">Detalles</h2><i class="fas fa-times" onclick="document.getElementById('detail-modal').remove()" style="font-size:1.8rem; color:#666; cursor:pointer;"></i></div><div style="color:#444;">${content}</div>${imagesHtml}<button onclick="document.getElementById('detail-modal').remove()" style="margin-top:25px; width:100%; padding:15px; background:#2ecc71; color:white; border:none; border-radius:12px; font-weight:bold; font-size:1.1rem; cursor:pointer; box-shadow: 0 4px 6px rgba(46, 204, 113, 0.3);">Cerrar</button></div></div>`;
     document.body.insertAdjacentHTML('beforeend', modalHtml);
 }
