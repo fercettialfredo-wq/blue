@@ -722,7 +722,6 @@ function confirmResidente() {
 function initSignature() { setTimeout(() => { const canvas = document.getElementById('sig-canvas'); if(canvas) { canvas.width = canvas.parentElement.offsetWidth; canvas.height = canvas.parentElement.offsetHeight; signaturePad = new SignaturePad(canvas, { backgroundColor: 'rgb(255, 255, 255)' }); } }, 300); }
 function clearSignature() { if(signaturePad) signaturePad.clear(); }
 
-// --- NUEVA FUNCIÓN DE CÁMARA (CORRIGE ROTACIÓN Y LIMITA A 1280PX) ---
 function previewImg(input, id) {
     if (input.files && input.files[0]) {
         const file = input.files[0];
@@ -736,7 +735,6 @@ function previewImg(input, id) {
                 const canvas = document.createElement('canvas');
                 const ctx = canvas.getContext('2d');
 
-                // Lógica de redimensionamiento (Max 1280px)
                 const maxDim = 1280;
                 let width = img.width;
                 let height = img.height;
@@ -756,10 +754,8 @@ function previewImg(input, id) {
                 canvas.width = width;
                 canvas.height = height;
 
-                // Dibujar imagen (Corrige rotación automáticamente)
                 ctx.drawImage(img, 0, 0, width, height);
 
-                // Exportar a JPEG calidad 0.7 para reducir peso
                 const processedBase64 = canvas.toDataURL('image/jpeg', 0.7);
 
                 STATE.photos[id] = processedBase64;
