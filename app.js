@@ -484,7 +484,7 @@ function renderRemoteGallery(serverData, elementId) {
         // CORRECCIÓN CRÍTICA PARA PAQUETERIA RECEPCION (BA2)
         // Forzamos que se muestre el "Nombre" (Repartidor) aunque exista Residente
         if (elementId === 'gal-ba2') {
-            if (item.Nombre) titulo = item.Nombre0;
+            if (item.Nombre) titulo = item.Nombre;
             else if (item.Title) titulo = item.Title; // A veces llega como Title
             else titulo = "Repartidor sin nombre";
         }
