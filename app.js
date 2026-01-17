@@ -722,15 +722,60 @@ function confirmResidente() {
 function initSignature() { setTimeout(() => { const canvas = document.getElementById('sig-canvas'); if(canvas) { canvas.width = canvas.parentElement.offsetWidth; canvas.height = canvas.parentElement.offsetHeight; signaturePad = new SignaturePad(canvas, { backgroundColor: 'rgb(255, 255, 255)' }); } }, 300); }
 function clearSignature() { if(signaturePad) signaturePad.clear(); }
 
+// --- NUEVA FUNCIÓN DE CÁMARA (CORRIGE ROTACIÓN Y LIMITA A 1280PX) ---
 function previewImg(input, id) {
     if (input.files && input.files[0]) {
+        const file = input.files[0];
         const reader = new FileReader();
-        reader.onload = e => {
-            STATE.photos[id] = e.target.result;
-            const prev = document.getElementById('prev-'+id);
-            if(prev) { prev.style.backgroundImage = `url(${e.target.result})`; prev.classList.remove('hidden'); if (prev.nextElementSibling) { prev.nextElementSibling.style.display = 'block'; prev.nextElementSibling.innerHTML = '<i class="fas fa-check-circle" style="color:#2ecc71;"></i><br>Foto Lista'; } }
+
+        reader.onload = function(e) {
+            const img = new Image();
+            img.src = e.target.result;
+
+            img.onload = function() {
+                const canvas = document.createElement('canvas');
+                const ctx = canvas.getContext('2d');
+
+                // Lógica de redimensionamiento (Max 1280px)
+                const maxDim = 1280;
+                let width = img.width;
+                let height = img.height;
+
+                if (width > height) {
+                    if (width > maxDim) {
+                        height *= maxDim / width;
+                        width = maxDim;
+                    }
+                } else {
+                    if (height > maxDim) {
+                        width *= maxDim / height;
+                        height = maxDim;
+                    }
+                }
+
+                canvas.width = width;
+                canvas.height = height;
+
+                // Dibujar imagen (Corrige rotación automáticamente)
+                ctx.drawImage(img, 0, 0, width, height);
+
+                // Exportar a JPEG calidad 0.7 para reducir peso
+                const processedBase64 = canvas.toDataURL('image/jpeg', 0.7);
+
+                STATE.photos[id] = processedBase64;
+
+                const prev = document.getElementById('prev-' + id);
+                if (prev) {
+                    prev.style.backgroundImage = `url(${processedBase64})`;
+                    prev.classList.remove('hidden');
+                    if (prev.nextElementSibling) {
+                        prev.nextElementSibling.style.display = 'block';
+                        prev.nextElementSibling.innerHTML = '<i class="fas fa-check-circle" style="color:#2ecc71;"></i><br>Foto Lista';
+                    }
+                }
+            };
         };
-        reader.readAsDataURL(input.files[0]);
+        reader.readAsDataURL(file);
     }
 }
 
