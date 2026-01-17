@@ -22,7 +22,6 @@ const STATE = {
     targetInputForQR: "",
     // Historial temporal (Visualización)
     tempHistory: []
-    // NOTA: Se eliminó pendingItems para forzar lectura del servidor
 };
 
 /* =========================================
@@ -59,7 +58,6 @@ const getHeaderLibreta = (titulo, funcionRecarga, pantallaRegreso, showReload = 
 };
 
 const SCREENS = {
-    // --- LOGIN SCREEN ---
     'LOGIN': `
         <div class="screen login-screen-container">
             <div class="login-box">
@@ -81,7 +79,6 @@ const SCREENS = {
         </div>
     `,
 
-    // --- MENÚ PRINCIPAL ---
     'INICIO': `
         <div class="screen">
             <header class="header-app">
@@ -113,7 +110,6 @@ const SCREENS = {
         </div>
     `,
 
-    // --- MÓDULO A: VISITAS ---
     'A1': `
         <div class="screen">
             <header class="header-app"><div class="header-logo"><span class="header-logo-text">VISITAS</span></div><div class="cursor-pointer" onclick="navigate('INICIO')"><img src="icons/home.svg" class="header-icon-img" style="height:40px;"></div></header>
@@ -163,7 +159,6 @@ const SCREENS = {
             ${getHeaderLibreta('Libreta Personal', "loadHistory('PERSONAL_DE_SERVICIO', 'gal-ac2')", 'AC1', true)}
             <div class="form-container" style="padding:0;"><div id="gal-ac2" class="gallery-container"></div></div></div>`,
 
-    // --- MÓDULO B: PAQUETERÍA ---
     'B1': `
         <div class="screen"><header class="header-app"><div class="header-logo"><span class="header-logo-text">PAQUETERÍA</span></div><div class="cursor-pointer" onclick="navigate('INICIO')"><img src="icons/home.svg" class="header-icon-img" style="height:40px;"></div></header>
             <main class="main-menu-grid">
@@ -177,12 +172,10 @@ const SCREENS = {
             <div class="form-title-section"><h2 class="form-title">Recibir Paquete</h2><div class="header-icons"><i class="fas fa-arrow-left fa-2x cursor-pointer" onclick="navigate('B1')" style="color:#ef4444;"></i><img src="icons/libreta.svg" class="header-icon-img cursor-pointer" onclick="navigate('BA2')" style="height:40px;"></div></div>
             <div class="form-container">
                 <div class="input-group"><label>Nombre (Repartidor/Entregó) *</label><input type="text" id="ba1-nombre" class="form-input"></div>
-
                 <div class="input-group"><label>Torre</label><input type="text" id="ba1-torre" class="form-input" readonly></div>
                 <div class="input-group"><label>Departamento</label><input type="text" id="ba1-depto" class="form-input" readonly></div>
                 <div class="input-group"><label>Destinatario (Residente)</label><input type="text" id="ba1-res-name" class="form-input" readonly></div>
                 <button class="btn-primary" onclick="openResidenteModal('ba1')"><i class="fas fa-search"></i> Seleccionar Residente</button>
-                
                 <div class="input-group" style="margin-top:15px"><label>Paquetería *</label><input type="text" id="ba1-paqueteria" class="form-input"></div>
                 <div class="input-group"><label>Estatus</label><select id="ba1-estatus" class="form-input"><option>Aceptado</option><option>Dañado</option></select></div>
                 <div class="input-group"><label>Foto</label>
@@ -220,7 +213,6 @@ const SCREENS = {
             ${getHeaderLibreta('Libreta Entregas', "loadHistory('PAQUETERIA_ENTREGA', 'gal-bb2')", 'BB1', true)}
             <div class="form-container" style="padding:0;"><div id="gal-bb2" class="gallery-container"></div></div></div>`,
 
-    // --- MÓDULO D: PROVEEDOR ---
     'D1': `
         <div class="screen form-page">
             <div class="form-title-section"><h2 class="form-title">Proveedor</h2><div class="header-icons"><img src="icons/home.svg" class="header-icon-img cursor-pointer" onclick="navigate('INICIO')" style="height:40px;"><img src="icons/libreta.svg" class="header-icon-img cursor-pointer" onclick="navigate('D2')" style="height:40px;"></div></div>
@@ -240,7 +232,6 @@ const SCREENS = {
             ${getHeaderLibreta('Libreta Proveedor', "loadHistory('PROVEEDOR', 'gal-d2')", 'D1', true)}
             <div class="form-container" style="padding:0;"><div id="gal-d2" class="gallery-container"></div></div></div>`,
 
-    // --- MÓDULO E: QR ---
     'E1': `
         <div class="screen"><header class="header-app"><div class="header-logo"><span class="header-logo-text">MÓDULOS QR</span></div><div class="cursor-pointer" onclick="navigate('INICIO')"><img src="icons/home.svg" class="header-icon-img" style="height:40px;"></div></header>
             <main class="main-menu-grid">
@@ -281,7 +272,6 @@ const SCREENS = {
             ${getHeaderLibreta('Historial NIP', "loadHistory('NIP_PROVEEDOR', 'gal-ed2')", 'ED1', false)}
             <div class="form-container" style="padding:0;"><div id="gal-ed2" class="gallery-container"></div></div></div>`,
 
-    // --- PERSONAL INTERNO ---
     'F1': `
         <div class="screen form-page">
             <div class="form-title-section"><h2 class="form-title">Personal Interno</h2><div class="header-icons"><img src="icons/home.svg" class="header-icon-img cursor-pointer" onclick="navigate('INICIO')" style="height:40px;"><img src="icons/libreta.svg" class="header-icon-img cursor-pointer" onclick="navigate('F2')" style="height:40px;"></div></div>
@@ -452,7 +442,7 @@ function getStatusColor(status) {
     return '#2563eb';
 }
 
-// --- MODIFICACIÓN: CORRECCIÓN DE TÍTULOS Y DETALLES ---
+// --- MOTOR DE GALERÍA (SOLUCIÓN DEFINITIVA PARA NOMBRES) ---
 function renderRemoteGallery(serverData, elementId) {
     const container = document.getElementById(elementId);
     if (!container) return; 
@@ -477,21 +467,26 @@ function renderRemoteGallery(serverData, elementId) {
     container.innerHTML = filteredData.map((item, index) => {
         let fechaLegible = formatearFechaBonita(item.Fecha || item.Created || item.Fechayhora);
         
-        // --- LOGICA DE TÍTULO PRINCIPAL ---
-        // Por defecto intentamos mostrar el Nombre
-        let titulo = item.Nombre || item.Nombre0 || item.Title || 'Registro';
-        
-        // CORRECCIÓN CRÍTICA PARA PAQUETERIA RECEPCION (BA2)
-        // Forzamos que se muestre el "Nombre" (Repartidor) aunque exista Residente
+        // --- BUSCADOR INTELIGENTE DE NOMBRE ---
+        // Intentamos obtener el nombre en todas sus posibles variantes de SharePoint
+        let tituloOriginal = item.Nombre || item.Nombre0 || item.Title || item.OData_Nombre || '';
+        let titulo = tituloOriginal;
+
+        // CORRECCIÓN PARA PAQUETERIA RECEPCION (BA2)
         if (elementId === 'gal-ba2') {
-            if (item.Nombre) titulo = item.Nombre;
-            else if (item.Title) titulo = item.Title; // A veces llega como Title
-            else titulo = "Repartidor sin nombre";
+            if (tituloOriginal) {
+                titulo = tituloOriginal;
+            } else if (item.Paqueteria) {
+                titulo = "Repartidor: " + item.Paqueteria;
+            } else {
+                titulo = "Repartidor sin nombre";
+            }
         }
         else {
             // Lógica normal para otros módulos
             if (item.Recibio) titulo = item.Recibio; 
-            else if (item.Residente && !item.Nombre && !item.Nombre0) titulo = item.Residente; 
+            else if (item.Residente && !tituloOriginal) titulo = item.Residente; 
+            else if (!tituloOriginal) titulo = "Registro sin nombre";
         }
 
         let lineasDetalle = [];
@@ -504,22 +499,15 @@ function renderRemoteGallery(serverData, elementId) {
 
         let detalle = lineasDetalle.join(' | ');
         
-        let rawStatus = item.Estatus || item.TipoMarca;
-        const statusLower = rawStatus ? rawStatus.toString().toLowerCase().trim() : "";
-        if (!rawStatus || statusLower === "" || statusLower === "pendiente") {
-            rawStatus = "Nuevo";
-        }
+        let rawStatus = item.Estatus || item.TipoMarca || "Nuevo";
+        const statusLower = rawStatus.toString().toLowerCase().trim();
+        if (statusLower === "" || statusLower === "pendiente") rawStatus = "Nuevo";
 
-        // CAMBIO VISUAL: Si es entrega y dice Nuevo, mostrar Entregado
-        if (elementId === 'gal-bb2' && rawStatus === 'Nuevo') {
-            rawStatus = 'Entregado';
-        }
+        // Ajuste visual para entregas
+        if (elementId === 'gal-bb2' && rawStatus === 'Nuevo') rawStatus = 'Entregado';
 
         const statusColor = getStatusColor(rawStatus);
-        
-        const estatusHtml = rawStatus 
-            ? `<span class="status-pill" style="background-color: ${statusColor}20; color: ${statusColor};">${rawStatus}</span>` 
-            : '';
+        const estatusHtml = `<span class="status-pill" style="background-color: ${statusColor}20; color: ${statusColor};">${rawStatus}</span>`;
 
         return `
         <div class="gallery-item" onclick="showDetails(${index})">
@@ -540,42 +528,21 @@ function showDetails(index) {
     const item = STATE.tempHistory[index];
     if(!item) return;
     
-    // Mapeo exhaustivo para asegurar que Nombre aparezca
     const labelMap = { 
-        'Nombre': 'Nombre (Repartidor/Visita)', 
-        'Nombre0': 'Nombre', 
-        'Title': 'Nombre/Título',
-        'Recibio': 'Quien Recibió', 
-        'Residente': 'Destinatario/Residente', 
-        'Fechayhora': 'Fecha y Hora', 
-        'Fecha': 'Fecha y Hora', 
-        'Estatus': 'Estatus', 
-        'Paqueteria': 'Paquetería', 
-        'Empresa': 'Empresa', 
-        'Asunto': 'Asunto', 
-        'Torre': 'Torre', 
-        'Departamento': 'Departamento', 
-        'Cargo': 'Cargo', 
-        'Placa': 'Placa'
+        'Nombre': 'Nombre', 'Nombre0': 'Nombre', 'Title': 'Título/Nombre',
+        'Recibio': 'Quien Recibió', 'Residente': 'Destinatario/Residente', 
+        'Fechayhora': 'Fecha y Hora', 'Fecha': 'Fecha y Hora', 'Estatus': 'Estatus', 
+        'Paqueteria': 'Paquetería', 'Empresa': 'Empresa', 'Asunto': 'Asunto', 
+        'Torre': 'Torre', 'Departamento': 'Departamento', 'Cargo': 'Cargo', 'Placa': 'Placa',
+        'N_x00fa_mero': 'Teléfono'
     };
     
     let content = '<div style="text-align:left;">';
-    
-    // Iteramos sobre las claves para pintar todo lo que tenga valor
     for (const [key, value] of Object.entries(item)) {
-        // Filtramos campos técnicos o internos
         if(key !== 'odata.type' && key !== 'Foto' && key !== 'FotoBase64' && key !== 'FirmaBase64' && key !== '_isLocal' && key !== 'formulario' && key !== 'Telefono' && key !== 'Número' && value) {
              let displayValue = value;
              if(key === 'Fecha' || key === 'Fechayhora' || key === 'Created') { displayValue = formatearFechaBonita(value); }
-             
-             if(key === 'RequiereRevisi_x00f3_n' || key === 'RequiereRevision') { 
-                 displayValue = (value === true || value === 'true' || value === 'True') ? 'SÍ' : 'NO'; 
-             }
-             
-             if(key === 'Estatus') {
-                 if(!value || value.toString().toLowerCase() === 'pendiente') displayValue = 'Nuevo';
-             }
-             
+             if(key === 'RequiereRevisi_x00f3_n' || key === 'RequiereRevision') { displayValue = (value === true || value === 'true') ? 'SÍ' : 'NO'; }
              const label = labelMap[key] || key;
              content += `<p style="margin:8px 0; font-size:1rem; border-bottom:1px solid #f0f0f0; padding-bottom:5px;"><strong style="color:#555;">${label}:</strong> <span style="color:#000;">${displayValue}</span></p>`;
         }
@@ -583,15 +550,21 @@ function showDetails(index) {
     content += '</div>';
     
     let imagesHtml = '';
-    if(item.FirmaBase64) { const firmaSrc = item.FirmaBase64.startsWith('http') || item.FirmaBase64.startsWith('data:') ? item.FirmaBase64 : 'data:image/png;base64,'+item.FirmaBase64; imagesHtml += `<div style="text-align:center; margin-top:15px; padding-top:10px;"><p style="font-weight:bold; margin-bottom:5px; color:#333;">Firma:</p><img src="${firmaSrc}" style="max-width:100%; border:1px solid #ccc; border-radius:8px; padding:5px;"></div>`; }
+    if(item.FirmaBase64) { 
+        const firmaSrc = item.FirmaBase64.startsWith('http') || item.FirmaBase64.startsWith('data:') ? item.FirmaBase64 : 'data:image/png;base64,'+item.FirmaBase64; 
+        imagesHtml += `<div style="text-align:center; margin-top:15px;"><p style="font-weight:bold; color:#333;">Firma:</p><img src="${firmaSrc}" style="max-width:100%; border:1px solid #ccc; border-radius:8px;"></div>`; 
+    }
     const fotoUrl = item.Foto || item.FotoBase64;
-    if(fotoUrl && fotoUrl !== "null") { const fotoSrc = fotoUrl.startsWith('http') || fotoUrl.startsWith('data:') ? fotoUrl : 'data:image/png;base64,'+fotoUrl; imagesHtml += `<div style="text-align:center; margin-top:15px; padding-top:10px;"><p style="font-weight:bold; margin-bottom:5px; color:#333;">Evidencia:</p><img src="${fotoSrc}" style="max-width:100%; border-radius:8px; box-shadow:0 2px 5px rgba(0,0,0,0.1);"></div>`; }
+    if(fotoUrl && fotoUrl !== "null") { 
+        const fotoSrc = fotoUrl.startsWith('http') || fotoUrl.startsWith('data:') ? fotoUrl : 'data:image/png;base64,'+fotoUrl; 
+        imagesHtml += `<div style="text-align:center; margin-top:15px;"><p style="font-weight:bold; color:#333;">Evidencia:</p><img src="${fotoSrc}" style="max-width:100%; border-radius:8px;"></div>`; 
+    }
     
-    const modalHtml = `<div id="detail-modal" style="position:fixed; top:0; left:0; width:100%; height:100%; background:rgba(0,0,0,0.6); z-index:99999; display:flex; justify-content:center; align-items:flex-end;"><div style="background:white; width:100%; max-width:500px; max-height:90vh; overflow-y:auto; padding:25px; border-radius:20px 20px 0 0; position:relative; animation: slideUp 0.3s ease-out;"><div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:20px; border-bottom:1px solid #eee; padding-bottom:15px;"><h2 style="margin:0; color:#333; font-size:1.5rem;">Detalles</h2><i class="fas fa-times" onclick="document.getElementById('detail-modal').remove()" style="font-size:1.8rem; color:#666; cursor:pointer;"></i></div><div style="color:#444;">${content}</div>${imagesHtml}<button onclick="document.getElementById('detail-modal').remove()" style="margin-top:25px; width:100%; padding:15px; background:#2ecc71; color:white; border:none; border-radius:12px; font-weight:bold; font-size:1.1rem; cursor:pointer; box-shadow: 0 4px 6px rgba(46, 204, 113, 0.3);">Cerrar</button></div></div>`;
+    const modalHtml = `<div id="detail-modal" style="position:fixed; top:0; left:0; width:100%; height:100%; background:rgba(0,0,0,0.6); z-index:99999; display:flex; justify-content:center; align-items:flex-end;"><div style="background:white; width:100%; max-width:500px; max-height:90vh; overflow-y:auto; padding:25px; border-radius:20px 20px 0 0; position:relative; animation: slideUp 0.3s ease-out;"><div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:20px; border-bottom:1px solid #eee; padding-bottom:15px;"><h2 style="margin:0; color:#333; font-size:1.5rem;">Detalles</h2><i class="fas fa-times" onclick="document.getElementById('detail-modal').remove()" style="font-size:1.8rem; color:#666; cursor:pointer;"></i></div><div style="color:#444;">${content}</div>${imagesHtml}<button onclick="document.getElementById('detail-modal').remove()" style="margin-top:25px; width:100%; padding:15px; background:#2ecc71; color:white; border:none; border-radius:12px; font-weight:bold; font-size:1.1rem; cursor:pointer;">Cerrar</button></div></div>`;
     document.body.insertAdjacentHTML('beforeend', modalHtml);
 }
 
-// --- D. ENVÍO DE FORMULARIOS Y QR ---
+// --- D. ENVÍO DE FORMULARIOS ---
 
 async function submitAviso(p) {
     const nom = document.getElementById(p+'-nombre').value;
@@ -601,24 +574,12 @@ async function submitAviso(p) {
     let tipoLista = p === 'aa1' ? 'VISITA' : 'PERSONALAVISO';
     let nextScreen = p === 'aa1' ? 'AA2' : 'AC2';
     
-    // OBJETO BASE
     const data = { 
-        Nombre: nom, 
-        Residente: STATE[p].residente, 
-        Torre: STATE[p].torre, 
-        Departamento: STATE[p].depto, 
-        Telefono: STATE[p].telefono || "", 
-        Tipo_Lista: tipoLista, 
-        Cargo: cargo || "N/A", 
-        Motivo: motivo || "Servicio", 
-        Placa: document.getElementById(p+'-placa')?.value || "N/A", 
-        Condominio: STATE.session.condominioId,
-        Fecha: new Date().toISOString(),
-        Estatus: "Nuevo"
+        Nombre: nom, Residente: STATE[p].residente, Torre: STATE[p].torre, Departamento: STATE[p].depto, 
+        Telefono: STATE[p].telefono || "", Tipo_Lista: tipoLista, Cargo: cargo || "N/A", Motivo: motivo || "Servicio", 
+        Placa: document.getElementById(p+'-placa')?.value || "N/A", Condominio: STATE.session.condominioId,
+        Fecha: new Date().toISOString(), Estatus: "Nuevo"
     };
-
-    // MODIFICADO: YA NO GUARDAMOS EN LOCAL (pendingItems)
-    // STATE.pendingItems.unshift(data);
 
     const res = await callBackend('submit_form', { formulario: 'AVISOG', data: data });
     if (res && res.success) { resetForm(p); showSuccessScreen(res.message || "Registro Guardado", "Correcto", nextScreen); } 
@@ -631,23 +592,11 @@ async function submitProveedor() {
     if(!nom || !STATE['d1']?.residente || !asunto) return alert("Faltan datos.");
     
     const data = { 
-        Nombre: nom, 
-        Residente: STATE['d1'].residente, 
-        Torre: STATE['d1'].torre, 
-        Departamento: STATE['d1'].depto, 
-        Telefono: STATE['d1']?.telefono || "", 
-        Tipo_Lista: 'PROVEEDOR', 
-        Empresa: document.getElementById('d1-empresa').value || "Genérica", 
-        Asunto: asunto, 
-        Motivo: asunto, 
-        Condominio: STATE.session.condominioId,
-        Estatus: "Nuevo",
-        Fecha: new Date().toISOString() 
+        Nombre: nom, Residente: STATE['d1'].residente, Torre: STATE['d1'].torre, Departamento: STATE['d1'].depto, 
+        Telefono: STATE['d1']?.telefono || "", Tipo_Lista: 'PROVEEDOR', Empresa: document.getElementById('d1-empresa').value || "Genérica", 
+        Asunto: asunto, Motivo: asunto, Condominio: STATE.session.condominioId, Estatus: "Nuevo", Fecha: new Date().toISOString() 
     };
     
-    // MODIFICADO: YA NO GUARDAMOS EN LOCAL
-    // STATE.pendingItems.unshift(data);
-
     const res = await callBackend('submit_form', { formulario: 'AVISOG', data: data });
     if (res && res.success) { resetForm('d1'); showSuccessScreen(res.message || "Proveedor Registrado", "Éxito", 'D2'); } 
     else { showFailureScreen(res.message, 'D1'); }
@@ -655,26 +604,15 @@ async function submitProveedor() {
 
 async function submitRecepcionPaquete() {
     const nombre = document.getElementById('ba1-nombre').value;
-
-    if(!STATE['ba1']?.residente) return alert("Selecciona un residente.");
-    if(!nombre) return alert("Ingresa el nombre de quien entrega/repartidor.");
+    if(!STATE['ba1']?.residente || !nombre) return alert("Faltan datos obligatorios.");
     
     const data = { 
-        Nombre: nombre,
-        Residente: STATE['ba1'].residente, 
-        Torre: STATE['ba1'].torre, 
-        Departamento: STATE['ba1'].depto, 
-        Telefono: STATE['ba1']?.telefono || "", 
-        Paqueteria: document.getElementById('ba1-paqueteria').value, 
-        Estatus: document.getElementById('ba1-estatus').value, 
-        FotoBase64: STATE.photos['ba1'] || "", 
-        Condominio: STATE.session.condominioId,
-        Fecha: new Date().toISOString()
+        Nombre: nombre, Residente: STATE['ba1'].residente, Torre: STATE['ba1'].torre, Departamento: STATE['ba1'].depto, 
+        Telefono: STATE['ba1']?.telefono || "", Paqueteria: document.getElementById('ba1-paqueteria').value, 
+        Estatus: document.getElementById('ba1-estatus').value, FotoBase64: STATE.photos['ba1'] || "", 
+        Condominio: STATE.session.condominioId, Fecha: new Date().toISOString()
     };
     
-    // MODIFICADO: YA NO GUARDAMOS EN LOCAL
-    // STATE.pendingItems.unshift({ ...data, formulario: 'PAQUETERIA_RECEPCION' });
-
     const res = await callBackend('submit_form', { formulario: 'PAQUETERIA_RECEPCION', data: data });
     if (res && res.success) { resetForm('ba1'); showSuccessScreen("Paquete Recibido", "Guardado", 'BA2'); } 
     else { showFailureScreen(res.message, 'BA1'); }
@@ -685,20 +623,11 @@ async function submitEntregaPaquete() {
     if(!nom || !STATE['bb1']?.residente) return alert("Datos incompletos.");
     
     const data = { 
-        Recibio: nom, 
-        Residente: STATE['bb1'].residente, 
-        Torre: STATE['bb1'].torre, 
-        Departamento: STATE['bb1'].depto, 
-        Telefono: STATE['bb1']?.telefono || "", 
-        FotoBase64: STATE.photos['bb1'] || "", 
+        Recibio: nom, Residente: STATE['bb1'].residente, Torre: STATE['bb1'].torre, Departamento: STATE['bb1'].depto, 
+        Telefono: STATE['bb1']?.telefono || "", FotoBase64: STATE.photos['bb1'] || "", 
         FirmaBase64: signaturePad ? signaturePad.toDataURL() : "", 
-        Condominio: STATE.session.condominioId,
-        Fecha: new Date().toISOString(),
-        Estatus: "Entregado"
+        Condominio: STATE.session.condominioId, Fecha: new Date().toISOString(), Estatus: "Entregado"
     };
-
-    // MODIFICADO: YA NO GUARDAMOS EN LOCAL
-    // STATE.pendingItems.unshift({ ...data, formulario: 'PAQUETERIA_ENTREGA' });
 
     const res = await callBackend('submit_form', { formulario: 'PAQUETERIA_ENTREGA', data: data });
     if (res && res.success) { resetForm('bb1'); showSuccessScreen("Paquete Entregado", "Firmado", 'BB2'); } 
@@ -710,45 +639,20 @@ async function submitPersonalInterno(accion) {
     if(!id) return alert("⚠️ No hay un código para validar.");
     const res = await callBackend('submit_form', { formulario: 'PERSONAL_INTERNO', data: { ID_Personal: id, Accion: accion, Condominio: STATE.session.condominioId } });
     
-    if (res && res.success) { 
-        resetForm('f1'); 
-        showSuccessScreen(res.message || "Movimiento registrado", accion, 'F2'); 
-    } else { 
-        let errorMsg = res ? res.message : "Error desconocido";
-        const msgLower = (errorMsg || "").toLowerCase();
-        
-        if (msgLower.includes("404") || msgLower.includes("not found") || msgLower.includes("no existe")) {
-            errorMsg = "🚫 ID no registrado. Acceso denegado."; 
-        } else if (msgLower.includes("ya registrado") || msgLower.includes("duplicado")) {
-            errorMsg = "⚠️ Movimiento ya registrado previamente.";
-        }
-        
-        showFailureScreen(errorMsg, 'F1'); 
-    }
+    if (res && res.success) { resetForm('f1'); showSuccessScreen(res.message || "Movimiento registrado", accion, 'F2'); } 
+    else { showFailureScreen(res ? res.message : "Error", 'F1'); }
 }
 
 async function validarAccesoQR(tipo, inputId, formId, nextScreen, failScreen) {
     const codigo = document.getElementById(inputId).value;
     if(!codigo) return alert("⚠️ No hay un código para validar."); 
-    
     const res = await callBackend('validate_qr', { tipo_validacion: tipo, codigo_leido: codigo });
     
     if (res && res.success) {
         resetForm(formId);
-        let mensaje = tipo === 'QR_RESIDENTE' ? "Código Validado" : (res.message || "Acceso Permitido");
-        showSuccessScreen(mensaje, `${res.data?.tipo || "ACCESO"}: ${res.data?.nombre || "Autorizado"}`, nextScreen);
+        showSuccessScreen(res.message || "Acceso Permitido", `${res.data?.tipo || "ACCESO"}: ${res.data?.nombre || "Autorizado"}`, nextScreen);
     } else {
-        let errorMsg = res ? res.message : "Código no válido";
-        const msgLower = (errorMsg || "").toLowerCase();
-
-        if (msgLower.includes("404") || msgLower.includes("not found") || msgLower.includes("no existe") || msgLower.includes("no encontrado")) {
-             errorMsg = "🚫 Código no encontrado. Acceso denegado."; 
-        }
-        else if (msgLower.includes("ya usado") || msgLower.includes("vencido") || msgLower.includes("salida")) {
-             errorMsg = "✅ El código ya fue validado anteriormente.";
-        }
-
-        showFailureScreen(errorMsg, failScreen);
+        showFailureScreen(res ? res.message : "Código no válido", failScreen);
     }
 }
 
@@ -757,21 +661,21 @@ function submitQRVisita() { validarAccesoQR('QR_VISITA', 'eb1-code', 'eb1', 'EB2
 function submitEvento() { validarAccesoQR('EVENTO', 'ec1-code', 'ec1', 'EC1', 'EC1'); }
 function submitProveedorNIP() { validarAccesoQR('NIP_PROVEEDOR', 'ed1-nip', 'ed1', 'ED2', 'ED1'); }
 
-// --- E. PANTALLAS DINÁMICAS (Éxito / Fracaso) ---
+// --- E. PANTALLAS DINÁMICAS ---
 
 function showSuccessScreen(titulo, subtitulo, nextScreen) {
     const old = document.getElementById('status-modal'); if(old) old.remove();
-    const html = `<div id="status-modal" class="screen" style="display:flex; justify-content:center; align-items:center; height:100vh; flex-direction:column; text-align:center; background-color:#f0fdf4; animation: fadeIn 0.4s ease-out; position:fixed; top:0; left:0; width:100%; z-index:99999;"><div style="background:white; padding:40px; border-radius:20px; box-shadow:0 10px 25px rgba(0,0,0,0.1); max-width:90%; width: 400px;"><div style="width:80px; height:80px; background:#dcfce7; border-radius:50%; display:flex; align-items:center; justify-content:center; margin:0 auto 20px;"><i class="fas fa-check fa-3x" style="color:#2ecc71;"></i></div><h1 style="font-size:1.8rem; margin:0 0 10px; color:#166534;">${titulo}</h1><p style="font-size:1.2rem; color:#555; margin-bottom:30px;">${subtitulo}</p><button class="btn-primary" style="width:100%; font-size:1.1rem; padding:12px;" onclick="document.getElementById('status-modal').remove(); navigate('${nextScreen}')">Continuar</button></div></div>`;
+    const html = `<div id="status-modal" class="screen" style="display:flex; justify-content:center; align-items:center; height:100vh; flex-direction:column; text-align:center; background-color:#f0fdf4; animation: fadeIn 0.4s ease-out; position:fixed; top:0; left:0; width:100%; z-index:99999;"><div style="background:white; padding:40px; border-radius:20px; box-shadow:0 10px 25px rgba(0,0,0,0.1); max-width:90%; width: 400px;"><div style="width:80px; height:80px; background:#dcfce7; border-radius:50%; display:flex; align-items:center; justify-content:center; margin:0 auto 20px;"><i class="fas fa-check fa-3x" style="color:#2ecc71;"></i></div><h1 style="font-size:1.8rem; margin:0 0 10px; color:#166534;">${titulo}</h1><p style="font-size:1.2rem; color:#555; margin-bottom:30px;">${subtitulo}</p><button class="btn-primary" style="width:100%;" onclick="document.getElementById('status-modal').remove(); navigate('${nextScreen}')">Continuar</button></div></div>`;
     document.body.insertAdjacentHTML('beforeend', html);
 }
 
 function showFailureScreen(motivo, retryScreen) {
     const old = document.getElementById('status-modal'); if(old) old.remove();
-    const html = `<div id="status-modal" class="screen" style="display:flex; justify-content:center; align-items:center; height:100vh; flex-direction:column; text-align:center; background-color:#fef2f2; animation: shake 0.4s ease-in-out; position:fixed; top:0; left:0; width:100%; z-index:99999;"><div style="background:white; padding:40px; border-radius:20px; box-shadow:0 10px 25px rgba(0,0,0,0.1); max-width:90%; width: 400px;"><div style="width:80px; height:80px; background:#fee2e2; border-radius:50%; display:flex; align-items:center; justify-content:center; margin:0 auto 20px;"><i class="fas fa-times fa-3x" style="color:#ef4444;"></i></div><h1 style="font-size:1.8rem; margin:0 0 10px; color:#991b1b;">DENEGADO</h1><p style="font-size:1.1rem; color:#666; margin-bottom:30px; font-weight:500;">${motivo}</p><button class="btn-primary" style="width:100%; background-color:#333; font-size:1.1rem; padding:12px;" onclick="document.getElementById('status-modal').remove(); navigate('${retryScreen}')">Intentar de nuevo</button></div></div>`;
+    const html = `<div id="status-modal" class="screen" style="display:flex; justify-content:center; align-items:center; height:100vh; flex-direction:column; text-align:center; background-color:#fef2f2; animation: shake 0.4s ease-in-out; position:fixed; top:0; left:0; width:100%; z-index:99999;"><div style="background:white; padding:40px; border-radius:20px; box-shadow:0 10px 25px rgba(0,0,0,0.1); max-width:90%; width: 400px;"><div style="width:80px; height:80px; background:#fee2e2; border-radius:50%; display:flex; align-items:center; justify-content:center; margin:0 auto 20px;"><i class="fas fa-times fa-3x" style="color:#ef4444;"></i></div><h1 style="font-size:1.8rem; margin:0 0 10px; color:#991b1b;">DENEGADO</h1><p style="font-size:1.1rem; color:#666; margin-bottom:30px;">${motivo}</p><button class="btn-primary" style="width:100%; background-color:#333;" onclick="document.getElementById('status-modal').remove(); navigate('${retryScreen}')">Intentar de nuevo</button></div></div>`;
     document.body.insertAdjacentHTML('beforeend', html);
 }
 
-// --- F. UTILIDADES DEL FORMULARIO Y CÁMARA ---
+// --- F. UTILIDADES ---
 
 function resetForm(prefix) {
     document.querySelectorAll(`[id^="${prefix}-"]`).forEach(i => i.value = '');
@@ -784,7 +688,7 @@ function resetForm(prefix) {
 
 function openResidenteModal(ctx) {
     STATE.currentContext = ctx;
-    if(STATE.colBaserFiltrada.length === 0) { alert("Lista vacía"); return; }
+    if(STATE.colBaserFiltrada.length === 0) { alert("Cargando lista, reintente..."); loadResidentesList(); return; }
     const torres = [...new Set(STATE.colBaserFiltrada.map(i => i.Torre))].sort();
     const selTorre = document.getElementById('sel-torre');
     if (selTorre) { selTorre.innerHTML = '<option value="">Selecciona...</option>' + torres.map(t => `<option value="${t}">${t}</option>`).join(''); updateDeptos(); document.getElementById('modal-selector').classList.add('active'); }
@@ -826,7 +730,7 @@ function previewImg(input, id) {
         reader.onload = e => {
             STATE.photos[id] = e.target.result;
             const prev = document.getElementById('prev-'+id);
-            if(prev) { prev.style.backgroundImage = `url(${e.target.result})`; prev.classList.remove('hidden'); if (prev.nextElementSibling) { prev.nextElementSibling.style.display = 'block'; prev.nextElementSibling.innerHTML = '<i class="fas fa-check-circle" style="color:#2ecc71; font-size:1.5em;"></i><br><span style="color:#2ecc71; font-weight:bold;">¡Foto Lista!</span>'; } }
+            if(prev) { prev.style.backgroundImage = `url(${e.target.result})`; prev.classList.remove('hidden'); if (prev.nextElementSibling) { prev.nextElementSibling.style.display = 'block'; prev.nextElementSibling.innerHTML = '<i class="fas fa-check-circle" style="color:#2ecc71;"></i><br>Foto Lista'; } }
         };
         reader.readAsDataURL(input.files[0]);
     }
