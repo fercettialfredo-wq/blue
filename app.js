@@ -442,7 +442,7 @@ function getStatusColor(status) {
     return '#2563eb';
 }
 
-// --- MOTOR DE GALERÍA (SOLUCIÓN DEFINITIVA PARA NOMBRES) ---
+// --- MOTOR DE GALERÍA (VERSIÓN SIMPLE POR NOMBRE) ---
 function renderRemoteGallery(serverData, elementId) {
     const container = document.getElementById(elementId);
     if (!container) return; 
@@ -467,26 +467,20 @@ function renderRemoteGallery(serverData, elementId) {
     container.innerHTML = filteredData.map((item, index) => {
         let fechaLegible = formatearFechaBonita(item.Fecha || item.Created || item.Fechayhora);
         
-        // --- BUSCADOR INTELIGENTE DE NOMBRE ---
-        // Intentamos obtener el nombre en todas sus posibles variantes de SharePoint
-        let tituloOriginal = item.Nombre || item.Nombre0 || item.Title || item.OData_Nombre || '';
-        let titulo = tituloOriginal;
+        // --- LOGICA SIMPLE: SOLO NOMBRE ---
+        let titulo = item.Nombre || item.Nombre0 || "Registro";
 
-        // CORRECCIÓN PARA PAQUETERIA RECEPCION (BA2)
+        // Caso especial para paquetería: Si el nombre está vacío, decimos "Repartidor sin nombre"
+        // pero NO usamos la empresa ni el título genérico.
         if (elementId === 'gal-ba2') {
-            if (tituloOriginal) {
-                titulo = tituloOriginal;
-            } else if (item.Paqueteria) {
-                titulo = "Repartidor: " + item.Paqueteria;
-            } else {
-                titulo = "Repartidor sin nombre";
-            }
+            if (item.Nombre) titulo = item.Nombre;
+            else if (item.Nombre0) titulo = item.Nombre0;
+            else titulo = "Repartidor sin nombre";
         }
         else {
-            // Lógica normal para otros módulos
+            // Resto de módulos
             if (item.Recibio) titulo = item.Recibio; 
-            else if (item.Residente && !tituloOriginal) titulo = item.Residente; 
-            else if (!tituloOriginal) titulo = "Registro sin nombre";
+            else if (item.Residente && !item.Nombre && !item.Nombre0) titulo = item.Residente; 
         }
 
         let lineasDetalle = [];
@@ -533,13 +527,13 @@ function showDetails(index) {
         'Recibio': 'Quien Recibió', 'Residente': 'Destinatario/Residente', 
         'Fechayhora': 'Fecha y Hora', 'Fecha': 'Fecha y Hora', 'Estatus': 'Estatus', 
         'Paqueteria': 'Paquetería', 'Empresa': 'Empresa', 'Asunto': 'Asunto', 
-        'Torre': 'Torre', 'Departamento': 'Departamento', 'Cargo': 'Cargo', 'Placa': 'Placa',
-        'N_x00fa_mero': 'Teléfono'
+        'Torre': 'Torre', 'Departamento': 'Departamento', 'Cargo': 'Cargo', 'Placa': 'Placa'
     };
     
     let content = '<div style="text-align:left;">';
     for (const [key, value] of Object.entries(item)) {
-        if(key !== 'odata.type' && key !== 'Foto' && key !== 'FotoBase64' && key !== 'FirmaBase64' && key !== '_isLocal' && key !== 'formulario' && key !== 'Telefono' && key !== 'Número' && value) {
+        // AQUÍ SE FILTRAN LOS CAMPOS, INCLUYENDO TELÉFONO
+        if(key !== 'odata.type' && key !== 'Foto' && key !== 'FotoBase64' && key !== 'FirmaBase64' && key !== '_isLocal' && key !== 'formulario' && key !== 'Telefono' && key !== 'Número' && key !== 'N_x00fa_mero' && value) {
              let displayValue = value;
              if(key === 'Fecha' || key === 'Fechayhora' || key === 'Created') { displayValue = formatearFechaBonita(value); }
              if(key === 'RequiereRevisi_x00f3_n' || key === 'RequiereRevision') { displayValue = (value === true || value === 'true') ? 'SÍ' : 'NO'; }
