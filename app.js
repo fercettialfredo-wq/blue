@@ -500,8 +500,12 @@ function renderRemoteGallery(serverData, elementId) {
         // Ajuste visual para entregas
         if (elementId === 'gal-bb2' && rawStatus === 'Nuevo') rawStatus = 'Entregado';
 
-        const statusColor = getStatusColor(rawStatus);
-        const estatusHtml = `<span class="status-pill" style="background-color: ${statusColor}20; color: ${statusColor};">${rawStatus}</span>`;
+        // --- CAMBIO SOLICITADO: Ocultar etiqueta "Nuevo" SOLO para QR Residente ---
+        let estatusHtml = '';
+        if (!(elementId === 'gal-ea2' && rawStatus === 'Nuevo')) {
+             const statusColor = getStatusColor(rawStatus);
+             estatusHtml = `<span class="status-pill" style="background-color: ${statusColor}20; color: ${statusColor};">${rawStatus}</span>`;
+        }
 
         return `
         <div class="gallery-item" onclick="showDetails(${index})">
