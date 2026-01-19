@@ -13,6 +13,8 @@ const STATE = {
         condominioId: null,
         usuario: null
     },
+    // Estado de Control
+    isSubmitting: false, // Semáforo para evitar doble envío
     // Datos locales
     colBaserFiltrada: [], 
     // Estado temporal para UI
@@ -289,8 +291,9 @@ const SCREENS = {
 let signaturePad;
 let html5QrCode;
 
-// --- A. BACKEND CALL ---
+// --- A. BACKEND CALL CON PROTECCIÓN DE DOBLE CLIC ---
 async function callBackend(action, extraData = {}) {
+    // 1. CHEQUEO DE SESIÓN
     if (!STATE.session.condominioId) {
         const saved = localStorage.getItem('ravensUser');
         if (saved) { 
@@ -305,13 +308,24 @@ async function callBackend(action, extraData = {}) {
         }
     }
 
+    // 2. BLOQUEO LÓGICO (SEMÁFORO)
+    // Si ya estamos enviando un formulario, impedimos otro.
+    if (action === 'submit_form' && STATE.isSubmitting) {
+        console.warn("🚫 Bloqueo: Envío duplicado detectado.");
+        return { success: false, message: "Procesando, espere..." };
+    }
+
     const loadingBtn = document.querySelector('.btn-save') || document.querySelector('.btn-primary');
-    // NOTA: El bloqueo visual se hace aquí, pero el bloqueo lógico para evitar duplicados se ha movido a las funciones submit específicas
+    
+    // 3. BLOQUEO VISUAL
     if(loadingBtn && loadingBtn.innerText !== "Guardando..." && loadingBtn.innerText !== "Procesando...") { 
         loadingBtn.dataset.originalText = loadingBtn.innerText; 
         loadingBtn.disabled = true; 
         loadingBtn.innerText = "Procesando..."; 
     }
+
+    // Activar semáforo
+    if (action === 'submit_form') STATE.isSubmitting = true;
 
     try {
         const payload = { 
@@ -321,7 +335,11 @@ async function callBackend(action, extraData = {}) {
             ...extraData 
         };
         
-        const response = await fetch(CONFIG.API_PROXY_URL, { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(payload) });
+        const response = await fetch(CONFIG.API_PROXY_URL, { 
+            method: 'POST', 
+            headers: { 'Content-Type': 'application/json' }, 
+            body: JSON.stringify(payload) 
+        });
         
         if (!response.ok) {
             const errorText = await response.text();
@@ -330,7 +348,8 @@ async function callBackend(action, extraData = {}) {
 
         const result = await response.json();
         
-        // El desbloqueo del botón ahora se maneja mejor en la función que llama, pero por seguridad si es genérico:
+        // Liberar semáforo y botón
+        if (action === 'submit_form') STATE.isSubmitting = false;
         if(loadingBtn && action !== 'submit_form') { loadingBtn.disabled = false; loadingBtn.innerText = loadingBtn.dataset.originalText || "Guardar"; }
         
         if (result && result.success === false) {
@@ -340,6 +359,8 @@ async function callBackend(action, extraData = {}) {
         return result;
 
     } catch (error) {
+        // Liberar semáforo en caso de error
+        if (action === 'submit_form') STATE.isSubmitting = false;
         if(loadingBtn) { loadingBtn.disabled = false; loadingBtn.innerText = "Error"; setTimeout(() => { loadingBtn.innerText = loadingBtn.dataset.originalText || "Guardar"; }, 3000); }
         console.error("❌ Error de comunicación:", error);
         return { success: false, message: error.message || "Error de conexión" };
@@ -430,7 +451,11 @@ function navigate(screen) {
 
 async function loadHistory(tipo, elementId) {
     const container = document.getElementById(elementId);
-    if(!container) return; container.innerHTML = '<div style="padding:20px; text-align:center;">Cargando...</div>';
+    if(!container) return; 
+    
+    // --- LIMPIEZA DE CACHÉ VISUAL ---
+    STATE.tempHistory = []; // Borramos lo anterior
+    container.innerHTML = '<div style="padding:20px; text-align:center;">Cargando...</div>';
     
     // FETCH SERVER DATA
     const response = await callBackend('get_history', { tipo_lista: tipo });
@@ -448,19 +473,34 @@ function getStatusColor(status) {
     return '#2563eb';
 }
 
-// --- MOTOR DE GALERÍA (VERSIÓN SIMPLE POR NOMBRE) ---
+// --- MOTOR DE GALERÍA (CON PROTECCIÓN ANTI-DUPLICADOS) ---
 function renderRemoteGallery(serverData, elementId) {
     const container = document.getElementById(elementId);
     if (!container) return; 
 
-    let allData = serverData || [];
+    let rawData = serverData || [];
 
-    if (allData.length === 0) { 
+    // 1. FILTRADO DUPLICADOS POR ID (Frontend Safety Net)
+    // Aunque el Proxy ya limpia, esto protege de renderizados dobles por caché del navegador
+    const uniqueData = [];
+    const seenIds = new Set();
+
+    rawData.forEach(item => {
+        // Usamos el ID de SharePoint que ahora sí llega
+        const identifier = item.ID || item.id || JSON.stringify(item);
+        if (!seenIds.has(identifier)) {
+            uniqueData.push(item);
+            seenIds.add(identifier);
+        }
+    });
+
+    if (uniqueData.length === 0) { 
         container.innerHTML = `<div style="padding:20px; text-align:center; color:#555">Sin registros recientes.</div>`; 
         return; 
     }
     
-    const filteredData = allData.filter(item => {
+    // 2. FILTRADO POR ESTADO (Solo para QR)
+    const filteredData = uniqueData.filter(item => {
         if (elementId === 'gal-eb2' || elementId === 'gal-ed2') {
             const estatus = (item.Estatus || item.TipoMarca || "").toString().toLowerCase().trim();
             return estatus !== "" && estatus !== "nuevo";
@@ -470,21 +510,19 @@ function renderRemoteGallery(serverData, elementId) {
 
     STATE.tempHistory = filteredData;
 
+    // 3. RENDERIZADO
     container.innerHTML = filteredData.map((item, index) => {
         let fechaLegible = formatearFechaBonita(item.Fecha || item.Created || item.Fechayhora);
         
-        // --- LOGICA SIMPLE: SOLO NOMBRE ---
         let titulo = item.Nombre || item.Nombre0 || "Registro";
 
-        // Caso especial para paquetería: Si el nombre está vacío, decimos "Repartidor sin nombre"
-        // pero NO usamos la empresa ni el título genérico.
+        // Caso especial para paquetería
         if (elementId === 'gal-ba2') {
             if (item.Nombre) titulo = item.Nombre;
             else if (item.Nombre0) titulo = item.Nombre0;
             else titulo = "Repartidor sin nombre";
         }
         else {
-            // Resto de módulos
             if (item.Recibio) titulo = item.Recibio; 
             else if (item.Residente && !item.Nombre && !item.Nombre0) titulo = item.Residente; 
         }
@@ -503,10 +541,8 @@ function renderRemoteGallery(serverData, elementId) {
         const statusLower = rawStatus.toString().toLowerCase().trim();
         if (statusLower === "" || statusLower === "pendiente") rawStatus = "Nuevo";
 
-        // Ajuste visual para entregas
         if (elementId === 'gal-bb2' && rawStatus === 'Nuevo') rawStatus = 'Entregado';
 
-        // --- CAMBIO SOLICITADO: Ocultar etiqueta "Nuevo" SOLO para QR Residente ---
         let estatusHtml = '';
         if (!(elementId === 'gal-ea2' && rawStatus === 'Nuevo')) {
              const statusColor = getStatusColor(rawStatus);
@@ -542,8 +578,8 @@ function showDetails(index) {
     
     let content = '<div style="text-align:left;">';
     for (const [key, value] of Object.entries(item)) {
-        // AQUÍ SE FILTRAN LOS CAMPOS, INCLUYENDO TELÉFONO
-        if(key !== 'odata.type' && key !== 'Foto' && key !== 'FotoBase64' && key !== 'FirmaBase64' && key !== '_isLocal' && key !== 'formulario' && key !== 'Telefono' && key !== 'Número' && key !== 'N_x00fa_mero' && value) {
+        // FILTRO: No mostramos campos técnicos o nulos
+        if(key !== 'ID' && key !== 'odata.type' && key !== 'Foto' && key !== 'FotoBase64' && key !== 'FirmaBase64' && key !== '_isLocal' && key !== 'formulario' && key !== 'Telefono' && key !== 'Número' && key !== 'N_x00fa_mero' && value) {
              let displayValue = value;
              if(key === 'Fecha' || key === 'Fechayhora' || key === 'Created') { displayValue = formatearFechaBonita(value); }
              if(key === 'RequiereRevisi_x00f3_n' || key === 'RequiereRevision') { displayValue = (value === true || value === 'true') ? 'SÍ' : 'NO'; }
@@ -572,17 +608,17 @@ function showDetails(index) {
 
 async function submitAviso(p) {
     const btn = document.querySelector('.btn-save');
-    if (btn && btn.disabled) return; // Si ya está bloqueado, no hagas nada
+    if (btn && btn.disabled) return; 
 
     const nom = document.getElementById(p+'-nombre').value;
     const motivo = document.getElementById(p+'-motivo')?.value;
     const cargo = document.getElementById(p+'-cargo')?.value; 
     if(!nom || !STATE[p]?.residente) { return alert("Faltan datos obligatorios."); }
     
-    // CORRECCIÓN Y BLOQUEO INMEDIATO
+    // El bloqueo visual y lógico ahora lo maneja callBackend, pero bloqueamos aquí preventivamente
     if(btn) { btn.disabled = true; btn.innerText = "Guardando..."; }
     
-    let tipoLista = p === 'aa1' ? 'VISITA' : 'PERSONAL_DE_SERVICIO'; // <--- CORRECCIÓN DEL NOMBRE
+    let tipoLista = p === 'aa1' ? 'VISITA' : 'PERSONAL_DE_SERVICIO'; 
     let nextScreen = p === 'aa1' ? 'AA2' : 'AC2';
     
     const data = { 
@@ -599,20 +635,19 @@ async function submitAviso(p) {
         showSuccessScreen(res.message || "Registro Guardado", "Correcto", nextScreen); 
     } 
     else { 
-        if(btn) { btn.disabled = false; btn.innerText = "Guardar"; } // Desbloquear solo si falla
+        if(btn) { btn.disabled = false; btn.innerText = "Guardar"; } 
         showFailureScreen(res.message || "Error al guardar", p.toUpperCase()); 
     }
 }
 
 async function submitProveedor() {
     const btn = document.querySelector('.btn-save');
-    if (btn && btn.disabled) return; // Si ya está bloqueado, no hagas nada
+    if (btn && btn.disabled) return; 
 
     const nom = document.getElementById('d1-nombre').value;
     const asunto = document.getElementById('d1-asunto').value;
     if(!nom || !STATE['d1']?.residente || !asunto) return alert("Faltan datos.");
     
-    // BLOQUEO INMEDIATO
     if(btn) { btn.disabled = true; btn.innerText = "Guardando..."; }
     
     const data = { 
@@ -628,16 +663,21 @@ async function submitProveedor() {
         showSuccessScreen(res.message || "Proveedor Registrado", "Éxito", 'D2'); 
     } 
     else { 
-        if(btn) { btn.disabled = false; btn.innerText = "Guardar"; } // Desbloquear solo si falla
+        if(btn) { btn.disabled = false; btn.innerText = "Guardar"; } 
         showFailureScreen(res.message, 'D1'); 
     }
 }
 
 async function submitRecepcionPaquete() {
+    const btn = document.querySelector('.btn-save');
+    if (btn && btn.disabled) return;
+
     const nombre = document.getElementById('ba1-nombre').value;
     if(!STATE['ba1']?.residente || !nombre) return alert("Faltan datos obligatorios (Nombre, Residente).");
-    if(!STATE.photos['ba1']) return alert("La foto es obligatoria."); // VALIDACIÓN AGREGADA
+    if(!STATE.photos['ba1']) return alert("La foto es obligatoria."); 
     
+    if(btn) { btn.disabled = true; btn.innerText = "Guardando..."; }
+
     const data = { 
         Nombre: nombre, Residente: STATE['ba1'].residente, Torre: STATE['ba1'].torre, Departamento: STATE['ba1'].depto, 
         Telefono: STATE['ba1']?.telefono || "", Paqueteria: document.getElementById('ba1-paqueteria').value, 
@@ -646,16 +686,27 @@ async function submitRecepcionPaquete() {
     };
     
     const res = await callBackend('submit_form', { formulario: 'PAQUETERIA_RECEPCION', data: data });
-    if (res && res.success) { resetForm('ba1'); showSuccessScreen("Paquete Recibido", "Guardado", 'BA2'); } 
-    else { showFailureScreen(res.message, 'BA1'); }
+    
+    if (res && res.success) { 
+        resetForm('ba1'); 
+        showSuccessScreen("Paquete Recibido", "Guardado", 'BA2'); 
+    } else { 
+        if(btn) { btn.disabled = false; btn.innerText = "Guardar"; }
+        showFailureScreen(res.message, 'BA1'); 
+    }
 }
 
 async function submitEntregaPaquete() {
+    const btn = document.querySelector('.btn-save');
+    if (btn && btn.disabled) return;
+
     const nom = document.getElementById('bb1-nombre').value;
     if(!nom || !STATE['bb1']?.residente) return alert("Datos incompletos.");
-    if(!STATE.photos['bb1']) return alert("La foto de evidencia es obligatoria."); // VALIDACIÓN AGREGADA
-    if(!signaturePad || signaturePad.isEmpty()) return alert("La firma es obligatoria."); // VALIDACIÓN AGREGADA
+    if(!STATE.photos['bb1']) return alert("La foto de evidencia es obligatoria."); 
+    if(!signaturePad || signaturePad.isEmpty()) return alert("La firma es obligatoria."); 
     
+    if(btn) { btn.disabled = true; btn.innerText = "Guardando..."; }
+
     const data = { 
         Recibio: nom, Residente: STATE['bb1'].residente, Torre: STATE['bb1'].torre, Departamento: STATE['bb1'].depto, 
         Telefono: STATE['bb1']?.telefono || "", FotoBase64: STATE.photos['bb1'] || "", 
@@ -664,8 +715,14 @@ async function submitEntregaPaquete() {
     };
 
     const res = await callBackend('submit_form', { formulario: 'PAQUETERIA_ENTREGA', data: data });
-    if (res && res.success) { resetForm('bb1'); showSuccessScreen("Paquete Entregado", "Firmado", 'BB2'); } 
-    else { showFailureScreen(res.message, 'BB1'); }
+    
+    if (res && res.success) { 
+        resetForm('bb1'); 
+        showSuccessScreen("Paquete Entregado", "Firmado", 'BB2'); 
+    } else { 
+        if(btn) { btn.disabled = false; btn.innerText = "Guardar"; }
+        showFailureScreen(res.message, 'BB1'); 
+    }
 }
 
 async function submitPersonalInterno(accion) {
