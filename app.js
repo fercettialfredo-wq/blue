@@ -178,7 +178,7 @@ const SCREENS = {
                 <button class="btn-primary" onclick="openResidenteModal('ba1')"><i class="fas fa-search"></i> Seleccionar Residente</button>
                 <div class="input-group" style="margin-top:15px"><label>Paquetería *</label><input type="text" id="ba1-paqueteria" class="form-input"></div>
                 <div class="input-group"><label>Estatus</label><select id="ba1-estatus" class="form-input"><option>Aceptado</option><option>Dañado</option></select></div>
-                <div class="input-group"><label>Foto</label>
+                <div class="input-group"><label>Foto *</label>
                     <div class="photo-placeholder" onclick="document.getElementById('cam-ba1').click()">
                         <input type="file" id="cam-ba1" hidden accept="image/*" capture="environment" onchange="previewImg(this, 'ba1')">
                         <div id="prev-ba1" class="photo-preview hidden"></div><span><i class="fas fa-camera"></i> Cámara</span>
@@ -189,7 +189,7 @@ const SCREENS = {
         </div>
     `,
     'BA2': `<div class="screen form-page">
-            ${getHeaderLibreta('Libreta Recepción', "loadHistory('PAQUETERIA_RECEPCION', 'gal-ba2')", 'BA1', true)}
+            ${getHeaderLibreta('Libreta Recepción', "loadHistory('PAQUETERIA_RECEPCION', 'gal-ba2')", 'BA1', false)}
             <div class="form-container" style="padding:0;"><div id="gal-ba2" class="gallery-container"></div></div></div>`,
     
     'BB1': `
@@ -201,16 +201,16 @@ const SCREENS = {
                 <div class="input-group"><label>Depto</label><input type="text" id="bb1-depto" class="form-input" readonly></div>
                 <div class="input-group"><label>Dueño (Residente)</label><input type="text" id="bb1-res-name" class="form-input" readonly></div>
                 <button class="btn-primary" onclick="openResidenteModal('bb1')"><i class="fas fa-search"></i> Seleccionar Dueño</button>
-                <div class="input-group" style="margin-top:15px"><label>Foto Evidencia</label>
+                <div class="input-group" style="margin-top:15px"><label>Foto Evidencia *</label>
                     <div class="photo-placeholder" onclick="document.getElementById('cam-bb1').click()"><input type="file" id="cam-bb1" hidden accept="image/*" capture="environment" onchange="previewImg(this, 'bb1')"><div id="prev-bb1" class="photo-preview hidden"></div><span><i class="fas fa-camera"></i> Cámara</span></div>
                 </div>
-                <div class="input-group"><label>Firma</label><div class="signature-wrapper"><canvas id="sig-canvas"></canvas><i class="fas fa-times-circle clear-sig" onclick="clearSignature()"></i></div></div>
+                <div class="input-group"><label>Firma *</label><div class="signature-wrapper"><canvas id="sig-canvas"></canvas><i class="fas fa-times-circle clear-sig" onclick="clearSignature()"></i></div></div>
                 <div style="margin-top: 20px;"><button class="btn-save" onclick="submitEntregaPaquete()">Guardar</button><button class="btn-clean" onclick="resetForm('bb1')"><i class="fas fa-eraser"></i> Limpiar</button></div>
             </div>
         </div>
     `,
     'BB2': `<div class="screen form-page">
-            ${getHeaderLibreta('Libreta Entregas', "loadHistory('PAQUETERIA_ENTREGA', 'gal-bb2')", 'BB1', true)}
+            ${getHeaderLibreta('Libreta Entregas', "loadHistory('PAQUETERIA_ENTREGA', 'gal-bb2')", 'BB1', false)}
             <div class="form-container" style="padding:0;"><div id="gal-bb2" class="gallery-container"></div></div></div>`,
 
     'D1': `
@@ -602,7 +602,8 @@ async function submitProveedor() {
 
 async function submitRecepcionPaquete() {
     const nombre = document.getElementById('ba1-nombre').value;
-    if(!STATE['ba1']?.residente || !nombre) return alert("Faltan datos obligatorios.");
+    if(!STATE['ba1']?.residente || !nombre) return alert("Faltan datos obligatorios (Nombre, Residente).");
+    if(!STATE.photos['ba1']) return alert("La foto es obligatoria."); // VALIDACIÓN AGREGADA
     
     const data = { 
         Nombre: nombre, Residente: STATE['ba1'].residente, Torre: STATE['ba1'].torre, Departamento: STATE['ba1'].depto, 
@@ -619,6 +620,8 @@ async function submitRecepcionPaquete() {
 async function submitEntregaPaquete() {
     const nom = document.getElementById('bb1-nombre').value;
     if(!nom || !STATE['bb1']?.residente) return alert("Datos incompletos.");
+    if(!STATE.photos['bb1']) return alert("La foto de evidencia es obligatoria."); // VALIDACIÓN AGREGADA
+    if(!signaturePad || signaturePad.isEmpty()) return alert("La firma es obligatoria."); // VALIDACIÓN AGREGADA
     
     const data = { 
         Recibio: nom, Residente: STATE['bb1'].residente, Torre: STATE['bb1'].torre, Departamento: STATE['bb1'].depto, 
