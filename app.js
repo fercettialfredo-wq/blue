@@ -1,4 +1,8 @@
 /* =========================================
+   RAVENS ACCESS - CÓDIGO JAVASCRIPT DEFINITIVO
+   ========================================= */
+
+/* =========================================
    1. CONFIGURACIÓN Y ESTADO GLOBAL
    ========================================= */
 const CONFIG = {
@@ -608,7 +612,7 @@ function showDetails(index) {
 
 async function submitAviso(p) {
     const btn = document.querySelector('.btn-save');
-    if (btn && btn.disabled) return; 
+    if (btn && btn.disabled) return; // Si ya está bloqueado, no hagas nada
 
     const nom = document.getElementById(p+'-nombre').value;
     const motivo = document.getElementById(p+'-motivo')?.value;
@@ -635,7 +639,7 @@ async function submitAviso(p) {
         showSuccessScreen(res.message || "Registro Guardado", "Correcto", nextScreen); 
     } 
     else { 
-        if(btn) { btn.disabled = false; btn.innerText = "Guardar"; } 
+        if(btn) { btn.disabled = false; btn.innerText = "Guardar"; } // Desbloquear solo si falla
         showFailureScreen(res.message || "Error al guardar", p.toUpperCase()); 
     }
 }
