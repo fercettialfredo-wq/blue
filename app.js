@@ -306,7 +306,12 @@ async function callBackend(action, extraData = {}) {
     }
 
     const loadingBtn = document.querySelector('.btn-save') || document.querySelector('.btn-primary');
-    if(loadingBtn) { loadingBtn.dataset.originalText = loadingBtn.innerText; loadingBtn.disabled = true; loadingBtn.innerText = "Procesando..."; }
+    // NOTA: El bloqueo visual se hace aquí, pero el bloqueo lógico para evitar duplicados se ha movido a las funciones submit específicas
+    if(loadingBtn && loadingBtn.innerText !== "Guardando..." && loadingBtn.innerText !== "Procesando...") { 
+        loadingBtn.dataset.originalText = loadingBtn.innerText; 
+        loadingBtn.disabled = true; 
+        loadingBtn.innerText = "Procesando..."; 
+    }
 
     try {
         const payload = { 
@@ -325,7 +330,8 @@ async function callBackend(action, extraData = {}) {
 
         const result = await response.json();
         
-        if(loadingBtn) { loadingBtn.disabled = false; loadingBtn.innerText = loadingBtn.dataset.originalText || "Guardar"; }
+        // El desbloqueo del botón ahora se maneja mejor en la función que llama, pero por seguridad si es genérico:
+        if(loadingBtn && action !== 'submit_form') { loadingBtn.disabled = false; loadingBtn.innerText = loadingBtn.dataset.originalText || "Guardar"; }
         
         if (result && result.success === false) {
             return result;
@@ -565,11 +571,18 @@ function showDetails(index) {
 // --- D. ENVÍO DE FORMULARIOS ---
 
 async function submitAviso(p) {
+    const btn = document.querySelector('.btn-save');
+    if (btn && btn.disabled) return; // Si ya está bloqueado, no hagas nada
+
     const nom = document.getElementById(p+'-nombre').value;
     const motivo = document.getElementById(p+'-motivo')?.value;
     const cargo = document.getElementById(p+'-cargo')?.value; 
     if(!nom || !STATE[p]?.residente) { return alert("Faltan datos obligatorios."); }
-    let tipoLista = p === 'aa1' ? 'VISITA' : 'PERSONALAVISO';
+    
+    // CORRECCIÓN Y BLOQUEO INMEDIATO
+    if(btn) { btn.disabled = true; btn.innerText = "Guardando..."; }
+    
+    let tipoLista = p === 'aa1' ? 'VISITA' : 'PERSONAL_DE_SERVICIO'; // <--- CORRECCIÓN DEL NOMBRE
     let nextScreen = p === 'aa1' ? 'AA2' : 'AC2';
     
     const data = { 
@@ -580,14 +593,27 @@ async function submitAviso(p) {
     };
 
     const res = await callBackend('submit_form', { formulario: 'AVISOG', data: data });
-    if (res && res.success) { resetForm(p); showSuccessScreen(res.message || "Registro Guardado", "Correcto", nextScreen); } 
-    else { showFailureScreen(res.message || "Error al guardar", p.toUpperCase()); }
+    
+    if (res && res.success) { 
+        resetForm(p); 
+        showSuccessScreen(res.message || "Registro Guardado", "Correcto", nextScreen); 
+    } 
+    else { 
+        if(btn) { btn.disabled = false; btn.innerText = "Guardar"; } // Desbloquear solo si falla
+        showFailureScreen(res.message || "Error al guardar", p.toUpperCase()); 
+    }
 }
 
 async function submitProveedor() {
+    const btn = document.querySelector('.btn-save');
+    if (btn && btn.disabled) return; // Si ya está bloqueado, no hagas nada
+
     const nom = document.getElementById('d1-nombre').value;
     const asunto = document.getElementById('d1-asunto').value;
     if(!nom || !STATE['d1']?.residente || !asunto) return alert("Faltan datos.");
+    
+    // BLOQUEO INMEDIATO
+    if(btn) { btn.disabled = true; btn.innerText = "Guardando..."; }
     
     const data = { 
         Nombre: nom, Residente: STATE['d1'].residente, Torre: STATE['d1'].torre, Departamento: STATE['d1'].depto, 
@@ -596,8 +622,15 @@ async function submitProveedor() {
     };
     
     const res = await callBackend('submit_form', { formulario: 'AVISOG', data: data });
-    if (res && res.success) { resetForm('d1'); showSuccessScreen(res.message || "Proveedor Registrado", "Éxito", 'D2'); } 
-    else { showFailureScreen(res.message, 'D1'); }
+    
+    if (res && res.success) { 
+        resetForm('d1'); 
+        showSuccessScreen(res.message || "Proveedor Registrado", "Éxito", 'D2'); 
+    } 
+    else { 
+        if(btn) { btn.disabled = false; btn.innerText = "Guardar"; } // Desbloquear solo si falla
+        showFailureScreen(res.message, 'D1'); 
+    }
 }
 
 async function submitRecepcionPaquete() {
