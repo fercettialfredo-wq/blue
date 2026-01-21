@@ -741,13 +741,27 @@ async function submitPersonalInterno(accion) {
 async function validarAccesoQR(tipo, inputId, formId, nextScreen, failScreen) {
     const codigo = document.getElementById(inputId).value;
     if(!codigo) return alert("⚠️ No hay un código para validar."); 
+    
     const res = await callBackend('validate_qr', { tipo_validacion: tipo, codigo_leido: codigo });
     
     if (res && res.success) {
         resetForm(formId);
         showSuccessScreen(res.message || "Acceso Permitido", `${res.data?.tipo || "ACCESO"}: ${res.data?.nombre || "Autorizado"}`, nextScreen);
     } else {
-        showFailureScreen(res ? res.message : "Código no válido", failScreen);
+        // --- LÓGICA DE MENSAJES PERSONALIZADOS (OPCIÓN 2) ---
+        let mensajePersonalizado = res ? res.message : "Error desconocido";
+
+        if (tipo === 'NIP_PROVEEDOR') {
+            mensajePersonalizado = "El NIP ingresado no es válido o ya caducó.";
+        } else if (tipo === 'QR_VISITA') {
+            mensajePersonalizado = "Este código QR de visita no existe o ya fue utilizado.";
+        } else if (tipo === 'QR_RESIDENTE') {
+            mensajePersonalizado = "Identificación de residente no encontrada en el sistema.";
+        } else if (tipo === 'EVENTO') {
+            mensajePersonalizado = "El código del evento no es válido o ha expirado.";
+        }
+
+        showFailureScreen(mensajePersonalizado, failScreen);
     }
 }
 
