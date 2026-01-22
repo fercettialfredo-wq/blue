@@ -266,9 +266,12 @@ const SCREENS = {
             <div class="form-container" style="padding:0;"><div id="gal-eb2" class="gallery-container"></div></div></div>`,
     'EC1': `
         <div class="screen form-page">
-            <div class="form-title-section"><h2 class="form-title">Validar Evento</h2><div class="cursor-pointer" onclick="navigate('E1')"><img src="icons/home.svg" class="header-icon-img" style="height:40px;"></div></div>
+            <div class="form-title-section"><h2 class="form-title">Validar Evento</h2><div class="header-icons"><i class="fas fa-arrow-left fa-2x cursor-pointer" onclick="navigate('E1')" style="color:#ef4444;"></i><img src="icons/libreta.svg" class="header-icon-img cursor-pointer" onclick="navigate('EC2')" style="height:40px;"></div></div>
             <div class="form-container"><div class="input-group"><input type="text" id="ec1-code" class="form-input" placeholder=""></div><button class="btn-primary" onclick="startScan('ec1-code')"><i class="fas fa-camera"></i> Escanear</button>
             <div style="margin-top: 20px;"><button class="btn-save" onclick="submitEvento()">Validar</button><button class="btn-clean" onclick="resetForm('ec1')"><i class="fas fa-eraser"></i> Limpiar</button></div></div></div>`,
+    'EC2': `<div class="screen form-page">
+            ${getHeaderLibreta('Libreta Eventos', "loadHistory('EVENTO', 'gal-ec2')", 'EC1', false)}
+            <div class="form-container" style="padding:0;"><div id="gal-ec2" class="gallery-container"></div></div></div>`,
     'ED1': `
         <div class="screen form-page">
             <div class="form-title-section"><h2 class="form-title">Proveedor NIP</h2><div class="header-icons"><i class="fas fa-arrow-left fa-2x cursor-pointer" onclick="navigate('E1')" style="color:#ef4444;"></i><img src="icons/libreta.svg" class="header-icon-img cursor-pointer" onclick="navigate('ED2')" style="height:40px;"></div></div>
@@ -449,7 +452,7 @@ function navigate(screen) {
     if(html5QrCode && html5QrCode.isScanning) { html5QrCode.stop().then(() => html5QrCode.clear()).catch(err => {}); }
     document.getElementById('viewport').innerHTML = SCREENS[screen] || SCREENS['LOGIN'];
     if(screen === 'BB1') initSignature();
-    const map = { 'AA2': 'VISITA', 'AC2': 'PERSONAL_DE_SERVICIO', 'BA2': 'PAQUETERIA_RECEPCION', 'BB2': 'PAQUETERIA_ENTREGA', 'D2': 'PROVEEDOR', 'EA2': 'QR_RESIDENTE', 'EB2': 'QR_VISITA', 'ED2': 'NIP_PROVEEDOR', 'F2': 'PERSONAL_INTERNO' };
+    const map = { 'AA2': 'VISITA', 'AC2': 'PERSONAL_DE_SERVICIO', 'BA2': 'PAQUETERIA_RECEPCION', 'BB2': 'PAQUETERIA_ENTREGA', 'D2': 'PROVEEDOR', 'EA2': 'QR_RESIDENTE', 'EB2': 'QR_VISITA', 'EC2': 'EVENTO', 'ED2': 'NIP_PROVEEDOR', 'F2': 'PERSONAL_INTERNO' };
     if(map[screen]) loadHistory(map[screen], `gal-${screen.toLowerCase()}`);
 }
 
