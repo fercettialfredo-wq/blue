@@ -506,9 +506,10 @@ function renderRemoteGallery(serverData, elementId) {
         return; 
     }
     
-    // 2. FILTRADO POR ESTADO (Solo para QR)
+    // 2. FILTRADO POR ESTADO (Solo para QR y Eventos)
     const filteredData = uniqueData.filter(item => {
-        if (elementId === 'gal-eb2' || elementId === 'gal-ed2') {
+        // AHORA INCLUYE 'gal-ec2' (EVENTOS) PARA OCULTAR 'NUEVOS'
+        if (elementId === 'gal-eb2' || elementId === 'gal-ed2' || elementId === 'gal-ec2') {
             const estatus = (item.Estatus || item.TipoMarca || "").toString().toLowerCase().trim();
             return estatus !== "" && estatus !== "nuevo";
         }
