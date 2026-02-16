@@ -21,7 +21,7 @@ const ASSETS_TO_CACHE = [
   './icons/evento.svg'
 ];
 
-// 1. INSTALACIÓN: Guardamos los archivos estáticos en caché
+// 1. INSTALACIÓN
 self.addEventListener('install', (event) => {
   event.waitUntil(
     caches.open(CACHE_NAME)
@@ -32,7 +32,7 @@ self.addEventListener('install', (event) => {
   );
 });
 
-// 2. ACTIVACIÓN: Limpiamos cachés viejas si actualizamos la versión
+// 2. ACTIVACIÓN
 self.addEventListener('activate', (event) => {
   event.waitUntil(
     caches.keys().then((cacheNames) => {
@@ -48,18 +48,15 @@ self.addEventListener('activate', (event) => {
   );
 });
 
-// 3. INTERCEPTOR DE RED: Estrategia "Network First" para API, "Cache First" para archivos
+// 3. INTERCEPTOR DE RED
 self.addEventListener('fetch', (event) => {
-  // Si la petición es a la API de Azure, NO usar caché (queremos datos en vivo)
   if (event.request.url.includes('proxyoperador.azurewebsites.net')) {
-    return; // Deja que la petición pase directo a internet
+    return;
   }
 
-  // Para el resto (imágenes, html, css), busca en caché primero
   event.respondWith(
     caches.match(event.request)
       .then((response) => {
-        // Si está en caché, lo devuelve. Si no, lo pide a internet.
         return response || fetch(event.request);
       })
   );
