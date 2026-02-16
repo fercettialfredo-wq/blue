@@ -316,7 +316,6 @@ async function callBackend(action, extraData = {}) {
     }
 
     // 2. BLOQUEO LÓGICO (SEMÁFORO)
-    // Si ya estamos enviando un formulario, impedimos otro.
     if (action === 'submit_form' && STATE.isSubmitting) {
         console.warn("🚫 Bloqueo: Envío duplicado detectado.");
         return { success: false, message: "Procesando, espere..." };
@@ -461,7 +460,7 @@ async function loadHistory(tipo, elementId) {
     if(!container) return; 
     
     // --- LIMPIEZA DE CACHÉ VISUAL ---
-    STATE.tempHistory = []; // Borramos lo anterior
+    STATE.tempHistory = []; 
     container.innerHTML = '<div style="padding:20px; text-align:center;">Cargando...</div>';
     
     // FETCH SERVER DATA
@@ -480,7 +479,7 @@ function getStatusColor(status) {
     return '#2563eb';
 }
 
-// --- MOTOR DE GALERÍA (CON PROTECCIÓN ANTI-DUPLICADOS) ---
+// --- MOTOR DE GALERÍA
 function renderRemoteGallery(serverData, elementId) {
     const container = document.getElementById(elementId);
     if (!container) return; 
@@ -488,12 +487,10 @@ function renderRemoteGallery(serverData, elementId) {
     let rawData = serverData || [];
 
     // 1. FILTRADO DUPLICADOS POR ID (Frontend Safety Net)
-    // Aunque el Proxy ya limpia, esto protege de renderizados dobles por caché del navegador
     const uniqueData = [];
     const seenIds = new Set();
 
     rawData.forEach(item => {
-        // Usamos el ID de SharePoint que ahora sí llega
         const identifier = item.ID || item.id || JSON.stringify(item);
         if (!seenIds.has(identifier)) {
             uniqueData.push(item);
@@ -506,9 +503,8 @@ function renderRemoteGallery(serverData, elementId) {
         return; 
     }
     
-    // 2. FILTRADO POR ESTADO (Solo para QR y Eventos)
+    // 2. FILTRADO POR ESTADO 
     const filteredData = uniqueData.filter(item => {
-        // AHORA INCLUYE 'gal-ec2' (EVENTOS) PARA OCULTAR 'NUEVOS'
         if (elementId === 'gal-eb2' || elementId === 'gal-ed2' || elementId === 'gal-ec2') {
             const estatus = (item.Estatus || item.TipoMarca || "").toString().toLowerCase().trim();
             return estatus !== "" && estatus !== "nuevo";
@@ -524,7 +520,6 @@ function renderRemoteGallery(serverData, elementId) {
         
         let titulo = item.Nombre || item.Nombre0 || "Registro";
 
-        // Caso especial para paquetería
         if (elementId === 'gal-ba2') {
             if (item.Nombre) titulo = item.Nombre;
             else if (item.Nombre0) titulo = item.Nombre0;
@@ -586,7 +581,6 @@ function showDetails(index) {
     
     let content = '<div style="text-align:left;">';
     for (const [key, value] of Object.entries(item)) {
-        // FILTRO: No mostramos campos técnicos o nulos
         if(key !== 'ID' && key !== 'odata.type' && key !== 'Foto' && key !== 'FotoBase64' && key !== 'FirmaBase64' && key !== '_isLocal' && key !== 'formulario' && key !== 'Telefono' && key !== 'Número' && key !== 'N_x00fa_mero' && value) {
              let displayValue = value;
              if(key === 'Fecha' || key === 'Fechayhora' || key === 'Created') { displayValue = formatearFechaBonita(value); }
@@ -616,14 +610,12 @@ function showDetails(index) {
 
 async function submitAviso(p) {
     const btn = document.querySelector('.btn-save');
-    if (btn && btn.disabled) return; // Si ya está bloqueado, no hagas nada
-
+    if (btn && btn.disabled) return; 
     const nom = document.getElementById(p+'-nombre').value;
     const motivo = document.getElementById(p+'-motivo')?.value;
     const cargo = document.getElementById(p+'-cargo')?.value; 
     if(!nom || !STATE[p]?.residente) { return alert("Faltan datos obligatorios."); }
     
-    // El bloqueo visual y lógico ahora lo maneja callBackend, pero bloqueamos aquí preventivamente
     if(btn) { btn.disabled = true; btn.innerText = "Guardando..."; }
     
     let tipoLista = p === 'aa1' ? 'VISITA' : 'PERSONAL_DE_SERVICIO'; 
@@ -752,7 +744,7 @@ async function validarAccesoQR(tipo, inputId, formId, nextScreen, failScreen) {
         resetForm(formId);
         showSuccessScreen(res.message || "Acceso Permitido", `${res.data?.tipo || "ACCESO"}: ${res.data?.nombre || "Autorizado"}`, nextScreen);
     } else {
-        // --- LÓGICA DE MENSAJES PERSONALIZADOS (OPCIÓN 2) ---
+        // --- LÓGICA DE MENSAJES PERSONALIZADOS
         let mensajePersonalizado = res ? res.message : "Error desconocido";
 
         if (tipo === 'NIP_PROVEEDOR') {
