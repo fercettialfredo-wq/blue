@@ -2,11 +2,34 @@
    RAVENS ACCESS - CÓDIGO JAVASCRIPT DEFINITIVO
    ========================================= */
 
+// --- LÓGICA DE ACTUALIZACIÓN FORZADA DEL SERVICE WORKER ---
+if ('serviceWorker' in navigator) {
+    navigator.serviceWorker.register('./sw.js').then(registration => {
+        registration.addEventListener('updatefound', () => {
+            const newWorker = registration.installing;
+            newWorker.addEventListener('statechange', () => {
+                if (newWorker.state === 'installed' && navigator.serviceWorker.controller) {
+                    // Nueva versión detectada, forzar la actualización
+                    newWorker.postMessage({ action: 'skipWaiting' });
+                }
+            });
+        });
+    }).catch(err => console.error('Error al registrar Service Worker:', err));
+
+    let refreshing = false;
+    navigator.serviceWorker.addEventListener('controllerchange', () => {
+        if (!refreshing) {
+            window.location.reload();
+            refreshing = true;
+        }
+    });
+}
+
 /* =========================================
    1. CONFIGURACIÓN Y ESTADO GLOBAL
    ========================================= */
 const CONFIG = {
-    // URL de tu Proxy en Azure
+    // URL de su Proxy en Azure
     API_PROXY_URL: 'https://proxyoperador.azurewebsites.net/api/ravens-proxy'
 };
 
@@ -37,7 +60,9 @@ const STATE = {
 // --- UTILIDAD DE FECHA ---
 function formatearFechaBonita(fechaRaw) {
     if (!fechaRaw) return "Pendiente";
-    const dateObj = new Date(fechaRaw);
+    // Reemplazo seguro para compatibilidad con iOS/Safari
+    const safeDate = fechaRaw.replace(/-/g, '/');
+    const dateObj = new Date(safeDate);
     if (isNaN(dateObj)) return fechaRaw;
     return dateObj.toLocaleString('es-MX', {
         day: '2-digit', month: '2-digit', year: 'numeric',
@@ -98,7 +123,7 @@ const SCREENS = {
             </header>
             <main class="main-menu-grid">
                 <div class="menu-item" onclick="navigate('A1')">
-                    <img src="icons/visita.svg" class="custom-icon"><div>Visitas</div>
+                    <img src="icons/visita.svg" class="custom-icon"><div>De un solo uso</div>
                 </div>
                 <div class="menu-item" onclick="navigate('B1')">
                     <img src="icons/paquete1.svg" class="custom-icon"><div>Paquetería</div>
@@ -118,22 +143,22 @@ const SCREENS = {
 
     'A1': `
         <div class="screen">
-            <header class="header-app"><div class="header-logo"><span class="header-logo-text">VISITAS</span></div><div class="cursor-pointer" onclick="navigate('INICIO')"><img src="icons/home.svg" class="header-icon-img" style="height:40px;"></div></header>
+            <header class="header-app"><div class="header-logo"><span class="header-logo-text">DE UN SOLO USO</span></div><div class="cursor-pointer" onclick="navigate('INICIO')"><img src="icons/home.svg" class="header-icon-img" style="height:40px;"></div></header>
             <main class="main-menu-grid">
-                <div class="menu-item" onclick="navigate('AA1')"><img src="icons/visita.svg" class="custom-icon"><div>Registrar Visita</div></div>
+                <div class="menu-item" onclick="navigate('AA1')"><img src="icons/visita.svg" class="custom-icon"><div>Registro un solo uso</div></div>
                 <div class="menu-item" onclick="navigate('AC1')"><img src="icons/servicio2.svg" class="custom-icon"><div>Personal Servicio</div></div>
             </main>
         </div>
     `,
     'AA1': `
         <div class="screen form-page">
-            <div class="form-title-section"><h2 class="form-title">Nueva Visita</h2><div class="header-icons"><i class="fas fa-arrow-left fa-2x cursor-pointer" onclick="navigate('A1')" style="color:#ef4444;"></i><img src="icons/libreta.svg" class="header-icon-img cursor-pointer" onclick="navigate('AA2')" style="height:40px;"></div></div>
+            <div class="form-title-section"><h2 class="form-title">Nuevo (Un solo uso)</h2><div class="header-icons"><i class="fas fa-arrow-left fa-2x cursor-pointer" onclick="navigate('A1')" style="color:#ef4444;"></i><img src="icons/libreta.svg" class="header-icon-img cursor-pointer" onclick="navigate('AA2')" style="height:40px;"></div></div>
             <div class="form-container">
-                <div class="input-group"><label>Nombre Visitante *</label><input type="text" id="aa1-nombre" class="form-input"></div>
+                <div class="input-group"><label>Nombre *</label><input type="text" id="aa1-nombre" class="form-input"></div>
                 <div class="input-group"><label>Torre</label><input type="text" id="aa1-torre" class="form-input" readonly></div>
                 <div class="input-group"><label>Departamento</label><input type="text" id="aa1-depto" class="form-input" readonly></div>
-                <div class="input-group"><label>Residente</label><input type="text" id="aa1-res-name" class="form-input" readonly></div>
-                <button class="btn-primary" onclick="openResidenteModal('aa1')"><i class="fas fa-search"></i> Seleccionar Residente</button>
+                <div class="input-group"><label>Permanente</label><input type="text" id="aa1-res-name" class="form-input" readonly></div>
+                <button class="btn-primary" onclick="openResidenteModal('aa1')"><i class="fas fa-search"></i> Seleccionar Permanente</button>
                 <div class="input-group" style="margin-top:15px"><label>Placa</label><input type="text" id="aa1-placa" class="form-input"></div>
                 <div class="input-group"><label>Motivo *</label><input type="text" id="aa1-motivo" class="form-input"></div>
                 <div style="margin-top: 20px;">
@@ -144,7 +169,7 @@ const SCREENS = {
         </div>
     `,
     'AA2': `<div class="screen form-page">
-            ${getHeaderLibreta('Libreta Visitas', "loadHistory('VISITA', 'gal-aa2')", 'AA1', true)}
+            ${getHeaderLibreta('Libreta de un solo uso', "loadHistory('VISITA', 'gal-aa2')", 'AA1', true)}
             <div class="form-container" style="padding:0;"><div id="gal-aa2" class="gallery-container"></div></div></div>`,
     
     'AC1': `
@@ -154,8 +179,8 @@ const SCREENS = {
                 <div class="input-group"><label>Nombre *</label><input type="text" id="ac1-nombre" class="form-input"></div>
                 <div class="input-group"><label>Torre</label><input type="text" id="ac1-torre" class="form-input" readonly></div>
                 <div class="input-group"><label>Depto</label><input type="text" id="ac1-depto" class="form-input" readonly></div>
-                <div class="input-group"><label>Residente</label><input type="text" id="ac1-res-name" class="form-input" readonly></div>
-                <button class="btn-primary" onclick="openResidenteModal('ac1')"><i class="fas fa-search"></i> Seleccionar Residente</button>
+                <div class="input-group"><label>Permanente</label><input type="text" id="ac1-res-name" class="form-input" readonly></div>
+                <button class="btn-primary" onclick="openResidenteModal('ac1')"><i class="fas fa-search"></i> Seleccionar Permanente</button>
                 <div class="input-group" style="margin-top:15px"><label>Cargo *</label><input type="text" id="ac1-cargo" class="form-input"></div>
                 <div style="margin-top: 20px;"><button class="btn-save" onclick="submitAviso('ac1')">Guardar</button><button class="btn-clean" onclick="resetForm('ac1')"><i class="fas fa-eraser"></i> Limpiar</button></div>
             </div>
@@ -180,8 +205,8 @@ const SCREENS = {
                 <div class="input-group"><label>Nombre (Repartidor/Entregó) *</label><input type="text" id="ba1-nombre" class="form-input"></div>
                 <div class="input-group"><label>Torre</label><input type="text" id="ba1-torre" class="form-input" readonly></div>
                 <div class="input-group"><label>Departamento</label><input type="text" id="ba1-depto" class="form-input" readonly></div>
-                <div class="input-group"><label>Destinatario (Residente)</label><input type="text" id="ba1-res-name" class="form-input" readonly></div>
-                <button class="btn-primary" onclick="openResidenteModal('ba1')"><i class="fas fa-search"></i> Seleccionar Residente</button>
+                <div class="input-group"><label>Destinatario (Permanente)</label><input type="text" id="ba1-res-name" class="form-input" readonly></div>
+                <button class="btn-primary" onclick="openResidenteModal('ba1')"><i class="fas fa-search"></i> Seleccionar Permanente</button>
                 <div class="input-group" style="margin-top:15px"><label>Paquetería *</label><input type="text" id="ba1-paqueteria" class="form-input"></div>
                 <div class="input-group"><label>Estatus</label><select id="ba1-estatus" class="form-input"><option>Aceptado</option><option>Dañado</option></select></div>
                 <div class="input-group"><label>Foto *</label>
@@ -202,11 +227,11 @@ const SCREENS = {
         <div class="screen form-page">
             <div class="form-title-section"><h2 class="form-title">Entregar Paquete</h2><div class="header-icons"><i class="fas fa-arrow-left fa-2x cursor-pointer" onclick="navigate('B1')" style="color:#ef4444;"></i><img src="icons/libreta.svg" class="header-icon-img cursor-pointer" onclick="navigate('BB2')" style="height:40px;"></div></div>
             <div class="form-container">
-                <div class="input-group"><label>Quien Recibe *</label><input type="text" id="bb1-nombre" class="form-input"></div>
+                <div class="input-group"><label>Quién Recibe *</label><input type="text" id="bb1-nombre" class="form-input"></div>
                 <div class="input-group"><label>Torre</label><input type="text" id="bb1-torre" class="form-input" readonly></div>
                 <div class="input-group"><label>Depto</label><input type="text" id="bb1-depto" class="form-input" readonly></div>
-                <div class="input-group"><label>Dueño (Residente)</label><input type="text" id="bb1-res-name" class="form-input" readonly></div>
-                <button class="btn-primary" onclick="openResidenteModal('bb1')"><i class="fas fa-search"></i> Seleccionar Dueño</button>
+                <div class="input-group"><label>Dueño (Permanente)</label><input type="text" id="bb1-res-name" class="form-input" readonly></div>
+                <button class="btn-primary" onclick="openResidenteModal('bb1')"><i class="fas fa-search"></i> Seleccionar Permanente</button>
                 <div class="input-group" style="margin-top:15px"><label>Foto Evidencia *</label>
                     <div class="photo-placeholder" onclick="document.getElementById('cam-bb1').click()"><input type="file" id="cam-bb1" hidden accept="image/*" capture="environment" onchange="previewImg(this, 'bb1')"><div id="prev-bb1" class="photo-preview hidden"></div><span><i class="fas fa-camera"></i> Cámara</span></div>
                 </div>
@@ -228,8 +253,8 @@ const SCREENS = {
                 <div class="input-group"><label>Asunto *</label><input type="text" id="d1-asunto" class="form-input"></div>
                 <div class="input-group"><label>Torre</label><input type="text" id="d1-torre" class="form-input" readonly></div>
                 <div class="input-group"><label>Depto</label><input type="text" id="d1-depto" class="form-input" readonly></div>
-                <div class="input-group"><label>Residente</label><input type="text" id="d1-res-name" class="form-input" readonly></div>
-                <button class="btn-primary" onclick="openResidenteModal('d1')"><i class="fas fa-search"></i> Seleccionar Residente</button>
+                <div class="input-group"><label>Permanente</label><input type="text" id="d1-res-name" class="form-input" readonly></div>
+                <button class="btn-primary" onclick="openResidenteModal('d1')"><i class="fas fa-search"></i> Seleccionar Permanente</button>
                 <div style="margin-top: 20px;"><button class="btn-save" onclick="submitProveedor()">Guardar</button><button class="btn-clean" onclick="resetForm('d1')"><i class="fas fa-eraser"></i> Limpiar</button></div>
             </div>
         </div>
@@ -241,8 +266,8 @@ const SCREENS = {
     'E1': `
         <div class="screen"><header class="header-app"><div class="header-logo"><span class="header-logo-text">MÓDULOS QR</span></div><div class="cursor-pointer" onclick="navigate('INICIO')"><img src="icons/home.svg" class="header-icon-img" style="height:40px;"></div></header>
             <main class="main-menu-grid">
-                <div class="menu-item" onclick="navigate('EA1')"><img src="icons/residente.svg" class="custom-icon"><div>QR Residente</div></div>
-                <div class="menu-item" onclick="navigate('EB1')"><img src="icons/visita.svg" class="custom-icon"><div>QR Visita</div></div>
+                <div class="menu-item" onclick="navigate('EA1')"><img src="icons/residente.svg" class="custom-icon"><div>QR Permanente</div></div>
+                <div class="menu-item" onclick="navigate('EB1')"><img src="icons/visita.svg" class="custom-icon"><div>QR de un solo uso</div></div>
                 <div class="menu-item" onclick="navigate('EC1')"><img src="icons/evento.svg" class="custom-icon"><div>Eventos</div></div>
                 <div class="menu-item" onclick="navigate('ED1')"><img src="icons/proveedor.svg" class="custom-icon"><div>Proveedor NIP</div></div>
             </main>
@@ -250,19 +275,19 @@ const SCREENS = {
     `,
     'EA1': `
         <div class="screen form-page">
-            <div class="form-title-section"><h2 class="form-title">QR Residente</h2><div class="header-icons"><i class="fas fa-arrow-left fa-2x cursor-pointer" onclick="navigate('E1')" style="color:#ef4444;"></i><img src="icons/libreta.svg" class="header-icon-img cursor-pointer" onclick="navigate('EA2')" style="height:40px;"></div></div>
+            <div class="form-title-section"><h2 class="form-title">QR Permanente</h2><div class="header-icons"><i class="fas fa-arrow-left fa-2x cursor-pointer" onclick="navigate('E1')" style="color:#ef4444;"></i><img src="icons/libreta.svg" class="header-icon-img cursor-pointer" onclick="navigate('EA2')" style="height:40px;"></div></div>
             <div class="form-container"><div class="input-group"><input type="text" id="ea1-dni" class="form-input" placeholder=""></div><button class="btn-primary" onclick="startScan('ea1-dni')"><i class="fas fa-camera"></i> Escanear</button>
             <div style="margin-top: 20px;"><button class="btn-save" onclick="submitQRResidente()">Validar</button><button class="btn-clean" onclick="resetForm('ea1')"><i class="fas fa-eraser"></i> Limpiar</button></div></div></div>`,
     'EA2': `<div class="screen form-page">
-            ${getHeaderLibreta('Historial QR', "loadHistory('QR_RESIDENTE', 'gal-ea2')", 'EA1', false)}
+            ${getHeaderLibreta('Historial Permanente', "loadHistory('QR_RESIDENTE', 'gal-ea2')", 'EA1', false)}
             <div class="form-container" style="padding:0;"><div id="gal-ea2" class="gallery-container"></div></div></div>`,
     'EB1': `
         <div class="screen form-page">
-            <div class="form-title-section"><h2 class="form-title">QR Visita</h2><div class="header-icons"><i class="fas fa-arrow-left fa-2x cursor-pointer" onclick="navigate('E1')" style="color:#ef4444;"></i><img src="icons/libreta.svg" class="header-icon-img cursor-pointer" onclick="navigate('EB2')" style="height:40px;"></div></div>
+            <div class="form-title-section"><h2 class="form-title">QR de un solo uso</h2><div class="header-icons"><i class="fas fa-arrow-left fa-2x cursor-pointer" onclick="navigate('E1')" style="color:#ef4444;"></i><img src="icons/libreta.svg" class="header-icon-img cursor-pointer" onclick="navigate('EB2')" style="height:40px;"></div></div>
             <div class="form-container"><div class="input-group"><input type="text" id="eb1-code" class="form-input" placeholder=""></div><button class="btn-primary" onclick="startScan('eb1-code')"><i class="fas fa-camera"></i> Escanear</button>
             <div style="margin-top: 20px;"><button class="btn-save" onclick="submitQRVisita()">Validar</button><button class="btn-clean" onclick="resetForm('eb1')"><i class="fas fa-eraser"></i> Limpiar</button></div></div></div>`,
     'EB2': `<div class="screen form-page">
-            ${getHeaderLibreta('Historial QR Visita', "loadHistory('QR_VISITA', 'gal-eb2')", 'EB1', false)}
+            ${getHeaderLibreta('Historial de un solo uso', "loadHistory('QR_VISITA', 'gal-eb2')", 'EB1', false)}
             <div class="form-container" style="padding:0;"><div id="gal-eb2" class="gallery-container"></div></div></div>`,
     'EC1': `
         <div class="screen form-page">
@@ -298,7 +323,7 @@ const SCREENS = {
 let signaturePad;
 let html5QrCode;
 
-// --- A. BACKEND CALL CON PROTECCIÓN DE DOBLE CLIC ---
+// --- A. BACKEND CALL CON PROTECCIÓN DE DOBLE CLIC Y ANTI-CACHÉ CELULAR ---
 async function callBackend(action, extraData = {}) {
     // 1. CHEQUEO DE SESIÓN
     if (!STATE.session.condominioId) {
@@ -341,8 +366,12 @@ async function callBackend(action, extraData = {}) {
             ...extraData 
         };
         
-        const response = await fetch(CONFIG.API_PROXY_URL, { 
+        // TRUCO PARA CELULARES: Evitar caché de Service Worker agregando Timestamp
+        const fetchUrl = `${CONFIG.API_PROXY_URL}?t=${Date.now()}`;
+        const response = await fetch(fetchUrl, { 
             method: 'POST', 
+            mode: 'cors',
+            cache: 'no-store', // Fuerza al celular a no usar memoria interna
             headers: { 'Content-Type': 'application/json' }, 
             body: JSON.stringify(payload) 
         });
@@ -382,8 +411,12 @@ async function doLogin() {
     if(!user || !pass) return;
     
     try {
-        const response = await fetch(CONFIG.API_PROXY_URL, { 
+        // Anti-caché también en el Login
+        const fetchUrl = `${CONFIG.API_PROXY_URL}?t=${Date.now()}`;
+        const response = await fetch(fetchUrl, { 
             method: 'POST', 
+            mode: 'cors',
+            cache: 'no-store',
             headers: { 'Content-Type': 'application/json' }, 
             body: JSON.stringify({ action: 'login', username: user, password: pass }) 
         });
@@ -571,9 +604,10 @@ function showDetails(index) {
     const item = STATE.tempHistory[index];
     if(!item) return;
     
+    // Traducción formal de llaves visuales
     const labelMap = { 
         'Nombre': 'Nombre', 'Nombre0': 'Nombre', 'Title': 'Título/Nombre',
-        'Recibio': 'Quien Recibió', 'Residente': 'Destinatario/Residente', 
+        'Recibio': 'Quién Recibió', 'Residente': 'Destinatario/Permanente', 
         'Fechayhora': 'Fecha y Hora', 'Fecha': 'Fecha y Hora', 'Estatus': 'Estatus', 
         'Paqueteria': 'Paquetería', 'Empresa': 'Empresa', 'Asunto': 'Asunto', 
         'Torre': 'Torre', 'Departamento': 'Departamento', 'Cargo': 'Cargo', 'Placa': 'Placa'
@@ -632,7 +666,7 @@ async function submitAviso(p) {
     
     if (res && res.success) { 
         resetForm(p); 
-        showSuccessScreen(res.message || "Registro Guardado", "Correcto", nextScreen); 
+        showSuccessScreen(res.message || "Registro Guardado con éxito", "Correcto", nextScreen); 
     } 
     else { 
         if(btn) { btn.disabled = false; btn.innerText = "Guardar"; } // Desbloquear solo si falla
@@ -646,7 +680,7 @@ async function submitProveedor() {
 
     const nom = document.getElementById('d1-nombre').value;
     const asunto = document.getElementById('d1-asunto').value;
-    if(!nom || !STATE['d1']?.residente || !asunto) return alert("Faltan datos.");
+    if(!nom || !STATE['d1']?.residente || !asunto) return alert("Faltan datos obligatorios.");
     
     if(btn) { btn.disabled = true; btn.innerText = "Guardando..."; }
     
@@ -673,7 +707,7 @@ async function submitRecepcionPaquete() {
     if (btn && btn.disabled) return;
 
     const nombre = document.getElementById('ba1-nombre').value;
-    if(!STATE['ba1']?.residente || !nombre) return alert("Faltan datos obligatorios (Nombre, Residente).");
+    if(!STATE['ba1']?.residente || !nombre) return alert("Faltan datos obligatorios (Nombre, Permanente).");
     if(!STATE.photos['ba1']) return alert("La foto es obligatoria."); 
     
     if(btn) { btn.disabled = true; btn.innerText = "Guardando..."; }
@@ -689,7 +723,7 @@ async function submitRecepcionPaquete() {
     
     if (res && res.success) { 
         resetForm('ba1'); 
-        showSuccessScreen("Paquete Recibido", "Guardado", 'BA2'); 
+        showSuccessScreen("Paquete Recibido", "Guardado con éxito", 'BA2'); 
     } else { 
         if(btn) { btn.disabled = false; btn.innerText = "Guardar"; }
         showFailureScreen(res.message, 'BA1'); 
@@ -718,7 +752,7 @@ async function submitEntregaPaquete() {
     
     if (res && res.success) { 
         resetForm('bb1'); 
-        showSuccessScreen("Paquete Entregado", "Firmado", 'BB2'); 
+        showSuccessScreen("Paquete Entregado", "Firmado con éxito", 'BB2'); 
     } else { 
         if(btn) { btn.disabled = false; btn.innerText = "Guardar"; }
         showFailureScreen(res.message, 'BB1'); 
@@ -744,15 +778,15 @@ async function validarAccesoQR(tipo, inputId, formId, nextScreen, failScreen) {
         resetForm(formId);
         showSuccessScreen(res.message || "Acceso Permitido", `${res.data?.tipo || "ACCESO"}: ${res.data?.nombre || "Autorizado"}`, nextScreen);
     } else {
-        // --- LÓGICA DE MENSAJES PERSONALIZADOS
+        // --- LÓGICA DE MENSAJES PERSONALIZADOS FORMALES
         let mensajePersonalizado = res ? res.message : "Error desconocido";
 
         if (tipo === 'NIP_PROVEEDOR') {
             mensajePersonalizado = "El NIP ingresado no es válido o ya caducó.";
         } else if (tipo === 'QR_VISITA') {
-            mensajePersonalizado = "Este código QR de visita no existe o ya fue utilizado.";
+            mensajePersonalizado = "El código de un solo uso no es válido o ya fue utilizado.";
         } else if (tipo === 'QR_RESIDENTE') {
-            mensajePersonalizado = "Identificación de residente no encontrada en el sistema.";
+            mensajePersonalizado = "El QR Permanente no ha sido encontrado en el sistema.";
         } else if (tipo === 'EVENTO') {
             mensajePersonalizado = "El código del evento no es válido o ha expirado.";
         }
@@ -776,7 +810,7 @@ function showSuccessScreen(titulo, subtitulo, nextScreen) {
 
 function showFailureScreen(motivo, retryScreen) {
     const old = document.getElementById('status-modal'); if(old) old.remove();
-    const html = `<div id="status-modal" class="screen" style="display:flex; justify-content:center; align-items:center; height:100vh; flex-direction:column; text-align:center; background-color:#fef2f2; animation: shake 0.4s ease-in-out; position:fixed; top:0; left:0; width:100%; z-index:99999;"><div style="background:white; padding:40px; border-radius:20px; box-shadow:0 10px 25px rgba(0,0,0,0.1); max-width:90%; width: 400px;"><div style="width:80px; height:80px; background:#fee2e2; border-radius:50%; display:flex; align-items:center; justify-content:center; margin:0 auto 20px;"><i class="fas fa-times fa-3x" style="color:#ef4444;"></i></div><h1 style="font-size:1.8rem; margin:0 0 10px; color:#991b1b;">DENEGADO</h1><p style="font-size:1.1rem; color:#666; margin-bottom:30px;">${motivo}</p><button class="btn-primary" style="width:100%; background-color:#333;" onclick="document.getElementById('status-modal').remove(); navigate('${retryScreen}')">Intentar de nuevo</button></div></div>`;
+    const html = `<div id="status-modal" class="screen" style="display:flex; justify-content:center; align-items:center; height:100vh; flex-direction:column; text-align:center; background-color:#fef2f2; animation: shake 0.4s ease-in-out; position:fixed; top:0; left:0; width:100%; z-index:99999;"><div style="background:white; padding:40px; border-radius:20px; box-shadow:0 10px 25px rgba(0,0,0,0.1); max-width:90%; width: 400px;"><div style="width:80px; height:80px; background:#fee2e2; border-radius:50%; display:flex; align-items:center; justify-content:center; margin:0 auto 20px;"><i class="fas fa-times fa-3x" style="color:#ef4444;"></i></div><h1 style="font-size:1.8rem; margin:0 0 10px; color:#991b1b;">DENEGADO</h1><p style="font-size:1.1rem; color:#666; margin-bottom:30px;">${motivo}</p><button class="btn-primary" style="width:100%; background-color:#333;" onclick="document.getElementById('status-modal').remove(); navigate('${retryScreen}')">Intentar nuevamente</button></div></div>`;
     document.body.insertAdjacentHTML('beforeend', html);
 }
 
@@ -793,16 +827,16 @@ function resetForm(prefix) {
 
 function openResidenteModal(ctx) {
     STATE.currentContext = ctx;
-    if(STATE.colBaserFiltrada.length === 0) { alert("Cargando lista, reintente..."); loadResidentesList(); return; }
+    if(STATE.colBaserFiltrada.length === 0) { alert("Cargando lista, intente nuevamente..."); loadResidentesList(); return; }
     const torres = [...new Set(STATE.colBaserFiltrada.map(i => i.Torre))].sort();
     const selTorre = document.getElementById('sel-torre');
-    if (selTorre) { selTorre.innerHTML = '<option value="">Selecciona...</option>' + torres.map(t => `<option value="${t}">${t}</option>`).join(''); updateDeptos(); document.getElementById('modal-selector').classList.add('active'); }
+    if (selTorre) { selTorre.innerHTML = '<option value="">Seleccione...</option>' + torres.map(t => `<option value="${t}">${t}</option>`).join(''); updateDeptos(); document.getElementById('modal-selector').classList.add('active'); }
 }
 
 function updateDeptos() {
     const t = document.getElementById('sel-torre').value;
     const deptos = [...new Set(STATE.colBaserFiltrada.filter(i => i.Torre == t).map(i => i.Departamento))].sort();
-    document.getElementById('sel-depto').innerHTML = '<option value="">Selecciona...</option>' + deptos.map(d => `<option value="${d}">${d}</option>`).join('');
+    document.getElementById('sel-depto').innerHTML = '<option value="">Seleccione...</option>' + deptos.map(d => `<option value="${d}">${d}</option>`).join('');
     updateResidentes();
 }
 
@@ -810,7 +844,7 @@ function updateResidentes() {
     const t = document.getElementById('sel-torre').value;
     const d = document.getElementById('sel-depto').value;
     const res = STATE.colBaserFiltrada.filter(i => i.Torre == t && i.Departamento == d).map(r => r.Nombre).sort();
-    document.getElementById('sel-nombre').innerHTML = '<option value="">Selecciona...</option>' + res.map(n => `<option value="${n}">${n}</option>`).join('');
+    document.getElementById('sel-nombre').innerHTML = '<option value="">Seleccione...</option>' + res.map(n => `<option value="${n}">${n}</option>`).join('');
 }
 
 function confirmResidente() {
@@ -886,7 +920,7 @@ function startScan(targetInputId) {
     STATE.targetInputForQR = targetInputId;
     document.getElementById('qr-modal').classList.add('active');
     html5QrCode = new Html5Qrcode("qr-reader-view");
-    html5QrCode.start({ facingMode: "environment" }, { fps: 10, qrbox: 250 }, (decodedText) => { html5QrCode.stop().then(() => html5QrCode.clear()); document.getElementById('qr-modal').classList.remove('active'); const input = document.getElementById(STATE.targetInputForQR); if(input) input.value = decodedText; }, () => {}).catch(err => { alert("Error cámara: " + err); document.getElementById('qr-modal').classList.remove('active'); });
+    html5QrCode.start({ facingMode: "environment" }, { fps: 10, qrbox: 250 }, (decodedText) => { html5QrCode.stop().then(() => html5QrCode.clear()); document.getElementById('qr-modal').classList.remove('active'); const input = document.getElementById(STATE.targetInputForQR); if(input) input.value = decodedText; }, () => {}).catch(err => { alert("Error en la cámara: " + err); document.getElementById('qr-modal').classList.remove('active'); });
 }
 
 function closeQRScanner() { if(html5QrCode) html5QrCode.stop().then(() => html5QrCode.clear()).catch(()=>{}); document.getElementById('qr-modal').classList.remove('active'); }
