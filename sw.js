@@ -1,4 +1,4 @@
-const CACHE_NAME = 'ravens-cache-v28';
+const CACHE_NAME = 'ravens-cache-v29';
 const ASSETS_TO_CACHE = [
   './',
   './index.html',
@@ -48,7 +48,14 @@ self.addEventListener('activate', (event) => {
   );
 });
 
-// 3. INTERCEPTOR DE RED
+// --- LÓGICA NUEVA: ESCUCHAR ORDEN DE ACTUALIZAR ---
+self.addEventListener('message', (event) => {
+  if (event.data && event.data.action === 'skipWaiting') {
+    self.skipWaiting();
+  }
+});
+
+// 3. INTERCEPTOR DE RED (INTACTO COMO LO TENÍAS)
 self.addEventListener('fetch', (event) => {
   if (event.request.url.includes('proxyoperador.azurewebsites.net')) {
     return;
