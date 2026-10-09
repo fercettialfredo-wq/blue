@@ -123,7 +123,7 @@ const SCREENS = {
             </header>
             <main class="main-menu-grid">
                 <div class="menu-item" onclick="navigate('A1')">
-                    <img src="icons/visita.svg" class="custom-icon"><div>De un solo uso</div>
+                    <img src="icons/visita.svg" class="custom-icon"><div>Visitas</div>
                 </div>
                 <div class="menu-item" onclick="navigate('B1')">
                     <img src="icons/paquete1.svg" class="custom-icon"><div>Paquetería</div>
@@ -143,22 +143,22 @@ const SCREENS = {
 
     'A1': `
         <div class="screen">
-            <header class="header-app"><div class="header-logo"><span class="header-logo-text">DE UN SOLO USO</span></div><div class="cursor-pointer" onclick="navigate('INICIO')"><img src="icons/home.svg" class="header-icon-img" style="height:40px;"></div></header>
+            <header class="header-app"><div class="header-logo"><span class="header-logo-text">VISITAS</span></div><div class="cursor-pointer" onclick="navigate('INICIO')"><img src="icons/home.svg" class="header-icon-img" style="height:40px;"></div></header>
             <main class="main-menu-grid">
-                <div class="menu-item" onclick="navigate('AA1')"><img src="icons/visita.svg" class="custom-icon"><div>Registro un solo uso</div></div>
+                <div class="menu-item" onclick="navigate('AA1')"><img src="icons/visita.svg" class="custom-icon"><div>Registrar Visita</div></div>
                 <div class="menu-item" onclick="navigate('AC1')"><img src="icons/servicio2.svg" class="custom-icon"><div>Personal Servicio</div></div>
             </main>
         </div>
     `,
     'AA1': `
         <div class="screen form-page">
-            <div class="form-title-section"><h2 class="form-title">Nuevo (Un solo uso)</h2><div class="header-icons"><i class="fas fa-arrow-left fa-2x cursor-pointer" onclick="navigate('A1')" style="color:#ef4444;"></i><img src="icons/libreta.svg" class="header-icon-img cursor-pointer" onclick="navigate('AA2')" style="height:40px;"></div></div>
+            <div class="form-title-section"><h2 class="form-title">Nueva Visita</h2><div class="header-icons"><i class="fas fa-arrow-left fa-2x cursor-pointer" onclick="navigate('A1')" style="color:#ef4444;"></i><img src="icons/libreta.svg" class="header-icon-img cursor-pointer" onclick="navigate('AA2')" style="height:40px;"></div></div>
             <div class="form-container">
                 <div class="input-group"><label>Nombre *</label><input type="text" id="aa1-nombre" class="form-input"></div>
                 <div class="input-group"><label>Torre</label><input type="text" id="aa1-torre" class="form-input" readonly></div>
                 <div class="input-group"><label>Departamento</label><input type="text" id="aa1-depto" class="form-input" readonly></div>
-                <div class="input-group"><label>Permanente</label><input type="text" id="aa1-res-name" class="form-input" readonly></div>
-                <button class="btn-primary" onclick="openResidenteModal('aa1')"><i class="fas fa-search"></i> Seleccionar Permanente</button>
+                <div class="input-group"><label>Residente</label><input type="text" id="aa1-res-name" class="form-input" readonly></div>
+                <button class="btn-primary" onclick="openResidenteModal('aa1')"><i class="fas fa-search"></i> Seleccionar Residente</button>
                 <div class="input-group" style="margin-top:15px"><label>Placa</label><input type="text" id="aa1-placa" class="form-input"></div>
                 <div class="input-group"><label>Motivo *</label><input type="text" id="aa1-motivo" class="form-input"></div>
                 <div style="margin-top: 20px;">
@@ -169,7 +169,7 @@ const SCREENS = {
         </div>
     `,
     'AA2': `<div class="screen form-page">
-            ${getHeaderLibreta('Libreta de un solo uso', "loadHistory('VISITA', 'gal-aa2')", 'AA1', true)}
+            ${getHeaderLibreta('Libreta Visitas', "loadHistory('VISITA', 'gal-aa2')", 'AA1', true)}
             <div class="form-container" style="padding:0;"><div id="gal-aa2" class="gallery-container"></div></div></div>`,
     
     'AC1': `
@@ -179,8 +179,8 @@ const SCREENS = {
                 <div class="input-group"><label>Nombre *</label><input type="text" id="ac1-nombre" class="form-input"></div>
                 <div class="input-group"><label>Torre</label><input type="text" id="ac1-torre" class="form-input" readonly></div>
                 <div class="input-group"><label>Depto</label><input type="text" id="ac1-depto" class="form-input" readonly></div>
-                <div class="input-group"><label>Permanente</label><input type="text" id="ac1-res-name" class="form-input" readonly></div>
-                <button class="btn-primary" onclick="openResidenteModal('ac1')"><i class="fas fa-search"></i> Seleccionar Permanente</button>
+                <div class="input-group"><label>Residente</label><input type="text" id="ac1-res-name" class="form-input" readonly></div>
+                <button class="btn-primary" onclick="openResidenteModal('ac1')"><i class="fas fa-search"></i> Seleccionar Residente</button>
                 <div class="input-group" style="margin-top:15px"><label>Cargo *</label><input type="text" id="ac1-cargo" class="form-input"></div>
                 <div style="margin-top: 20px;"><button class="btn-save" onclick="submitAviso('ac1')">Guardar</button><button class="btn-clean" onclick="resetForm('ac1')"><i class="fas fa-eraser"></i> Limpiar</button></div>
             </div>
@@ -205,8 +205,8 @@ const SCREENS = {
                 <div class="input-group"><label>Nombre (Repartidor/Entregó) *</label><input type="text" id="ba1-nombre" class="form-input"></div>
                 <div class="input-group"><label>Torre</label><input type="text" id="ba1-torre" class="form-input" readonly></div>
                 <div class="input-group"><label>Departamento</label><input type="text" id="ba1-depto" class="form-input" readonly></div>
-                <div class="input-group"><label>Destinatario (Permanente)</label><input type="text" id="ba1-res-name" class="form-input" readonly></div>
-                <button class="btn-primary" onclick="openResidenteModal('ba1')"><i class="fas fa-search"></i> Seleccionar Permanente</button>
+                <div class="input-group"><label>Destinatario (Residente)</label><input type="text" id="ba1-res-name" class="form-input" readonly></div>
+                <button class="btn-primary" onclick="openResidenteModal('ba1')"><i class="fas fa-search"></i> Seleccionar Residente</button>
                 <div class="input-group" style="margin-top:15px"><label>Paquetería *</label><input type="text" id="ba1-paqueteria" class="form-input"></div>
                 <div class="input-group"><label>Estatus</label><select id="ba1-estatus" class="form-input"><option>Aceptado</option><option>Dañado</option></select></div>
                 <div class="input-group"><label>Foto *</label>
@@ -230,8 +230,8 @@ const SCREENS = {
                 <div class="input-group"><label>Quién Recibe *</label><input type="text" id="bb1-nombre" class="form-input"></div>
                 <div class="input-group"><label>Torre</label><input type="text" id="bb1-torre" class="form-input" readonly></div>
                 <div class="input-group"><label>Depto</label><input type="text" id="bb1-depto" class="form-input" readonly></div>
-                <div class="input-group"><label>Dueño (Permanente)</label><input type="text" id="bb1-res-name" class="form-input" readonly></div>
-                <button class="btn-primary" onclick="openResidenteModal('bb1')"><i class="fas fa-search"></i> Seleccionar Permanente</button>
+                <div class="input-group"><label>Dueño (Residente)</label><input type="text" id="bb1-res-name" class="form-input" readonly></div>
+                <button class="btn-primary" onclick="openResidenteModal('bb1')"><i class="fas fa-search"></i> Seleccionar Residente</button>
                 <div class="input-group" style="margin-top:15px"><label>Foto Evidencia *</label>
                     <div class="photo-placeholder" onclick="document.getElementById('cam-bb1').click()"><input type="file" id="cam-bb1" hidden accept="image/*" capture="environment" onchange="previewImg(this, 'bb1')"><div id="prev-bb1" class="photo-preview hidden"></div><span><i class="fas fa-camera"></i> Cámara</span></div>
                 </div>
@@ -253,8 +253,8 @@ const SCREENS = {
                 <div class="input-group"><label>Asunto *</label><input type="text" id="d1-asunto" class="form-input"></div>
                 <div class="input-group"><label>Torre</label><input type="text" id="d1-torre" class="form-input" readonly></div>
                 <div class="input-group"><label>Depto</label><input type="text" id="d1-depto" class="form-input" readonly></div>
-                <div class="input-group"><label>Permanente</label><input type="text" id="d1-res-name" class="form-input" readonly></div>
-                <button class="btn-primary" onclick="openResidenteModal('d1')"><i class="fas fa-search"></i> Seleccionar Permanente</button>
+                <div class="input-group"><label>Residente</label><input type="text" id="d1-res-name" class="form-input" readonly></div>
+                <button class="btn-primary" onclick="openResidenteModal('d1')"><i class="fas fa-search"></i> Seleccionar Residente</button>
                 <div style="margin-top: 20px;"><button class="btn-save" onclick="submitProveedor()">Guardar</button><button class="btn-clean" onclick="resetForm('d1')"><i class="fas fa-eraser"></i> Limpiar</button></div>
             </div>
         </div>
@@ -566,7 +566,7 @@ function renderRemoteGallery(serverData, elementId) {
         let lineasDetalle = [];
         if (item.Empresa) { let txt = `Empresa: ${item.Empresa}`; if(item.Asunto) txt += ` (${item.Asunto})`; lineasDetalle.push(txt); }
         else if (item.Paqueteria) { lineasDetalle.push(`Paq: ${item.Paqueteria}`); }
-        else if (item.Recibio) { lineasDetalle.push(`Recibió: ${item.Recibio}`); }
+        else if (item.Recibio) { lineasDetalle.push(`Quién Recibió: ${item.Recibio}`); }
         else if (item.Cargo) { lineasDetalle.push(item.Cargo); }
         else if (item.Motivo) { lineasDetalle.push(item.Motivo); }
         if (item.Torre || item.Departamento) { lineasDetalle.push(`T: ${item.Torre || '?'} D: ${item.Departamento || '?'}`); }
@@ -607,7 +607,7 @@ function showDetails(index) {
     // Traducción formal de llaves visuales
     const labelMap = { 
         'Nombre': 'Nombre', 'Nombre0': 'Nombre', 'Title': 'Título/Nombre',
-        'Recibio': 'Quién Recibió', 'Residente': 'Destinatario/Permanente', 
+        'Recibio': 'Quién Recibió', 'Residente': 'Destinatario/Residente', 
         'Fechayhora': 'Fecha y Hora', 'Fecha': 'Fecha y Hora', 'Estatus': 'Estatus', 
         'Paqueteria': 'Paquetería', 'Empresa': 'Empresa', 'Asunto': 'Asunto', 
         'Torre': 'Torre', 'Departamento': 'Departamento', 'Cargo': 'Cargo', 'Placa': 'Placa'
@@ -707,7 +707,7 @@ async function submitRecepcionPaquete() {
     if (btn && btn.disabled) return;
 
     const nombre = document.getElementById('ba1-nombre').value;
-    if(!STATE['ba1']?.residente || !nombre) return alert("Faltan datos obligatorios (Nombre, Permanente).");
+    if(!STATE['ba1']?.residente || !nombre) return alert("Faltan datos obligatorios (Nombre, Residente).");
     if(!STATE.photos['ba1']) return alert("La foto es obligatoria."); 
     
     if(btn) { btn.disabled = true; btn.innerText = "Guardando..."; }
