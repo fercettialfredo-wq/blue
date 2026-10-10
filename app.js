@@ -60,14 +60,34 @@ const STATE = {
 // --- UTILIDAD DE FECHA ---
 function formatearFechaBonita(fechaRaw) {
     if (!fechaRaw) return "Pendiente";
-    // Reemplazo seguro para compatibilidad con iOS/Safari
-    const safeDate = fechaRaw.replace(/-/g, '/');
-    const dateObj = new Date(safeDate);
-    if (isNaN(dateObj)) return fechaRaw;
+    
+    // 1. Intento nativo (ideal para ISO 8601 de SharePoint ej. "2024-10-24T18:30:00Z")
+    let dateObj = new Date(fechaRaw);
+    
+    // 2. Si es inválida, intentar arreglar formatos específicos para Safari/iOS
+    if (isNaN(dateObj.getTime())) {
+        let safeDate = fechaRaw.replace(' ', 'T'); // Convertir SQL a ISO parcial
+        dateObj = new Date(safeDate);
+        
+        // Si sigue fallando, aplicar reemplazo de guiones (solo para fechas simples sin T)
+        if (isNaN(dateObj.getTime())) {
+            safeDate = fechaRaw.replace(/-/g, '/').replace('T', ' ');
+            dateObj = new Date(safeDate);
+        }
+    }
+    
+    // 3. Si definitivamente no se pudo parsear, devolver el original crudo para no romper la vista
+    if (isNaN(dateObj.getTime())) return fechaRaw;
+    
+    // 4. Formatear correctamente a formato local (Ej. 24/10/2024 02:30 p.m.)
     return dateObj.toLocaleString('es-MX', {
-        day: '2-digit', month: '2-digit', year: 'numeric',
-        hour: '2-digit', minute: '2-digit', hour12: true
-    }).replace(',', ''); 
+        day: '2-digit', 
+        month: '2-digit', 
+        year: 'numeric',
+        hour: '2-digit', 
+        minute: '2-digit', 
+        hour12: true
+    }).replace(',', ' -'); 
 }
 
 // --- CABECERA DE LIBRETA ---
